@@ -7,9 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum CheckStatus {
+  NOT_YET_CHECKED
+  CHECKING
+  CHECKED
+}
+
+enum MatchStatus {
+  REJECTED
+  ASK_AGAIN
+  NO_LONGER_MATCH
+  OPEN
+}
+
 model profile {
   idprofile             Int       @id @default(autoincrement())
-  userid                Int       @unique(map: "Profile_userId_key")
+  userid                Int       @unique
   availtime             String?   @db.VarChar(600)
   address               String?   @db.VarChar(45)
   agreewith             String?   @db.VarChar(45)
@@ -23,50 +36,51 @@ model profile {
   nationality           String?   @db.VarChar(45)
   phoneno               String?   @db.VarChar(45)
   lastOnline            DateTime? @db.DateTime(0)
-  user                  user      @relation(fields: [userid], references: [userid], map: "Profile_userId_fkey")
+  user                  user      @relation(fields: [userid], references: [userid])
 }
 
 model user {
-  userid           Int      @id @default(autoincrement())
-  email            String   @db.VarChar(45)
-  password         String   @db.TinyText
+  userid           Int       @id @default(autoincrement())
+  email            String    @unique @db.VarChar(45)
+  password         String    @db.TinyText
   favouritecaseid  Json?
   favouritetutorid Json?
   profile          profile?
-  tutor            tutor[]
+  tutor            tutor?
 }
 
 model student {
-  studentid         Int       @id @default(autoincrement())
+  studentid         Int          @id @default(autoincrement())
   userid            Int?
-  subject           String?   @db.VarChar(300)
-  availtime         String?   @db.VarChar(45)
+  subject           String?      @db.VarChar(300)
+  availtime         String?      @db.VarChar(45)
   lowestfrequency   Int?
   lowestfee         Int?
   lowestduration    Int?
-  language          String?   @db.VarChar(45)
-  others            String?   @db.VarChar(45)
-  expectation       String?   @db.VarChar(45)
-  genderrequirement String?   @db.VarChar(45)
-  status            String?   @db.VarChar(45)
+  language          String?      @db.VarChar(45)
+  others            String?      @db.VarChar(45)
+  expectation       String?      @db.VarChar(45)
+  genderrequirement String?      @db.VarChar(45)
+  status            String?      @db.VarChar(45)
   location          Json?
   highestfee        Int?
   highestfrequency  Int?
   highestduration   Int?
-  level             String?   @db.VarChar(45)
-  lastOnline        DateTime? @db.DateTime(0)
+  level             String?      @db.VarChar(45)
+  lastOnline        DateTime?    @db.DateTime(0)
+  matches           match[]      // Back-relation for matches
 }
 
 model apply {
   idapply Int    @id @default(autoincrement())
   subject String @db.VarChar(45)
   place   String @db.VarChar(45)
-  userid  Int    @unique(map: "Apply_userId_key")
+  userid  Int    @unique
 }
 
 model tutor {
   tutorid              Int       @id @default(autoincrement())
-  userid               Int?
+  userid               Int?      @unique
   location             Json?
   availtime            String?   @db.VarChar(45)
   intro                String?   @db.VarChar(45)
@@ -92,20 +106,21 @@ model tutor {
   highestfee           Int?
   lowestfee            Int?
   matchedbefore        Json?
-  status               String?   @default("open") @db.VarChar(45)
-  lastOnline           DateTime? @db.DateTime(0)
-  verify               String?   @default("未驗證") @db.VarChar(45)
-  user                 user?     @relation(fields: [userid], references: [userid], onDelete: Restrict, map: "tutor_userid_key")
-
-  @@index([userid], map: "tutor_userid_key_idx")
+  status               String?    @default("open") @db.VarChar(45)
+  lastOnline           DateTime?  @db.DateTime(0)
+  verify               String?    @default("未驗證") @db.VarChar(45)
+  user                  user?     @relation(fields: [userid], references: [userid])
+  matches              match[]    // Back-relation for matches
 }
-
 model match {
-  idmatch       Int     @id @default(autoincrement())
-  studentid     Int?    @unique(map: "studentid_UNIQUE")
-  availtutor    Json?
-  notavailtutor Json?
-  checking      Json?
-  checked       Json?
-  status        String? @default("open") @db.VarChar(45)
+  idmatch       Int           @id @default(autoincrement())
+  studentid     Int           // Student ID
+  tutorid       Int           // Tutor ID
+  availability  Boolean       // Indicates availability for the match
+  checkStatus   CheckStatus   // Status of the check
+  student       student       @relation(fields: [studentid], references: [studentid])
+  tutor         tutor         @relation(fields: [tutorid], references: [tutorid])
+  matchstatus   MatchStatus  
 }
+
+

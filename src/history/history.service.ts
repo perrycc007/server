@@ -19,7 +19,7 @@ export class HistoryService {
     // Implement the logic for updating case status
     // You can reuse your existing logic from the Express router
 
-    this.prisma.match.update({
+    this.prisma.matchStatus.update({
         where: {
           studentid: parseInt(studentId),
         },

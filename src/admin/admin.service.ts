@@ -13,8 +13,7 @@ export class AdminService {
         idmatch: req.body.idmatch,
       },
       data: {
-        checking: req.body.checking,
-        checked: req.body.checked,
+        checkStatus: req.body.checking,
       },
     });
   }
@@ -27,7 +26,7 @@ export class AdminService {
         idmatch: req.body.idmatch,
       },
       data: {
-        notavailtutor: req.body.notavailtutor,
+        availability: req.body.notavailtutor,
       },
     });
   }

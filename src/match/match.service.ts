@@ -13,39 +13,85 @@ export class MatchService {
     const { location, subject, lowestfee, tutorid } = req.body.information;
 
     const preference = {
-      highestfee: {
-        gte: lowestfee,
-      },
+      ...(lowestfee != null && { highestfee: { gte: lowestfee } }),
       status: "open",
     };
 
-    if (lowestfee == null) {
-      delete preference["highestfee"];
-    }
-
     const students = await findMatchingStudents(location, subject, preference);
-    const found1Ids = students.map((student) => student.studentid);
+    const matchedStudentIds = students.map((student) => student.studentid);
 
-    const before = await this.prisma.tutor.findUnique({
+
+    const updateResult1 = await this.prisma.match.updateMany({
       where: {
         tutorid: tutorid,
-      },
-    });
-
-    const difference = findDifference(before.matchedbefore, found1Ids);
-    await updateNotMatchingStudents(difference, tutorid);
-
-    const studentMatches = await this.prisma.match.findMany({
-      where: {
-        studentid: {
-          in: found1Ids,
+        NOT: {
+          studentid: {
+            in: matchedStudentIds,
+          },
         },
       },
+      data: {
+        matchstatus: "NO_LONGER_MATCH",
+      },
     });
+    const updateResult2 = await this.prisma.match.updateMany({
+      where: {
+        tutorid: tutorid,
+          studentid: {
+            in: matchedStudentIds,
+          },
+          OR:[{matchstatus: "REJECTED"}, {matchstatus: "NO_LONGER_MATCH"}]
+      },
+      data: {
+        matchstatus: "ASK_AGAIN",
+      },
+    });
+    const studentidOfExistingMatch = await this.prisma.match.findMany({
+      where: {
+        tutorid: tutorid,
+        studentid: {
+          in: matchedStudentIds,
+        },
+      },  select: {
+        studentid: true, // Include only the 'studentId' field in the result
+      },
+    });
+    const difference = studentidOfExistingMatch.filter(studentId => !matchedStudentIds.includes(studentId.studentid));
+    if (difference.length !== 0) {
+      const newRows = difference.map(onestudentid => {
+        return {
+          tutorid: tutorid,
+          studentid: onestudentid.studentid, // access the studentid property of the onestudentid object
+          availability: true, // replace with actual value
+          checkStatus: "NOT_YET_CHECK", // replace with actual value
+          matchstatus: "OPEN",
+        };
+      });
+    
+      await this.prisma.match.createMany({
+        data:newRows,
+      });
 
-    await updateTutorMatchedBefore(tutorid, found1Ids);
+    // const before = await this.prisma.tutor.findUnique({
+    //   where: {
+    //     tutorid: tutorid,
+    //   },
+    // });
 
-    await updateMatchingStudents(studentMatches, tutorid);
+    // const difference = findDifference(before.matchedbefore, found1Ids);
+    // await updateNotMatchingStudents(difference, tutorid);
+
+    // const studentMatches = await this.prisma.match.findMany({
+    //   where: {
+    //     studentid: {
+    //       in: found1Ids,
+    //     },
+    //   },
+    // });
+
+    // await updateTutorMatchedBefore(tutorid, found1Ids);
+
+    // await updateMatchingStudents(studentMatches, tutorid);
 
     return ({ message: "Tutor profile updated successfully." });
   } catch (err) {

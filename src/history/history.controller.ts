@@ -1,13 +1,16 @@
-import { Controller, Get, Param, Patch, Body } from '@nestjs/common';
+import { Controller, Get, Param, Patch, Body, UseGuards } from '@nestjs/common';
 import { HistoryService } from './history.service';
+import {JwtAuthGuard} from '../auth/guard/auth.guard'
+
 
 @Controller('history')
 export class HistoryController {
   constructor(private readonly historyService: HistoryService) {}
-
-  @Get(':userid')
+  @UseGuards(JwtAuthGuard)
+  @Get()
   async getHistoryByUserId(@Param('userid') userid: string) {
-    return this.historyService.getHistoryByUserId(userid);
+    // return this.historyService.getHistoryByUserId(userid);
+    return "dddd"
   }
 
   @Patch('updateCaseStatus')

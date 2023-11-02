@@ -1,9 +1,9 @@
-// src/auth/auth.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SignUpDto } from './dto/signup.dto';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt'; // Import bcrypt
+import * as bcrypt from 'bcrypt';
+import { SignUpDto } from './dto/signup.dto';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +12,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+
+  
   async signUp(signUpDto: SignUpDto): Promise<string> {
     const { email, password } = signUpDto;
     const saltRounds = 8;
@@ -29,8 +31,42 @@ export class AuthService {
       throw new Error('User registration failed');
     }
 
-    const accessToken = this.generateAccessToken({ id: user.userid, email: user.email });
+    const accessToken = this.generateAccessToken({
+      id: user.userid,
+      email: user.email,
+    });
     return accessToken;
+  }
+
+  async authenticateUser(email: string, password: string): Promise<string> {
+    try {
+
+      const user = await this.prisma.user.findFirst({
+        where: {
+          email: email,
+        },
+      });
+
+      if (!user) {
+        throw new Error('Invalid email or password');
+      }
+      console.log(password)
+      const validPassword = await bcrypt.compare(password, user.password);
+    
+      if (!validPassword) {
+        throw new Error('Invalid email or password');
+      }
+
+      // Generate an access token
+      const accessToken = this.generateAccessToken({
+        id: user.userid,
+        email: user.email,
+      });
+
+      return accessToken;
+    } catch (error) {
+      throw error;
+    }
   }
 
   private generateAccessToken(payload: { id: number; email: string }): string {

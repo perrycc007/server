@@ -18,21 +18,26 @@ import { HistoryController } from './history/history.controller';
 import { ProfileController } from './profile/profile.controller';
 import { MatchController } from './match/match.controller';
 import { AdminController } from './admin/admin.controller';
-import { ResultController } from './result/result.controller';
+// import { ResultController } from './result/result.controller';
 import { HistoryService } from './history/history.service';
 import { ProfileService } from './profile/profile.service';
 import { MatchService } from './match/match.service';
 import { AdminService } from './admin/admin.service';
-import { ResultService } from './result/result.service';
-
-
+// import { ResultService } from './result/result.service';
+import { PasswordForgetService } from './password-forget/password-forget.service';
+import{ PasswordResetService } from './password-reset/password-reset.service';
+import { PrismaService } from './prisma/prisma.service';
 @Module({
   imports: [
     JwtModule.register({
       secret: 'your-secret-key', // Replace with your actual secret key
       signOptions: { expiresIn: '1h' }, // Optional: Set token expiration
     }),],
-  controllers: [AppController, AuthController, TutorsController, ApplyController, StudentsController, FavouriteController, PasswordForgetController, PasswordResetController, HistoryController, ProfileController, MatchController, AdminController, ResultController],
-  providers: [AppService,FavouriteService,StudentsService,TutorService,ApplyService,AuthService, HistoryService, ProfileService, MatchService, AdminService, ResultService],
+  controllers: [AppController, AuthController, TutorsController, ApplyController, StudentsController, FavouriteController, PasswordForgetController, PasswordResetController, HistoryController, ProfileController, MatchController, AdminController, 
+    // ResultController
+  ],
+  providers: [PrismaService,AppService,FavouriteService,StudentsService,TutorService,ApplyService,AuthService, HistoryService, ProfileService, MatchService, AdminService, PasswordForgetService,PasswordResetService,
+    // ResultService
+  ],
 })
 export class AppModule {}
