@@ -1,167 +1,137 @@
-// import { Injectable } from '@nestjs/common';
-// import { PrismaService } from '../prisma/prisma.service';
-// import { Prisma } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
-// @Injectable()
-// export class ResultService {
-//   constructor(private readonly prisma: PrismaService) {}
+@Injectable()
+export class ResultService {
+  constructor(private readonly prisma: PrismaService) {}
 
-//   async getResultByPage(page: number) {
-//     // Implement the logic for getting results by page
-//     // You can reuse your existing logic from the Express router
-    
-//   const result = await this.prisma.match.findMany({
-//     // where:{
-//     //   status: 'open'
-//     // },
+  async getResultByPage(page: number) {
+    // Implement the logic for getting results by page
+    // You can reuse your existing logic from the Express router
+    const result = await this.prisma.student.findMany({
+      where: {
+        status: 'open',
+      },
+      orderBy: [
+        {
+          lastOnline: 'desc',
+        },
+      ],
+      include: {
+        matches: {
+          include: {
+            tutor: {
+              include: {
+                user: {
+                  include: {
+                    profile: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        // user: {
+        //   include: {
+        //     profile: true
+        //   }
+        // }
+      },
+      skip: page,
+      take: 1,
+    });
 
-//     orderBy: [
-//       {
-//         lastOnline: "desc",
-//       },
-//     ],
-//     skip: page,
-//     take: 1,
-//   });
-//   const totalNumberofMatch = await this.prisma.match.count();
-//   const totalPage = { totalNumberofMatch: totalNumberofMatch };
-//   // console.log('result',result)
-//   if (result !== null) {
-//     let result1 = [];
-//     // console.log(result)
-//     // res.json({result})
-//     for (const match of result) {
-//       let favouritetutorid: Prisma.JsonValue;
-//       let result2;
-//       const student = await this.prisma.student.findUnique({
-//         where: {
-//           studentid: match.studentid,
-//         },
-//       });
-//       if (student != null) {
-//         const user = await this.prisma.user.findUnique({
-//           where: {
-//             userid: student.userid,
-//           },
-//         });
+    console.log(result);
+  }
+  async getResultByStudentId(studentId: number) {
+    // Implement the logic for getting results by student ID
+    // You can reuse your existing logic from the Express router
+    const result = await this.prisma.student.findUnique({
+      where: {
+        studentid: studentId,
+      },
+      include: {
+        matches: {
+          include: {
+            tutor: {
+              include: {
+                user: {
+                  include: {
+                    profile: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        // user: {
+        //   include: {
+        //     profile: true
+        //   }
+        // }
+      },
+    });
 
-//         if (user.favouritetutorid != null) {
-//           // console.log('favouriteTutor',user.favouritetutorid)
-//           favouritetutorid = user.favouritetutorid;
-//         }
-//         result2 = { ...match, ...student, favouritetutorid };
-//       }
-//       if (match.availtutor !== null) {
-//         const tutor = await this.prisma.tutor.findMany({
-//           where: {
-//             tutorid: {
-//               in: match.availtutor,
-//             },
-//           },
-//           orderBy: [
-//             {
-//               lastOnline: "desc",
-//             },
-//           ],
-//         });
-//         // console.log('tutor',tutor)
-//         for (let teahcer of tutor) {
-//           const user = await this.prisma.user.findUnique({
-//             where: {
-//               userid: teahcer.userid,
-//             },
-//           });
-//           if (user.favouritecaseid != null) {
-//             // console.log('favouriteCase', user.favouritecaseid)
-//             const favouritecaseid = user.favouritecaseid;
-//             teahcer = { ...teahcer, favouritecaseid };
-//           }
-//           result2 = { ...result2, tutor };
-//         }
-//       }
-//       // match.availtutor !=null?console.log([2]):''
-//       result1.push(result2, totalPage);
-//     }
-//     console.log(result1, totalPage);
-//     return result1;
-//   } else {
-//     const result = { userid: userid, ...dummyProfile };
-//   }
-//   }
-//   async getResultByStudentId(studentId: number) {
-//     // Implement the logic for getting results by student ID
-//     // You can reuse your existing logic from the Express router
-//     const result = await this.prisma.match.findUnique({
-//       where: {
-//         studentid: studentId,
-//       },
-//     });
-  
-//     // console.log('result',result)
-//     if (result !== null) {
-//       const match = result;
-//       let result1 = [];
-//       // console.log(result)
-//       // res.json({result})
-//       let favouritetutorid = [];
-//       let result2 = [];
-//       const student = await this.prisma.student.findUnique({
-//         where: {
-//           studentid: match.studentid,
-//         },
-//       });
-//       if (student != null) {
-//         const user = await this.prisma.user.findUnique({
-//           where: {
-//             userid: student.userid,
-//           },
-//         });
-  
-//         if (user.favouritetutorid != null) {
-//           // console.log('favouriteTutor',user.favouritetutorid)
-//           favouritetutorid = user.favouritetutorid;
-//         }
-//         result2 = { ...match, ...student, favouritetutorid };
-//       }
-//       if (match.availtutor !== null) {
-//         const tutor = await this.prisma.tutor.findMany({
-//           where: {
-//             tutorid: {
-//               in: match.availtutor,
-//             },
-//             orderBy: [
-//               {
-//                 lastOnline: "desc",
-//               },
-//             ],
-//           },
-//         });
-//         // console.log('tutor',tutor)
-//         const tutors = []
-//         for (let teacher of tutor) {
-//           const user = await this.prisma.user.findUnique({
-//             where: {
-//               userid: teacher.userid,
-//             },
-//           });
-//           if (user.favouritecaseid != null) {
-//             // console.log('favouriteCase', user.favouritecaseid)
-//             const favouritecaseid = user.favouritecaseid;
-//             tutors.push({...teacher,favouritecaseid});
-//           }
-//           result2 = { ...result2, 
-//             tutors
-//            };
-//         }
-//       }
-//       // match.availtutor !=null?console.log([2]):''
-//       result1.push(result2);
-  
-//       console.log(result1);
-//       return(result1);
-//     } else {
-//       // console.log(result)
-//       return("error");
-//     }
-//   }
-// }
+    console.log(result);
+    // return("error");
+  }
+
+  //   async getResultByTutorId(tutorid: number) {
+  //     // Implement the logic for getting results by student ID
+  //     // You can reuse your existing logic from the Express router
+  //     const result = await this.prisma.tutor.findUnique({
+  //       where: {
+  //         tutorid: tutorid,
+  //       },
+  //       include: {
+  //         matches: {
+  //           include: {
+  //             student: {
+  //               include: {
+  //                 user: {
+  //                   include: {
+  //                     profile: true
+  //                   }
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         },
+  //         user: {
+  //           include: {
+  //             profile: true
+  //           }
+  //         }
+  //       },
+  //     });
+
+  //       console.log(result)
+  //       // return("error");
+  //     }
+
+  async closeLastOnlineMoreThan6months() {
+    await this.prisma.student.updateMany({
+      where: {
+        lastOnline: {
+          lt: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+        },
+        status: 'open',
+      },
+      data: {
+        status: 'closed',
+      },
+    });
+    await this.prisma.tutor.updateMany({
+      where: {
+        lastOnline: {
+          lt: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+        },
+        status: 'open',
+      },
+      data: {
+        status: 'closed',
+      },
+    });
+  }
+}

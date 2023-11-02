@@ -47,11 +47,23 @@ model user {
   favouritetutorid Json?
   profile          profile?
   tutor            tutor?
+  students         student[] 
+  favourites       favourite[] // Add this line
+}
+
+model favourite {
+  idfavourite   Int      @id @default(autoincrement())
+  userid        Int
+  studentid     Int      // Student ID
+  tutorid       Int      // Tutor ID
+  user          user     @relation(fields: [userid], references: [userid])
+  student       student  @relation(fields: [studentid], references: [studentid])
+  tutor         tutor    @relation(fields: [tutorid], references: [tutorid])
 }
 
 model student {
   studentid         Int          @id @default(autoincrement())
-  userid            Int?
+  userid            Int         
   subject           String?      @db.VarChar(300)
   availtime         String?      @db.VarChar(45)
   lowestfrequency   Int?
@@ -69,6 +81,8 @@ model student {
   level             String?      @db.VarChar(45)
   lastOnline        DateTime?    @db.DateTime(0)
   matches           match[]      // Back-relation for matches
+  user              user         @relation(fields: [userid], references: [userid]) 
+  favourites        favourite[] // Add this line
 }
 
 model apply {
@@ -111,6 +125,7 @@ model tutor {
   verify               String?    @default("未驗證") @db.VarChar(45)
   user                  user?     @relation(fields: [userid], references: [userid])
   matches              match[]    // Back-relation for matches
+  favourites      favourite[] // Add this line
 }
 model match {
   idmatch       Int           @id @default(autoincrement())
