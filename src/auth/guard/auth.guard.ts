@@ -13,10 +13,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<any> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
-    console.log(request, token)
+    console.log(request, token);
     if (!token) {
       throw new UnauthorizedException('You must be authenticated.');
     }
@@ -24,11 +24,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     try {
       const decodedToken = this.jwtService.verify(token);
       request.user = decodedToken;
-      console.log(decodedToken)
+      console.log(decodedToken);
       // Perform additional actions here, e.g., updating the profile
       await this.updateProfile(request.user);
-
-      return true;
+      return { access: true, userid: decodedToken.id };
     } catch (err) {
       throw new UnauthorizedException('Invalid token.');
     }

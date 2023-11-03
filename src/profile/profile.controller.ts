@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 
 @Controller('profile')
@@ -10,7 +10,7 @@ export class ProfileController {
     return this.profileService.getProfile(parseInt(userid));
   }
 
-  @Post()
+  @Patch()
   async updateProfile(@Body() requestBody) {
     return this.profileService.updateProfile(requestBody);
   }

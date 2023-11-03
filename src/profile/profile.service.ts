@@ -21,16 +21,19 @@ export class ProfileService {
   }
 
   async updateProfile(requestBody: any) {
+    console.log(requestBody);
     const reqUserid = requestBody.userid;
-    let { userid, idprofile, ...information } = requestBody.information;
+    let { userid, ...information } = requestBody;
     let { availtime, country, lastOnline, ...requiredInfo } = information;
-    const isEmpty = Object.values(requiredInfo).some((x) => x == null || x == "");
+    const isEmpty = Object.values(requiredInfo).some(
+      (x) => x == null || x == '',
+    );
     if (isEmpty) {
       throw new Error('Please fill in all fields');
     }
-    let agreewith = information.agreewith;
+    let agreewith = true;
     let date_ob = new Date();
-    
+
     const result = await this.prismaService.profile.upsert({
       where: {
         userid: reqUserid,
@@ -46,7 +49,7 @@ export class ProfileService {
         agreewith: `${agreewith}`,
       },
     });
-    
+
     return result;
   }
 }

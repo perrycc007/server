@@ -12,9 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-
-  
-  async signUp(signUpDto: SignUpDto): Promise<string> {
+  async signUp(signUpDto: SignUpDto): Promise<any> {
     const { email, password } = signUpDto;
     const saltRounds = 8;
     const salt = await bcrypt.genSalt(saltRounds);
@@ -35,12 +33,11 @@ export class AuthService {
       id: user.userid,
       email: user.email,
     });
-    return accessToken;
+    return { accessToken: accessToken, userid: user.userid };
   }
 
-  async authenticateUser(email: string, password: string): Promise<string> {
+  async authenticateUser(email: string, password: string): Promise<any> {
     try {
-
       const user = await this.prisma.user.findFirst({
         where: {
           email: email,
@@ -50,9 +47,9 @@ export class AuthService {
       if (!user) {
         throw new Error('Invalid email or password');
       }
-      console.log(password)
+      console.log(password);
       const validPassword = await bcrypt.compare(password, user.password);
-    
+
       if (!validPassword) {
         throw new Error('Invalid email or password');
       }
@@ -62,8 +59,7 @@ export class AuthService {
         id: user.userid,
         email: user.email,
       });
-
-      return accessToken;
+      return { accessToken: accessToken, userid: user.userid };
     } catch (error) {
       throw error;
     }
