@@ -44,19 +44,25 @@ export class TutorsService {
     return result !== null ? result : { userid: userId, ...dummyTutor };
   }
 
-  async createOrUpdateTutor(userId: number, information: any): Promise<any> {
+  async createOrUpdateTutor(information: any): Promise<any> {
+    console.log(information);
+    const { userid, tutorid, availtime, ...tutorinfo } = information;
     let date_ob = new Date();
     return this.prisma.tutor.upsert({
       where: {
-        tutorid: userId,
+        tutorid: userid,
       },
       update: {
-        ...information,
+        ...tutorinfo,
         lastOnline: date_ob,
       },
       create: {
-        userid: userId,
-        ...information,
+        user: {
+          connect: {
+            userid: information.userid, // Assuming you want to connect to an existing 'user' record with userid 2
+          },
+        },
+        ...tutorinfo,
         lastOnline: date_ob,
       },
     });

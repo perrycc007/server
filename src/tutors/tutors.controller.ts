@@ -52,10 +52,6 @@ export class TutorsController {
 
   @Patch()
   async updateTutor(@Body() updateInfo: any) {
-    const { information, userid } = updateInfo;
-    if (information.subject === undefined) {
-      information.subject = JSON.stringify([]);
-    }
-    return this.tutorsService.createOrUpdateTutor(userid, information);
+    return this.tutorsService.createOrUpdateTutor(updateInfo.information);
   }
 }

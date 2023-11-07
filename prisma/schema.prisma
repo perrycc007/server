@@ -96,7 +96,7 @@ model tutor {
   tutorid              Int       @id @default(autoincrement())
   userid               Int?      @unique
   location             Json?
-  availtime            String?   @db.VarChar(45)
+  availtime            Json?   
   intro                String?   @db.VarChar(45)
   language             String?   @db.VarChar(45)
   occupation           String?   @db.VarChar(45)
@@ -114,7 +114,7 @@ model tutor {
   othercert            String?   @db.VarChar(45)
   caseid               String?   @db.VarChar(45)
   major                String?   @db.VarChar(45)
-  subgrade             String?   @db.VarChar(2000)
+  subgrade             Json?   
   strength             String?   @db.VarChar(45)
   subject              Json?
   highestfee           Int?

@@ -21,7 +21,7 @@ export class AuthController {
     try {
       console.log('signUpDto');
       const accessToken = await this.authService.signUp(signUpDto);
-      return { accessToken };
+      return { ...accessToken };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }

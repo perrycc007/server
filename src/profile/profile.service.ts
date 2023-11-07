@@ -12,7 +12,7 @@ export class ProfileService {
         userid: userid,
       },
     });
-
+    console.log(result);
     if (result !== null) {
       return result;
     } else {

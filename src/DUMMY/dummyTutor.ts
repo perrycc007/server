@@ -1,6 +1,6 @@
 export const dummyTutor = {
-  location: '[]',
-  availtime: '[]',
+  location: [],
+  availtime: [],
   intro: null,
   language: null,
   occupation: null,
@@ -18,8 +18,8 @@ export const dummyTutor = {
   othercert: null,
   caseid: null,
   major: null,
-  subgrade: '[]',
+  subgrade: `[{ id: 'drop', value: '' }]`,
   strength: null,
   fee: null,
-  subject: '[]',
+  subject: [],
 };

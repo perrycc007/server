@@ -5,15 +5,14 @@ import { FavouriteService } from './favourite.service';
 export class FavouriteController {
   constructor(private readonly favouriteService: FavouriteService) {}
 
-
   @Get('tutor/:userid')
-  async getUserTutor(@Param('userid') userid: number) {
-    return this.favouriteService.getFavouriteTutor(userid);
+  async getUserTutor(@Param('userid') userid: string) {
+    return this.favouriteService.getFavouriteTutor(parseInt(userid));
   }
 
   @Get('cases/:userid')
-  async getUserCases(@Param('userid') userid: number) {
-    return this.favouriteService.getFavouriterCase(userid);
+  async getUserCases(@Param('userid') userid: string) {
+    return this.favouriteService.getFavouriterCase(parseInt(userid));
   }
 
   @Patch('case')
