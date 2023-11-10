@@ -20,6 +20,26 @@ enum MatchStatus {
   OPEN
 }
 
+enum NumberGrade {
+  Value_2
+  Value_3
+  Value_4
+  Value_5
+  Value_5Star
+  Value_5DoubleStar
+}
+
+// Define an enum for the letter-based grades
+enum LetterGrade {
+  APlus
+  A
+  B
+  C
+  D
+  E
+  F
+}
+
 model profile {
   idprofile             Int       @id @default(autoincrement())
   userid                Int       @unique
@@ -40,102 +60,528 @@ model profile {
 }
 
 model user {
-  userid           Int       @id @default(autoincrement())
-  email            String    @unique @db.VarChar(45)
-  password         String    @db.TinyText
+  userid           Int         @id @default(autoincrement())
+  email            String      @unique @db.VarChar(45)
+  password         String      @db.TinyText
   favouritecaseid  Json?
   favouritetutorid Json?
   profile          profile?
   tutor            tutor?
-  students         student[] 
+  students         student[]
   favourites       favourite[] // Add this line
+  location         location[]
+  subject          subject[]
 }
 
 model favourite {
-  idfavourite   Int      @id @default(autoincrement())
-  userid        Int
-  studentid     Int      // Student ID
-  tutorid       Int      // Tutor ID
-  user          user     @relation(fields: [userid], references: [userid])
-  student       student  @relation(fields: [studentid], references: [studentid])
-  tutor         tutor    @relation(fields: [tutorid], references: [tutorid])
+  idfavourite Int     @id @default(autoincrement())
+  userid      Int
+  studentid   Int // Student ID
+  tutorid     Int // Tutor ID
+  user        user    @relation(fields: [userid], references: [userid])
+  student     student @relation(fields: [studentid], references: [studentid])
+  tutor       tutor   @relation(fields: [tutorid], references: [tutorid])
 }
 
 model student {
-  studentid         Int          @id @default(autoincrement())
-  userid            Int         
-  subject           String?      @db.VarChar(300)
-  availtime         String?      @db.VarChar(45)
+  studentid         Int         @id @default(autoincrement())
+  userid            Int
   lowestfrequency   Int?
   lowestfee         Int?
   lowestduration    Int?
-  language          String?      @db.VarChar(45)
-  others            String?      @db.VarChar(45)
-  expectation       String?      @db.VarChar(45)
-  genderrequirement String?      @db.VarChar(45)
-  status            String?      @db.VarChar(45)
-  location          Json?
+  language          String?     @db.VarChar(45)
+  others            String?     @db.VarChar(45)
+  expectation       String?     @db.VarChar(45)
+  genderrequirement String?     @db.VarChar(45)
+  status            String?     @db.VarChar(45)
   highestfee        Int?
   highestfrequency  Int?
   highestduration   Int?
-  level             String?      @db.VarChar(45)
-  lastOnline        DateTime?    @db.DateTime(0)
-  matches           match[]      // Back-relation for matches
-  user              user         @relation(fields: [userid], references: [userid]) 
+  level             String?     @db.VarChar(45)
+  lastOnline        DateTime?   @db.DateTime(0)
+  matches           match[] // Back-relation for matches
+  user              user        @relation(fields: [userid], references: [userid])
   favourites        favourite[] // Add this line
+  location          location[]
+  subject           subject[]
+  availtime         availtime[]
 }
 
-model apply {
-  idapply Int    @id @default(autoincrement())
-  subject String @db.VarChar(45)
-  place   String @db.VarChar(45)
-  userid  Int    @unique
-}
 
 model tutor {
-  tutorid              Int       @id @default(autoincrement())
-  userid               Int?      @unique
-  location             Json?
-  availtime            Json?   
-  intro                String?   @db.VarChar(45)
-  language             String?   @db.VarChar(45)
-  occupation           String?   @db.VarChar(45)
-  secondaryschool      String?   @db.VarChar(45)
-  primaryschool        String?   @db.VarChar(45)
-  yearofexperience     String?   @db.VarChar(45)
-  experience           String?   @db.VarChar(45)
-  highestteachinglevel String?   @db.VarChar(45)
-  educationallevel     String?   @db.VarChar(45)
-  notes                String?   @db.VarChar(45)
-  schoolcat            String?   @db.VarChar(45)
-  year                 String?   @db.VarChar(45)
-  publicexamgrade      String?   @db.VarChar(45)
-  university           String?   @db.VarChar(45)
-  othercert            String?   @db.VarChar(45)
-  caseid               String?   @db.VarChar(45)
-  major                String?   @db.VarChar(45)
-  subgrade             Json?   
-  strength             String?   @db.VarChar(45)
-  subject              Json?
+  tutorid              Int         @id @default(autoincrement())
+  userid               Int?        @unique
+  intro                String?     @db.VarChar(45)
+  language             String?     @db.VarChar(45)
+  occupation           String?     @db.VarChar(45)
+  secondaryschool      String?     @db.VarChar(45)
+  primaryschool        String?     @db.VarChar(45)
+  yearofexperience     String?     @db.VarChar(45)
+  experience           String?     @db.VarChar(45)
+  highestteachinglevel String?     @db.VarChar(45)
+  educationallevel     String?     @db.VarChar(45)
+  notes                String?     @db.VarChar(45)
+  schoolcat            String?     @db.VarChar(45)
+  year                 String?     @db.VarChar(45)
+  publicexamgrade      String?     @db.VarChar(45)
+  university           String?     @db.VarChar(45)
+  othercert            String?     @db.VarChar(45)
+  caseid               String?     @db.VarChar(45)
+  major                String?     @db.VarChar(45)
+  subgrade             Json?
+  strength             String?     @db.VarChar(45)
   highestfee           Int?
   lowestfee            Int?
   matchedbefore        Json?
-  status               String?    @default("open") @db.VarChar(45)
-  lastOnline           DateTime?  @db.DateTime(0)
-  verify               String?    @default("未驗證") @db.VarChar(45)
-  user                  user?     @relation(fields: [userid], references: [userid])
-  matches              match[]    // Back-relation for matches
-  favourites      favourite[] // Add this line
-}
-model match {
-  idmatch       Int           @id @default(autoincrement())
-  studentid     Int           // Student ID
-  tutorid       Int           // Tutor ID
-  availability  Boolean       // Indicates availability for the match
-  checkStatus   CheckStatus   // Status of the check
-  student       student       @relation(fields: [studentid], references: [studentid])
-  tutor         tutor         @relation(fields: [tutorid], references: [tutorid])
-  matchstatus   MatchStatus  
+  status               String?     @default("open") @db.VarChar(45)
+  lastOnline           DateTime?   @db.DateTime(0)
+  verify               String?     @default("未驗證") @db.VarChar(45)
+  user                 user?       @relation(fields: [userid], references: [userid])
+  matches              match[] // Back-relation for matches
+  favourites           favourite[] // Add this line
+  location             location[]
+  subject              subject[]
+  HKCEE                HKCEE[]
+  HKALE                HKALE[]
+  HKDSE                HKDSE[]
+  IB                   IB[]
+  IGCSE                IGCSE[]
+  GCEALevel            GCEALevel[]
+  availtime         availtime[]
 }
 
+model match {
+  idmatch      Int         @id @default(autoincrement())
+  studentid    Int // Student ID
+  tutorid      Int // Tutor ID
+  availability Boolean // Indicates availability for the match
+  checkStatus  CheckStatus // Status of the check
+  student      student     @relation(fields: [studentid], references: [studentid])
+  tutor        tutor       @relation(fields: [tutorid], references: [tutorid])
+  matchstatus  MatchStatus
+}
+
+model location {
+  id              Int      @id @default(autoincrement())
+  userid          Int?
+  studentid       Int?
+  tutorid         Int?
+  Midlevels       Boolean  @default(false)
+  Pokfulam        Boolean  @default(false)
+  Central         Boolean  @default(false)
+  Western         Boolean  @default(false)
+  WanChai         Boolean  @default(false)
+  CausewayBay     Boolean  @default(false)
+  HappyValley     Boolean  @default(false)
+  NorthPoint      Boolean  @default(false)
+  QuarryBay       Boolean  @default(false)
+  TaiKoo          Boolean  @default(false)
+  ShauKeiWan      Boolean  @default(false)
+  SaiWanHo        Boolean  @default(false)
+  ChaiWan         Boolean  @default(false)
+  SiuSaiWan       Boolean  @default(false)
+  Aberdeen        Boolean  @default(false)
+  ApLeiChau       Boolean  @default(false)
+  Stanley         Boolean  @default(false)
+  MeiFoo          Boolean  @default(false)
+  LaiChiKok       Boolean  @default(false)
+  CheungShaWan    Boolean  @default(false)
+  ShamShuiPo      Boolean  @default(false)
+  TaiKokTsui      Boolean  @default(false)
+  MongKok         Boolean  @default(false)
+  HoManTin        Boolean  @default(false)
+  YauMaTei        Boolean  @default(false)
+  TsimShaTsui     Boolean  @default(false)
+  ToKwaWan        Boolean  @default(false)
+  HungHom         Boolean  @default(false)
+  Whampoa         Boolean  @default(false)
+  LokFu           Boolean  @default(false)
+  TseungKwanO     Boolean  @default(false)
+  LamTin          Boolean  @default(false)
+  NgauTauKok      Boolean  @default(false)
+  KowloonCity     Boolean  @default(false)
+  SheungShui      Boolean  @default(false)
+  FanLing         Boolean  @default(false)
+  TaiPo           Boolean  @default(false)
+  MaOnShan        Boolean  @default(false)
+  TseungKwanOArea Boolean  @default(false)
+  TuenMun         Boolean  @default(false)
+  YuenLong        Boolean  @default(false)
+  TuenMunRoad     Boolean  @default(false)
+  ShamTseng       Boolean  @default(false)
+  TsingYi         Boolean  @default(false)
+  KwaiFong        Boolean  @default(false)
+  KwaiChung       Boolean  @default(false)
+  LaiKing         Boolean  @default(false)
+  TsingYiIsland   Boolean  @default(false)
+  MaWan           Boolean  @default(false)
+  TungChung       Boolean  @default(false)
+  OutlyingIslands Boolean  @default(false)
+  user            user?    @relation(fields: [userid], references: [userid])
+  tutor           tutor?   @relation(fields: [tutorid], references: [tutorid])
+  student         student? @relation(fields: [studentid], references: [studentid])
+}
+
+model subject {
+  id                       Int      @id @default(autoincrement())
+  userid                   Int?
+  studentid                Int?
+  tutorid                  Int?
+  GeneralStudies           Boolean  @default(false)
+  Arts                     Boolean  @default(false)
+  Science                  Boolean  @default(false)
+  Business                 Boolean  @default(false)
+  Chinese                  Boolean  @default(false)
+  English                  Boolean  @default(false)
+  Mathematics              Boolean  @default(false)
+  MathematicsM1            Boolean  @default(false)
+  MathematicsM2            Boolean  @default(false)
+  ChineseLiterature        Boolean  @default(false)
+  EnglishLiterature        Boolean  @default(false)
+  ChineseHistory           Boolean  @default(false)
+  WorldHistory             Boolean  @default(false)
+  Geography                Boolean  @default(false)
+  LiberalStudies           Boolean  @default(false)
+  IntegratedScience        Boolean  @default(false)
+  IntegratedHumanities     Boolean  @default(false)
+  AdditionalMathematics    Boolean  @default(false)
+  PureMathematics          Boolean  @default(false)
+  AppliedMathematics       Boolean  @default(false)
+  Physics                  Boolean  @default(false)
+  Biology                  Boolean  @default(false)
+  Chemistry                Boolean  @default(false)
+  BusinessStudies          Boolean  @default(false)
+  Accounting               Boolean  @default(false)
+  Economics                Boolean  @default(false)
+  BusinessandPublicAffairs Boolean  @default(false)
+  MathematicsandStatistics Boolean  @default(false)
+  BAFS                     Boolean  @default(false)
+  Putonghua                Boolean  @default(false)
+  Cantonese                Boolean  @default(false)
+  EnglishPhonics           Boolean  @default(false)
+  Japanese                 Boolean  @default(false)
+  Korean                   Boolean  @default(false)
+  French                   Boolean  @default(false)
+  Italian                  Boolean  @default(false)
+  German                   Boolean  @default(false)
+  Spanish                  Boolean  @default(false)
+  EnglishConversation      Boolean  @default(false)
+  GCE                      Boolean  @default(false)
+  TOEFL                    Boolean  @default(false)
+  IELTS                    Boolean  @default(false)
+  Cello                    Boolean  @default(false)
+  Viola                    Boolean  @default(false)
+  Violin                   Boolean  @default(false)
+  Trumpet                  Boolean  @default(false)
+  Harmonica                Boolean  @default(false)
+  Recorder                 Boolean  @default(false)
+  Flute                    Boolean  @default(false)
+  Ocarina                  Boolean  @default(false)
+  Clarinet                 Boolean  @default(false)
+  Saxophone                Boolean  @default(false)
+  Erhu                     Boolean  @default(false)
+  Guzheng                  Boolean  @default(false)
+  Pipa                     Boolean  @default(false)
+  Yangqin                  Boolean  @default(false)
+  Liuqin                   Boolean  @default(false)
+  Guitar                   Boolean  @default(false)
+  AcousticGuitar           Boolean  @default(false)
+  ElectricGuitar           Boolean  @default(false)
+  ElectronicKeyboard       Boolean  @default(false)
+  Piano                    Boolean  @default(false)
+  Vocal                    Boolean  @default(false)
+  MusicTheory              Boolean  @default(false)
+  SwimmingFreestyle        Boolean  @default(false)
+  SwimmingBackstroke       Boolean  @default(false)
+  SwimmingBreaststroke     Boolean  @default(false)
+  SwimmingButterfly        Boolean  @default(false)
+  Painting                 Boolean  @default(false)
+  Computer                 Boolean  @default(false)
+  CambridgeEnglish         Boolean  @default(false)
+  OlympiadMath             Boolean  @default(false)
+  Abacus                   Boolean  @default(false)
+  KumanMath                Boolean  @default(false)
+  IGCSE                    Boolean  @default(false)
+  IBOthers                 Boolean  @default(false)
+  user                     user?    @relation(fields: [userid], references: [userid])
+  tutor                    tutor?   @relation(fields: [tutorid], references: [tutorid])
+  student                  student? @relation(fields: [studentid], references: [studentid])
+}
+
+model HKCEE {
+  id                    Int          @id @default(autoincrement())
+  tutorid               Int
+  ChineseLanguage       LetterGrade?
+  EnglishLanguage       LetterGrade?
+  Mathematics           LetterGrade?
+  ChineseLiterature     LetterGrade?
+  EnglishLiterature     LetterGrade?
+  ChineseHistory        LetterGrade?
+  WorldHistory          LetterGrade?
+  Geography             LetterGrade?
+  Music                 LetterGrade?
+  AdditionalMathematics LetterGrade?
+  Physics               LetterGrade?
+  Biology               LetterGrade?
+  Chemistry             LetterGrade?
+  BusinessStudies       LetterGrade?
+  PrinciplesofAccounts  LetterGrade?
+  Economics             LetterGrade?
+  ComputerStudies       LetterGrade?
+  tutor                 tutor?       @relation(fields: [tutorid], references: [tutorid])
+}
+
+model HKALE {
+  id                    Int          @id @default(autoincrement())
+  tutorid               Int
+  ChineseLanguage       LetterGrade?
+  EnglishLanguage       LetterGrade?
+  Mathematics           LetterGrade?
+  ChineseLiterature     LetterGrade?
+  EnglishLiterature     LetterGrade?
+  ChineseHistory        LetterGrade?
+  WorldHistory          LetterGrade?
+  Geography             LetterGrade?
+  Music                 LetterGrade?
+  AdditionalMathematics LetterGrade?
+  Physics               LetterGrade?
+  Biology               LetterGrade?
+  Chemistry             LetterGrade?
+  BusinessStudies       LetterGrade?
+  PrinciplesofAccounts  LetterGrade?
+  Economics             LetterGrade?
+  ComputerStudies       LetterGrade?
+  tutor                 tutor        @relation(fields: [tutorid], references: [tutorid])
+}
+
+model HKDSE {
+  id                                    Int          @id @default(autoincrement())
+  tutorid                               Int
+  ChineseLanguage                       NumberGrade?
+  EnglishLanguage                       NumberGrade?
+  Mathematics                           NumberGrade?
+  LiberalStudies                        NumberGrade?
+  ChineseLiterature                     NumberGrade?
+  EnglishLiterature                     NumberGrade?
+  MathematicsM1                         NumberGrade?
+  MathematicsM2                         NumberGrade?
+  ChineseHistory                        NumberGrade?
+  Economics                             NumberGrade?
+  EthicsandReligiousStudies             NumberGrade?
+  Geography                             NumberGrade?
+  History                               NumberGrade?
+  TourismandHospitalityStudies          NumberGrade?
+  Biology                               NumberGrade?
+  Chemistry                             NumberGrade?
+  Physics                               NumberGrade?
+  IntegratedScienceCombinedScience      NumberGrade?
+  IntegratedScienceIntegratedScience    NumberGrade?
+  InformationandCommunicationTechnology NumberGrade?
+  TechnologyandLiving                   NumberGrade?
+  DesignandAppliedTechnology            NumberGrade?
+  VisualArts                            NumberGrade?
+  Music                                 NumberGrade?
+  PhysicalEducation                     NumberGrade?
+  BusinessAccountingandFinancialStudies NumberGrade?
+  HealthManagementandSocialCare         NumberGrade?
+  OtherLanguagesFrench                  NumberGrade?
+  OtherLanguagesJapanese                NumberGrade?
+  OtherLanguagesGerman                  NumberGrade?
+  OtherLanguagesSpanish                 NumberGrade?
+  OtherLanguagesHindi                   NumberGrade?
+  OtherLanguagesUrdu                    NumberGrade?
+  tutor                                 tutor        @relation(fields: [tutorid], references: [tutorid])
+}
+
+model IB {
+  id                                                       Int          @id @default(autoincrement())
+  tutorid                                                  Int
+  LanguagesEnglishLanguageLiteratureSLHL                   LetterGrade?
+  LanguagesEnglishLiteratureSLHL                           LetterGrade?
+  LanguagesChineseALanguageLiteratureSL                    LetterGrade?
+  LanguagesChineseALiteratureSL                            LetterGrade?
+  LanguagesChineseBSLHL                                    LetterGrade?
+  MathematicsMathematics                                   LetterGrade?
+  MathematicsMathematicsSL                                 LetterGrade?
+  MathematicsMathematicsHL                                 LetterGrade?
+  MathematicsFurtherMathematicsHL                          LetterGrade?
+  HumanitiesandSocialSciencesBusinessManagement            LetterGrade?
+  HumanitiesandSocialSciencesEconomics                     LetterGrade?
+  HumanitiesandSocialSciencesGlobalPolitics                LetterGrade?
+  HumanitiesandSocialSciencesHistory                       LetterGrade?
+  HumanitiesandSocialSciencesPhilosophy                    LetterGrade?
+  HumanitiesandSocialSciencesPsychology                    LetterGrade?
+  HumanitiesandSocialSciencesSocialandCulturalAnthropology LetterGrade?
+  HumanitiesandSocialSciencesWorldReligionsSL              LetterGrade?
+  SciencesBiology                                          LetterGrade?
+  SciencesChemistry                                        LetterGrade?
+  SciencesPhysics                                          LetterGrade?
+  SciencesSportsExerciseandHealthScience                   LetterGrade?
+  SciencesCreativeTechnicalandVocational                   LetterGrade?
+  SciencesInformationTechnology                            LetterGrade?
+  SciencesComputerScience                                  LetterGrade?
+  SciencesDesignTechnology                                 LetterGrade?
+  tutor                                                    tutor        @relation(fields: [tutorid], references: [tutorid])
+}
+
+model IGCSE {
+  id                                                Int          @id @default(autoincrement())
+  tutorid                                           Int
+  LanguagesChinese                                  LetterGrade?
+  LanguagesEnglishA                                 LetterGrade?
+  LanguagesEnglishB                                 LetterGrade?
+  LanguagesEnglishLiterature                        LetterGrade?
+  SciencesBiology                                   LetterGrade?
+  SciencesChemistry                                 LetterGrade?
+  SciencesPhysics                                   LetterGrade?
+  SciencesScience                                   LetterGrade?
+  SciencesGeography                                 LetterGrade?
+  CreativeTechnicalandVocationalComputerScience     LetterGrade?
+  CreativeTechnicalandVocationalDesignandTechnology LetterGrade?
+  MathematicsMathematicsA                           LetterGrade?
+  MathematicsMathematicsB                           LetterGrade?
+  MathematicsFurtherPureMathematics                 LetterGrade?
+  HumanitiesandSocialSciencesBusiness               LetterGrade?
+  HumanitiesandSocialSciencesEconomics              LetterGrade?
+  HumanitiesandSocialSciencesHistory                LetterGrade?
+  HumanitiesandSocialSciencesAccounting             LetterGrade?
+  tutor                                             tutor        @relation(fields: [tutorid], references: [tutorid])
+}
+
+model GCEALevel {
+  id                                         Int          @id @default(autoincrement())
+  tutorid                                    Int
+  LanguagesEnglishLanguage                   LetterGrade?
+  LanguagesEnglishLiterature                 LetterGrade?
+  SciencesBiology                            LetterGrade?
+  SciencesChemistry                          LetterGrade?
+  SciencesPhysics                            LetterGrade?
+  MathematicsMathematics                     LetterGrade?
+  MathematicsFurtherMathematics              LetterGrade?
+  MathematicsPureMathematics                 LetterGrade?
+  HumanitiesandSocialSciencesAccounting      LetterGrade?
+  HumanitiesandSocialSciencesBusinessStudies LetterGrade?
+  HumanitiesandSocialSciencesEconomics       LetterGrade?
+  HumanitiesandSocialSciencesPsychology      LetterGrade?
+  tutor                                      tutor        @relation(fields: [tutorid], references: [tutorid])
+}
+
+model availtime {
+  id Int @id @default(autoincrement())
+  studentid       Int?
+  tutorid         Int?
+  Mon0800 Boolean @default(false)
+  Mon0900 Boolean @default(false)
+  Mon1000 Boolean @default(false)
+  Mon1100 Boolean @default(false)
+  Mon1200 Boolean @default(false)
+  Mon1300 Boolean @default(false)
+  Mon1400 Boolean @default(false)
+  Mon1500 Boolean @default(false)
+  Mon1600 Boolean @default(false)
+  Mon1700 Boolean @default(false)
+  Mon1800 Boolean @default(false)
+  Mon1900 Boolean @default(false)
+  Mon2000 Boolean @default(false)
+  Mon2100 Boolean @default(false)
+  Mon2200 Boolean @default(false)
+
+  Tue0800 Boolean @default(false)
+  Tue0900 Boolean @default(false)
+  Tue1000 Boolean @default(false)
+  Tue1100 Boolean @default(false)
+  Tue1200 Boolean @default(false)
+  Tue1300 Boolean @default(false)
+  Tue1400 Boolean @default(false)
+  Tue1500 Boolean @default(false)
+  Tue1600 Boolean @default(false)
+  Tue1700 Boolean @default(false)
+  Tue1800 Boolean @default(false)
+  Tue1900 Boolean @default(false)
+  Tue2000 Boolean @default(false)
+  Tue2100 Boolean @default(false)
+  Tue2200 Boolean @default(false)
+
+  Wed0800 Boolean @default(false)
+  Wed0900 Boolean @default(false)
+  Wed1000 Boolean @default(false)
+  Wed1100 Boolean @default(false)
+  Wed1200 Boolean @default(false)
+  Wed1300 Boolean @default(false)
+  Wed1400 Boolean @default(false)
+  Wed1500 Boolean @default(false)
+  Wed1600 Boolean @default(false)
+  Wed1700 Boolean @default(false)
+  Wed1800 Boolean @default(false)
+  Wed1900 Boolean @default(false)
+  Wed2000 Boolean @default(false)
+  Wed2100 Boolean @default(false)
+  Wed2200 Boolean @default(false)
+
+  Thur0800 Boolean @default(false)
+  Thur0900 Boolean @default(false)
+  Thur1000 Boolean @default(false)
+  Thur1100 Boolean @default(false)
+  Thur1200 Boolean @default(false)
+  Thur1300 Boolean @default(false)
+  Thur1400 Boolean @default(false)
+  Thur1500 Boolean @default(false)
+  Thur1600 Boolean @default(false)
+  Thur1700 Boolean @default(false)
+  Thur1800 Boolean @default(false)
+  Thur1900 Boolean @default(false)
+  Thur2000 Boolean @default(false)
+  Thur2100 Boolean @default(false)
+  Thur2200 Boolean @default(false)
+
+  Fri0800 Boolean @default(false)
+  Fri0900 Boolean @default(false)
+  Fri1000 Boolean @default(false)
+  Fri1100 Boolean @default(false)
+  Fri1200 Boolean @default(false)
+  Fri1300 Boolean @default(false)
+  Fri1400 Boolean @default(false)
+  Fri1500 Boolean @default(false)
+  Fri1600 Boolean @default(false)
+  Fri1700 Boolean @default(false)
+  Fri1800 Boolean @default(false)
+  Fri1900 Boolean @default(false)
+  Fri2000 Boolean @default(false)
+  Fri2100 Boolean @default(false)
+  Fri2200 Boolean @default(false)
+
+  Sat0800 Boolean @default(false)
+  Sat0900 Boolean @default(false)
+  Sat1000 Boolean @default(false)
+  Sat1100 Boolean @default(false)
+  Sat1200 Boolean @default(false)
+  Sat1300 Boolean @default(false)
+  Sat1400 Boolean @default(false)
+  Sat1500 Boolean @default(false)
+  Sat1600 Boolean @default(false)
+  Sat1700 Boolean @default(false)
+  Sat1800 Boolean @default(false)
+  Sat1900 Boolean @default(false)
+  Sat2000 Boolean @default(false)
+  Sat2100 Boolean @default(false)
+  Sat2200 Boolean @default(false)
+
+  Sun0800 Boolean @default(false)
+  Sun0900 Boolean @default(false)
+  Sun1000 Boolean @default(false)
+  Sun1100 Boolean @default(false)
+  Sun1200 Boolean @default(false)
+  Sun1300 Boolean @default(false)
+  Sun1400 Boolean @default(false)
+  Sun1500 Boolean @default(false)
+  Sun1600 Boolean @default(false)
+  Sun1700 Boolean @default(false)
+  Sun1800 Boolean @default(false)
+  Sun1900 Boolean @default(false)
+  Sun2000 Boolean @default(false)
+  Sun2100 Boolean @default(false)
+  Sun2200 Boolean @default(false)
+  tutor           tutor?   @relation(fields: [tutorid], references: [tutorid])
+  student         student? @relation(fields: [studentid], references: [studentid])
+}
 

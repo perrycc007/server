@@ -14,6 +14,11 @@ import { StudentsService } from './students.service';
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
+  @Get('test')
+  async test() {
+    return this.studentsService.test();
+  }
+
   @Get()
   async findAll() {
     // Implement logic to fetch students based on query parameters

@@ -4,13 +4,12 @@ import { AppService } from './app.service';
 import { AuthController } from './auth/auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { TutorsController } from './tutors/tutors.controller';
-import { ApplyController } from './apply/apply.controller';
 import { StudentsController } from './students/students.controller';
 import { FavouriteController } from './favourite/favourite.controller';
 import { FavouriteService } from './favourite/favourite.service';
 import { StudentsService } from './students/students.service';
 import { TutorsService } from './tutors/tutors.service';
-import { ApplyService } from './apply/apply.service';
+import { DataService } from './helper/helperFunction.service';
 import { AuthService } from './auth/auth.service';
 import { PasswordForgetController } from './password-forget/password-forget.controller';
 import { PasswordResetController } from './password-reset/password-reset.controller';
@@ -38,7 +37,6 @@ import { PrismaService } from './prisma/prisma.service';
     AppController,
     AuthController,
     TutorsController,
-    ApplyController,
     StudentsController,
     FavouriteController,
     PasswordForgetController,
@@ -55,7 +53,6 @@ import { PrismaService } from './prisma/prisma.service';
     FavouriteService,
     StudentsService,
     TutorsService,
-    ApplyService,
     AuthService,
     HistoryService,
     ProfileService,
@@ -63,6 +60,7 @@ import { PrismaService } from './prisma/prisma.service';
     AdminService,
     PasswordForgetService,
     PasswordResetService,
+    DataService,
     // ResultService
   ],
 })

@@ -1,19 +1,31 @@
 // tutors.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { DataService } from '../helper/helperFunction.service';
 
 @Injectable()
 export class TutorsService {
+  constructor(private readonly DataService: DataService) {}
   private prisma = new PrismaClient();
 
   async findAllTutors(): Promise<any> {
-    return this.prisma.tutor.findMany({
+    const result = this.prisma.tutor.findMany({
       where: {
         status: 'open',
       },
       orderBy: {
         lastOnline: 'desc',
       },
+      include: {
+        location: true,
+        availtime: true,
+        subject: true,
+      },
+    });
+    result.then((data) => {
+      const object = this.DataService.formatObject(data);
+      console.log(object);
+      return object;
     });
   }
 
@@ -25,13 +37,23 @@ export class TutorsService {
     });
     const tutorIdList = user ? (user.favouritetutorid as number[]) : [];
 
-    return this.prisma.tutor.findMany({
+    const result = this.prisma.tutor.findMany({
       orderBy: {
         lastOnline: 'desc',
       },
       where: {
         tutorid: { in: tutorIdList },
       },
+      include: {
+        location: true,
+        availtime: true,
+        subject: true,
+      },
+    });
+    result.then((data) => {
+      const object = this.DataService.formatObject(data);
+      console.log(object);
+      return object;
     });
   }
 
@@ -41,7 +63,13 @@ export class TutorsService {
         tutorid: userId,
       },
     });
-    return result !== null ? result : { userid: userId, ...dummyTutor };
+    if (result !== null) {
+      const object = this.DataService.formatObject([result]);
+      console.log(object);
+      return object;
+    } else {
+      return { userid: userId, ...dummyTutor };
+    }
   }
 
   async createOrUpdateTutor(information: any): Promise<any> {
@@ -73,38 +101,36 @@ export class TutorsService {
     location: string[],
     subject: string[],
   ): Promise<any> {
-    const tutors = await this.prisma.tutor.findMany({ where: preference });
-
-    let found =
-      location[0] != null
-        ? tutors.map((key) => {
-            if (
-              JSON.parse(key.location as string).some(
-                (item) => location.indexOf(item) >= 0,
-              )
-            ) {
-              return key;
-            }
-          })
-        : tutors;
-    console.log(found);
-    found = found.filter((item) => item != null);
-    let found1 =
-      subject[0] != null
-        ? found.map((key) => {
-            if (
-              JSON.parse(key.subject as string).some(
-                (item) => subject.indexOf(item) >= 0,
-              )
-            ) {
-              return key;
-            }
-          })
-        : found;
-    // const result = JSON.parse(...s);
-    // console.log(found1)
-    found1 = found1.filter((item) => item != null);
-
-    return found;
+    // const tutors = await this.prisma.tutor.findMany({ where: preference });
+    // let found =
+    //   location[0] != null
+    //     ? tutors.map((key) => {
+    //         if (
+    //           JSON.parse(key.location as string).some(
+    //             (item) => location.indexOf(item) >= 0,
+    //           )
+    //         ) {
+    //           return key;
+    //         }
+    //       })
+    //     : tutors;
+    // console.log(found);
+    // found = found.filter((item) => item != null);
+    // let found1 =
+    //   subject[0] != null
+    //     ? found.map((key) => {
+    //         if (
+    //           JSON.parse(key.subject as string).some(
+    //             (item) => subject.indexOf(item) >= 0,
+    //           )
+    //         ) {
+    //           return key;
+    //         }
+    //       })
+    //     : found;
+    // // const result = JSON.parse(...s);
+    // // console.log(found1)
+    // found1 = found1.filter((item) => item != null);
+    // return found;
   }
 }
