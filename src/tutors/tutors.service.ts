@@ -23,7 +23,7 @@ export class TutorsService {
       },
     });
     result.then((data) => {
-      const object = this.DataService.formatObject(data);
+      const object = this.DataService.formatObject(data, 'tutor');
       console.log(object);
       return object;
     });
@@ -51,7 +51,7 @@ export class TutorsService {
       },
     });
     result.then((data) => {
-      const object = this.DataService.formatObject(data);
+      const object = this.DataService.formatObject(data, 'tutor');
       console.log(object);
       return object;
     });
@@ -64,7 +64,7 @@ export class TutorsService {
       },
     });
     if (result !== null) {
-      const object = this.DataService.formatObject([result]);
+      const object = this.DataService.formatObject([result], 'tutor');
       console.log(object);
       return object;
     } else {
@@ -74,7 +74,9 @@ export class TutorsService {
 
   async createOrUpdateTutor(information: any): Promise<any> {
     console.log(information);
-    const { userid, tutorid, availtime, ...tutorinfo } = information;
+    const formatData = this.DataService.ToDBFormat(information, 'tutor');
+    const { userid, tutorid, availtime, location, subject, ...tutorinfo } =
+      formatData[0];
     let date_ob = new Date();
     return this.prisma.tutor.upsert({
       where: {
@@ -83,6 +85,16 @@ export class TutorsService {
       update: {
         ...tutorinfo,
         lastOnline: date_ob,
+        availtime: {
+          update: { ...availtime },
+        },
+        location: { update: { ...location } },
+        subject: { update: { ...subject } },
+      },
+      include: {
+        location: true,
+        availtime: true,
+        subject: true,
       },
       create: {
         user: {
@@ -92,45 +104,31 @@ export class TutorsService {
         },
         ...tutorinfo,
         lastOnline: date_ob,
+        availtime: {
+          create: { ...availtime },
+        },
+        location: { create: { ...location } },
+        subject: { create: { ...subject } },
       },
     });
   }
 
   async findTutorsByPreference(
     preference: any,
-    location: string[],
-    subject: string[],
+    location: [],
+    subject: [],
   ): Promise<any> {
-    // const tutors = await this.prisma.tutor.findMany({ where: preference });
-    // let found =
-    //   location[0] != null
-    //     ? tutors.map((key) => {
-    //         if (
-    //           JSON.parse(key.location as string).some(
-    //             (item) => location.indexOf(item) >= 0,
-    //           )
-    //         ) {
-    //           return key;
-    //         }
-    //       })
-    //     : tutors;
-    // console.log(found);
-    // found = found.filter((item) => item != null);
-    // let found1 =
-    //   subject[0] != null
-    //     ? found.map((key) => {
-    //         if (
-    //           JSON.parse(key.subject as string).some(
-    //             (item) => subject.indexOf(item) >= 0,
-    //           )
-    //         ) {
-    //           return key;
-    //         }
-    //       })
-    //     : found;
-    // // const result = JSON.parse(...s);
-    // // console.log(found1)
-    // found1 = found1.filter((item) => item != null);
-    // return found;
+    const info = this.DataService.PrefereceToDBFormat(location, subject);
+
+    const tutors = await this.prisma.tutor.findMany({
+      where: {
+        AND: [
+          preference,
+          { location: info.location },
+          { subject: info.subject },
+        ],
+      },
+    });
+    return tutors;
   }
 }

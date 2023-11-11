@@ -36,20 +36,38 @@ export class StudentsController {
     return this.studentsService.findOne(casesid);
   }
   @Patch()
-  async updateStudent(
-    @Body('studentid', ParseIntPipe) studentid: number,
-    @Body('information') information: any,
-  ) {
-    const result = await this.studentsService.updateStudent(
-      studentid,
-      information,
-    );
+  async updateStudent(@Body() requestBody) {
+    const result =
+      await this.studentsService.createOrUpdateStudent(requestBody);
     return { result };
   }
 
   @Post()
   async create(@Body() requestBody) {
     // Implement logic to create a student
-    return this.studentsService.create(requestBody);
+    return this.studentsService.createOrUpdateStudent(requestBody);
+  }
+
+  @Post('filter')
+  async findTutorsByPreferences(@Body() preferences: any) {
+    const { fee, location, highestteachinglevel, subject } = preferences;
+    const pref = {
+      highestteachinglevel: highestteachinglevel,
+      lowestfee: {
+        gte: fee[0],
+      },
+      status: 'open',
+    };
+    if (fee[0] == null) {
+      delete pref.lowestfee;
+    }
+    if (highestteachinglevel[0] == null) {
+      delete pref.highestteachinglevel;
+    }
+    return this.studentsService.findStudentByPreference(
+      pref,
+      location,
+      subject,
+    );
   }
 }

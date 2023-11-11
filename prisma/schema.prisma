@@ -311,160 +311,162 @@ model subject {
 model HKCEE {
   id                    Int          @id @default(autoincrement())
   tutorid               Int
-  ChineseLanguage       LetterGrade?
-  EnglishLanguage       LetterGrade?
-  Mathematics           LetterGrade?
-  ChineseLiterature     LetterGrade?
-  EnglishLiterature     LetterGrade?
-  ChineseHistory        LetterGrade?
-  WorldHistory          LetterGrade?
-  Geography             LetterGrade?
-  Music                 LetterGrade?
-  AdditionalMathematics LetterGrade?
-  Physics               LetterGrade?
-  Biology               LetterGrade?
-  Chemistry             LetterGrade?
-  BusinessStudies       LetterGrade?
-  PrinciplesofAccounts  LetterGrade?
-  Economics             LetterGrade?
-  ComputerStudies       LetterGrade?
+  HKCEE_ChineseLanguage       LetterGrade?
+  HKCEE_EnglishLanguage       LetterGrade?
+  HKCEE_Mathematics           LetterGrade?
+  HKCEE_ChineseLiterature     LetterGrade?
+  HKCEE_EnglishLiterature     LetterGrade?
+  HKCEE_ChineseHistory        LetterGrade?
+  HKCEE_WorldHistory          LetterGrade?
+  HKCEE_Geography             LetterGrade?
+  HKCEE_Music                 LetterGrade?
+  HKCEE_AdditionalMathematics LetterGrade?
+  HKCEE_Physics               LetterGrade?
+  HKCEE_Biology               LetterGrade?
+  HKCEE_Chemistry             LetterGrade?
+  HKCEE_BusinessStudies       LetterGrade?
+  HKCEE_PrinciplesofAccounts  LetterGrade?
+  HKCEE_Economics             LetterGrade?
+  HKCEE_ComputerStudies       LetterGrade?
   tutor                 tutor?       @relation(fields: [tutorid], references: [tutorid])
 }
 
 model HKALE {
   id                    Int          @id @default(autoincrement())
   tutorid               Int
-  ChineseLanguage       LetterGrade?
-  EnglishLanguage       LetterGrade?
-  Mathematics           LetterGrade?
-  ChineseLiterature     LetterGrade?
-  EnglishLiterature     LetterGrade?
-  ChineseHistory        LetterGrade?
-  WorldHistory          LetterGrade?
-  Geography             LetterGrade?
-  Music                 LetterGrade?
-  AdditionalMathematics LetterGrade?
-  Physics               LetterGrade?
-  Biology               LetterGrade?
-  Chemistry             LetterGrade?
-  BusinessStudies       LetterGrade?
-  PrinciplesofAccounts  LetterGrade?
-  Economics             LetterGrade?
-  ComputerStudies       LetterGrade?
+  HKALE_ChineseLanguage       LetterGrade?
+  HKALE_EnglishLanguage       LetterGrade?
+  HKALE_Mathematics           LetterGrade?
+  HKALE_ChineseLiterature     LetterGrade?
+  HKALE_EnglishLiterature     LetterGrade?
+  HKALE_ChineseHistory        LetterGrade?
+  HKALE_WorldHistory          LetterGrade?
+  HKALE_Geography             LetterGrade?
+  HKALE_Music                 LetterGrade?
+  HKALE_AdditionalMathematics LetterGrade?
+  HKALE_Physics               LetterGrade?
+  HKALE_Biology               LetterGrade?
+  HKALE_Chemistry             LetterGrade?
+  HKALE_BusinessStudies       LetterGrade?
+  HKALE_PrinciplesofAccounts  LetterGrade?
+  HKALE_Economics             LetterGrade?
+  HKALE_ComputerStudies       LetterGrade?
   tutor                 tutor        @relation(fields: [tutorid], references: [tutorid])
 }
 
 model HKDSE {
   id                                    Int          @id @default(autoincrement())
   tutorid                               Int
-  ChineseLanguage                       NumberGrade?
-  EnglishLanguage                       NumberGrade?
-  Mathematics                           NumberGrade?
-  LiberalStudies                        NumberGrade?
-  ChineseLiterature                     NumberGrade?
-  EnglishLiterature                     NumberGrade?
-  MathematicsM1                         NumberGrade?
-  MathematicsM2                         NumberGrade?
-  ChineseHistory                        NumberGrade?
-  Economics                             NumberGrade?
-  EthicsandReligiousStudies             NumberGrade?
-  Geography                             NumberGrade?
-  History                               NumberGrade?
-  TourismandHospitalityStudies          NumberGrade?
-  Biology                               NumberGrade?
-  Chemistry                             NumberGrade?
-  Physics                               NumberGrade?
-  IntegratedScienceCombinedScience      NumberGrade?
-  IntegratedScienceIntegratedScience    NumberGrade?
-  InformationandCommunicationTechnology NumberGrade?
-  TechnologyandLiving                   NumberGrade?
-  DesignandAppliedTechnology            NumberGrade?
-  VisualArts                            NumberGrade?
-  Music                                 NumberGrade?
-  PhysicalEducation                     NumberGrade?
-  BusinessAccountingandFinancialStudies NumberGrade?
-  HealthManagementandSocialCare         NumberGrade?
-  OtherLanguagesFrench                  NumberGrade?
-  OtherLanguagesJapanese                NumberGrade?
-  OtherLanguagesGerman                  NumberGrade?
-  OtherLanguagesSpanish                 NumberGrade?
-  OtherLanguagesHindi                   NumberGrade?
-  OtherLanguagesUrdu                    NumberGrade?
+  HKDSE_ChineseLanguage                       NumberGrade?
+  HKDSE_EnglishLanguage                       NumberGrade?
+  HKDSE_Mathematics                           NumberGrade?
+  HKDSE_LiberalStudies                        NumberGrade?
+  HKDSE_ChineseLiterature                     NumberGrade?
+  HKDSE_EnglishLiterature                     NumberGrade?
+  HKDSE_MathematicsM1                         NumberGrade?
+  HKDSE_MathematicsM2                         NumberGrade?
+  HKDSE_ChineseHistory                        NumberGrade?
+  HKDSE_Economics                             NumberGrade?
+  HKDSE_EthicsandReligiousStudies             NumberGrade?
+  HKDSE_Geography                             NumberGrade?
+  HKDSE_History                               NumberGrade?
+  HKDSE_TourismandHospitalityStudies          NumberGrade?
+  HKDSE_Biology                               NumberGrade?
+  HKDSE_Chemistry                             NumberGrade?
+  HKDSE_Physics                               NumberGrade?
+  HKDSE_IntegratedScienceCombinedScience      NumberGrade?
+  HKDSE_IntegratedScienceIntegratedScience    NumberGrade?
+  HKDSE_InformationandCommunicationTechnology NumberGrade?
+  HKDSE_TechnologyandLiving                   NumberGrade?
+  HKDSE_DesignandAppliedTechnology            NumberGrade?
+  HKDSE_VisualArts                            NumberGrade?
+  HKDSE_Music                                 NumberGrade?
+  HKDSE_PhysicalEducation                     NumberGrade?
+  HKDSE_BusinessAccountingandFinancialStudies NumberGrade?
+  HKDSE_HealthManagementandSocialCare         NumberGrade?
+  HKDSE_OtherLanguagesFrench                  NumberGrade?
+  HKDSE_OtherLanguagesJapanese                NumberGrade?
+  HKDSE_OtherLanguagesGerman                  NumberGrade?
+  HKDSE_OtherLanguagesSpanish                 NumberGrade?
+  HKDSE_OtherLanguagesHindi                   NumberGrade?
+  HKDSE_OtherLanguagesUrdu                    NumberGrade?
   tutor                                 tutor        @relation(fields: [tutorid], references: [tutorid])
 }
 
 model IB {
   id                                                       Int          @id @default(autoincrement())
   tutorid                                                  Int
-  LanguagesEnglishLanguageLiteratureSLHL                   LetterGrade?
-  LanguagesEnglishLiteratureSLHL                           LetterGrade?
-  LanguagesChineseALanguageLiteratureSL                    LetterGrade?
-  LanguagesChineseALiteratureSL                            LetterGrade?
-  LanguagesChineseBSLHL                                    LetterGrade?
-  MathematicsMathematics                                   LetterGrade?
-  MathematicsMathematicsSL                                 LetterGrade?
-  MathematicsMathematicsHL                                 LetterGrade?
-  MathematicsFurtherMathematicsHL                          LetterGrade?
-  HumanitiesandSocialSciencesBusinessManagement            LetterGrade?
-  HumanitiesandSocialSciencesEconomics                     LetterGrade?
-  HumanitiesandSocialSciencesGlobalPolitics                LetterGrade?
-  HumanitiesandSocialSciencesHistory                       LetterGrade?
-  HumanitiesandSocialSciencesPhilosophy                    LetterGrade?
-  HumanitiesandSocialSciencesPsychology                    LetterGrade?
-  HumanitiesandSocialSciencesSocialandCulturalAnthropology LetterGrade?
-  HumanitiesandSocialSciencesWorldReligionsSL              LetterGrade?
-  SciencesBiology                                          LetterGrade?
-  SciencesChemistry                                        LetterGrade?
-  SciencesPhysics                                          LetterGrade?
-  SciencesSportsExerciseandHealthScience                   LetterGrade?
-  SciencesCreativeTechnicalandVocational                   LetterGrade?
-  SciencesInformationTechnology                            LetterGrade?
-  SciencesComputerScience                                  LetterGrade?
-  SciencesDesignTechnology                                 LetterGrade?
+  IB_LanguagesEnglishLanguageLiteratureSLHL                   LetterGrade?
+  IB_LanguagesEnglishLiteratureSLHL                           LetterGrade?
+  IB_LanguagesChineseALanguageLiteratureSL                    LetterGrade?
+  IB_LanguagesChineseALiteratureSL                            LetterGrade?
+  IB_LanguagesChineseBSLHL                                    LetterGrade?
+  IB_MathematicsMathematics                                   LetterGrade?
+  IB_MathematicsMathematicsSL                                 LetterGrade?
+  IB_MathematicsMathematicsHL                                 LetterGrade?
+  IB_MathematicsFurtherMathematicsHL                          LetterGrade?
+  IB_HumanitiesandSocialSciencesBusinessManagement            LetterGrade?
+  IB_HumanitiesandSocialSciencesEconomics                     LetterGrade?
+  IB_HumanitiesandSocialSciencesGlobalPolitics                LetterGrade?
+  IB_HumanitiesandSocialSciencesHistory                       LetterGrade?
+  IB_HumanitiesandSocialSciencesPhilosophy                    LetterGrade?
+  IB_HumanitiesandSocialSciencesPsychology                    LetterGrade?
+  IB_HumanitiesandSocialSciencesSocialandCulturalAnthropology LetterGrade?
+  IB_HumanitiesandSocialSciencesWorldReligionsSL              LetterGrade?
+  IB_SciencesBiology                                          LetterGrade?
+  IB_SciencesChemistry                                        LetterGrade?
+  IB_SciencesPhysics                                          LetterGrade?
+  IB_SciencesSportsExerciseandHealthScience                   LetterGrade?
+  IB_SciencesCreativeTechnicalandVocational                   LetterGrade?
+  IB_SciencesInformationTechnology                            LetterGrade?
+  IB_SciencesComputerScience                                  LetterGrade?
+  IB_SciencesDesignTechnology                                 LetterGrade?
   tutor                                                    tutor        @relation(fields: [tutorid], references: [tutorid])
 }
 
 model IGCSE {
   id                                                Int          @id @default(autoincrement())
   tutorid                                           Int
-  LanguagesChinese                                  LetterGrade?
-  LanguagesEnglishA                                 LetterGrade?
-  LanguagesEnglishB                                 LetterGrade?
-  LanguagesEnglishLiterature                        LetterGrade?
-  SciencesBiology                                   LetterGrade?
-  SciencesChemistry                                 LetterGrade?
-  SciencesPhysics                                   LetterGrade?
-  SciencesScience                                   LetterGrade?
-  SciencesGeography                                 LetterGrade?
-  CreativeTechnicalandVocationalComputerScience     LetterGrade?
-  CreativeTechnicalandVocationalDesignandTechnology LetterGrade?
-  MathematicsMathematicsA                           LetterGrade?
-  MathematicsMathematicsB                           LetterGrade?
-  MathematicsFurtherPureMathematics                 LetterGrade?
-  HumanitiesandSocialSciencesBusiness               LetterGrade?
-  HumanitiesandSocialSciencesEconomics              LetterGrade?
-  HumanitiesandSocialSciencesHistory                LetterGrade?
-  HumanitiesandSocialSciencesAccounting             LetterGrade?
+  IGCSE_LanguagesChinese                                  LetterGrade?
+  IGCSE_LanguagesEnglishA                                 LetterGrade?
+  IGCSE_LanguagesEnglishB                                 LetterGrade?
+  IGCSE_LanguagesEnglishLiterature                        LetterGrade?
+  IGCSE_SciencesBiology                                   LetterGrade?
+  IGCSE_SciencesChemistry                                 LetterGrade?
+  IGCSE_SciencesPhysics                                   LetterGrade?
+  IGCSE_SciencesScience                                   LetterGrade?
+  IGCSE_SciencesGeography                                 LetterGrade?
+  IGCSE_CreativeTechnicalandVocationalComputerScience     LetterGrade?
+  IGCSE_CreativeTechnicalandVocationalDesignandTechnology LetterGrade?
+  IGCSE_MathematicsMathematicsA                           LetterGrade?
+  IGCSE_MathematicsMathematicsB                           LetterGrade?
+  IGCSE_MathematicsFurtherPureMathematics                 LetterGrade?
+  IGCSE_HumanitiesandSocialSciencesBusiness               LetterGrade?
+  IGCSE_HumanitiesandSocialSciencesEconomics              LetterGrade?
+  IGCSE_HumanitiesandSocialSciencesHistory                LetterGrade?
+  IGCSE_HumanitiesandSocialSciencesAccounting             LetterGrade?
   tutor                                             tutor        @relation(fields: [tutorid], references: [tutorid])
 }
 
 model GCEALevel {
   id                                         Int          @id @default(autoincrement())
   tutorid                                    Int
-  LanguagesEnglishLanguage                   LetterGrade?
-  LanguagesEnglishLiterature                 LetterGrade?
-  SciencesBiology                            LetterGrade?
-  SciencesChemistry                          LetterGrade?
-  SciencesPhysics                            LetterGrade?
-  MathematicsMathematics                     LetterGrade?
-  MathematicsFurtherMathematics              LetterGrade?
-  MathematicsPureMathematics                 LetterGrade?
-  HumanitiesandSocialSciencesAccounting      LetterGrade?
-  HumanitiesandSocialSciencesBusinessStudies LetterGrade?
-  HumanitiesandSocialSciencesEconomics       LetterGrade?
-  HumanitiesandSocialSciencesPsychology      LetterGrade?
+  GCEALevel_LanguagesEnglishLanguage                   LetterGrade?
+  GCEALevel_LanguagesEnglishLiterature                 LetterGrade?
+  GCEALevel_SciencesBiology                            LetterGrade?
+  GCEALevel_SciencesChemistry                          LetterGrade?
+  GCEALevel_SciencesPhysics                            LetterGrade?
+  GCEALevel_MathematicsMathematics                     LetterGrade?
+  GCEALevel_MathematicsFurtherMathematics              LetterGrade?
+  GCEALevel_MathematicsPureMathematics                 LetterGrade?
+  GCEALevel_HumanitiesandSocialSciencesAccounting      LetterGrade?
+  GCEALevel_HumanitiesandSocialSciencesBusinessStudies LetterGrade?
+  GCEALevel_HumanitiesandSocialSciencesEconomics       LetterGrade?
+  GCEALevel_HumanitiesandSocialSciencesPsychology      LetterGrade?
   tutor                                      tutor        @relation(fields: [tutorid], references: [tutorid])
 }
+
+
 
 model availtime {
   id Int @id @default(autoincrement())

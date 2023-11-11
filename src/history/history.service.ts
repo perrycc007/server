@@ -22,7 +22,7 @@ export class HistoryService {
       },
     });
     result.then((data) => {
-      const object = this.DataService.formatObject(data);
+      const object = this.DataService.formatObject(data, 'student');
       console.log(object);
       return object;
     });
