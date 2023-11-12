@@ -7,9 +7,12 @@ import {
   Param,
   Body,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { TutorsService } from './tutors.service';
 import { dummyTutor } from '../DUMMY/dummyTutor';
+
+import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
 
 @Controller('tutors')
 export class TutorsController {
@@ -49,7 +52,7 @@ export class TutorsController {
     }
     return this.tutorsService.findTutorsByPreference(pref, location, subject);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Patch()
   async updateTutor(@Body() updateInfo: any) {
     return this.tutorsService.createOrUpdateTutor(updateInfo.information);

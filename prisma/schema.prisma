@@ -20,26 +20,6 @@ enum MatchStatus {
   OPEN
 }
 
-enum NumberGrade {
-  Value_2
-  Value_3
-  Value_4
-  Value_5
-  Value_5Star
-  Value_5DoubleStar
-}
-
-// Define an enum for the letter-based grades
-enum LetterGrade {
-  APlus
-  A
-  B
-  C
-  D
-  E
-  F
-}
-
 model profile {
   idprofile             Int       @id @default(autoincrement())
   userid                Int       @unique
@@ -107,7 +87,6 @@ model student {
   availtime         availtime[]
 }
 
-
 model tutor {
   tutorid              Int         @id @default(autoincrement())
   userid               Int?        @unique
@@ -140,14 +119,9 @@ model tutor {
   matches              match[] // Back-relation for matches
   favourites           favourite[] // Add this line
   location             location[]
+  grade                grade[]
+  availtime            availtime[]
   subject              subject[]
-  HKCEE                HKCEE[]
-  HKALE                HKALE[]
-  HKDSE                HKDSE[]
-  IB                   IB[]
-  IGCSE                IGCSE[]
-  GCEALevel            GCEALevel[]
-  availtime         availtime[]
 }
 
 model match {
@@ -308,185 +282,154 @@ model subject {
   student                  student? @relation(fields: [studentid], references: [studentid])
 }
 
-model HKCEE {
-  id                    Int          @id @default(autoincrement())
-  tutorid               Int
-  HKCEE_ChineseLanguage       LetterGrade?
-  HKCEE_EnglishLanguage       LetterGrade?
-  HKCEE_Mathematics           LetterGrade?
-  HKCEE_ChineseLiterature     LetterGrade?
-  HKCEE_EnglishLiterature     LetterGrade?
-  HKCEE_ChineseHistory        LetterGrade?
-  HKCEE_WorldHistory          LetterGrade?
-  HKCEE_Geography             LetterGrade?
-  HKCEE_Music                 LetterGrade?
-  HKCEE_AdditionalMathematics LetterGrade?
-  HKCEE_Physics               LetterGrade?
-  HKCEE_Biology               LetterGrade?
-  HKCEE_Chemistry             LetterGrade?
-  HKCEE_BusinessStudies       LetterGrade?
-  HKCEE_PrinciplesofAccounts  LetterGrade?
-  HKCEE_Economics             LetterGrade?
-  HKCEE_ComputerStudies       LetterGrade?
-  tutor                 tutor?       @relation(fields: [tutorid], references: [tutorid])
+model grade {
+  id                          Int    @id @default(autoincrement())
+  tutorid                     Int
+  HKCEE_ChineseLanguage       String @db.VarChar(10)
+  HKCEE_EnglishLanguage       String @db.VarChar(10)
+  HKCEE_Mathematics           String @db.VarChar(10)
+  HKCEE_ChineseLiterature     String @db.VarChar(10)
+  HKCEE_EnglishLiterature     String @db.VarChar(10)
+  HKCEE_ChineseHistory        String @db.VarChar(10)
+  HKCEE_WorldHistory          String @db.VarChar(10)
+  HKCEE_Geography             String @db.VarChar(10)
+  HKCEE_Music                 String @db.VarChar(10)
+  HKCEE_AdditionalMathematics String @db.VarChar(10)
+  HKCEE_Physics               String @db.VarChar(10)
+  HKCEE_Biology               String @db.VarChar(10)
+  HKCEE_Chemistry             String @db.VarChar(10)
+  HKCEE_BusinessStudies       String @db.VarChar(10)
+  HKCEE_PrinciplesofAccounts  String @db.VarChar(10)
+  HKCEE_Economics             String @db.VarChar(10)
+  HKCEE_ComputerStudies       String @db.VarChar(10)
+  HKALE_ChineseLanguage       String @db.VarChar(10)
+  HKALE_EnglishLanguage       String @db.VarChar(10)
+  HKALE_Mathematics           String @db.VarChar(10)
+  HKALE_ChineseLiterature     String @db.VarChar(10)
+  HKALE_EnglishLiterature     String @db.VarChar(10)
+  HKALE_ChineseHistory        String @db.VarChar(10)
+  HKALE_WorldHistory          String @db.VarChar(10)
+  HKALE_Geography             String @db.VarChar(10)
+  HKALE_Music                 String @db.VarChar(10)
+  HKALE_AdditionalMathematics String @db.VarChar(10)
+  HKALE_Physics               String @db.VarChar(10)
+  HKALE_Biology               String @db.VarChar(10)
+  HKALE_Chemistry             String @db.VarChar(10)
+  HKALE_BusinessStudies       String @db.VarChar(10)
+  HKALE_PrinciplesofAccounts  String @db.VarChar(10)
+  HKALE_Economics             String @db.VarChar(10)
+  HKALE_ComputerStudies       String @db.VarChar(10)
+
+  HKDSE_ChineseLanguage                                       String @db.VarChar(10)
+  HKDSE_EnglishLanguage                                       String @db.VarChar(10)
+  HKDSE_Mathematics                                           String @db.VarChar(10)
+  HKDSE_LiberalStudies                                        String @db.VarChar(10)
+  HKDSE_ChineseLiterature                                     String @db.VarChar(10)
+  HKDSE_EnglishLiterature                                     String @db.VarChar(10)
+  HKDSE_MathematicsM1                                         String @db.VarChar(10)
+  HKDSE_MathematicsM2                                         String @db.VarChar(10)
+  HKDSE_ChineseHistory                                        String @db.VarChar(10)
+  HKDSE_Economics                                             String @db.VarChar(10)
+  HKDSE_EthicsandReligiousStudies                             String @db.VarChar(10)
+  HKDSE_Geography                                             String @db.VarChar(10)
+  HKDSE_History                                               String @db.VarChar(10)
+  HKDSE_TourismandHospitalityStudies                          String @db.VarChar(10)
+  HKDSE_Biology                                               String @db.VarChar(10)
+  HKDSE_Chemistry                                             String @db.VarChar(10)
+  HKDSE_Physics                                               String @db.VarChar(10)
+  HKDSE_IntegratedScienceCombinedScience                      String @db.VarChar(10)
+  HKDSE_IntegratedScienceIntegratedScience                    String @db.VarChar(10)
+  HKDSE_InformationandCommunicationTechnology                 String @db.VarChar(10)
+  HKDSE_TechnologyandLiving                                   String @db.VarChar(10)
+  HKDSE_DesignandAppliedTechnology                            String @db.VarChar(10)
+  HKDSE_VisualArts                                            String @db.VarChar(10)
+  HKDSE_Music                                                 String @db.VarChar(10)
+  HKDSE_PhysicalEducation                                     String @db.VarChar(10)
+  HKDSE_BusinessAccountingandFinancialStudies                 String @db.VarChar(10)
+  HKDSE_HealthManagementandSocialCare                         String @db.VarChar(10)
+  HKDSE_OtherLanguagesFrench                                  String @db.VarChar(10)
+  HKDSE_OtherLanguagesJapanese                                String @db.VarChar(10)
+  HKDSE_OtherLanguagesGerman                                  String @db.VarChar(10)
+  HKDSE_OtherLanguagesSpanish                                 String @db.VarChar(10)
+  HKDSE_OtherLanguagesHindi                                   String @db.VarChar(10)
+  HKDSE_OtherLanguagesUrdu                                    String @db.VarChar(10)
+  IB_LanguagesEnglishLanguageLiteratureSLHL                   String @db.VarChar(10)
+  IB_LanguagesEnglishLiteratureSLHL                           String @db.VarChar(10)
+  IB_LanguagesChineseALanguageLiteratureSL                    String @db.VarChar(10)
+  IB_LanguagesChineseALiteratureSL                            String @db.VarChar(10)
+  IB_LanguagesChineseBSLHL                                    String @db.VarChar(10)
+  IB_MathematicsMathematics                                   String @db.VarChar(10)
+  IB_MathematicsMathematicsSL                                 String @db.VarChar(10)
+  IB_MathematicsMathematicsHL                                 String @db.VarChar(10)
+  IB_MathematicsFurtherMathematicsHL                          String @db.VarChar(10)
+  IB_HumanitiesandSocialSciencesBusinessManagement            String @db.VarChar(10)
+  IB_HumanitiesandSocialSciencesEconomics                     String @db.VarChar(10)
+  IB_HumanitiesandSocialSciencesGlobalPolitics                String @db.VarChar(10)
+  IB_HumanitiesandSocialSciencesHistory                       String @db.VarChar(10)
+  IB_HumanitiesandSocialSciencesPhilosophy                    String @db.VarChar(10)
+  IB_HumanitiesandSocialSciencesPsychology                    String @db.VarChar(10)
+  IB_HumanitiesandSocialSciencesSocialandCulturalAnthropology String @db.VarChar(10)
+  IB_HumanitiesandSocialSciencesWorldReligionsSL              String @db.VarChar(10)
+  IB_SciencesBiology                                          String @db.VarChar(10)
+  IB_SciencesChemistry                                        String @db.VarChar(10)
+  IB_SciencesPhysics                                          String @db.VarChar(10)
+  IB_SciencesSportsExerciseandHealthScience                   String @db.VarChar(10)
+  IB_SciencesCreativeTechnicalandVocational                   String @db.VarChar(10)
+  IB_SciencesInformationTechnology                            String @db.VarChar(10)
+  IB_SciencesComputerScience                                  String @db.VarChar(10)
+  IB_SciencesDesignTechnology                                 String @db.VarChar(10)
+  IGCSE_LanguagesChinese                                      String @db.VarChar(10)
+  IGCSE_LanguagesEnglishA                                     String @db.VarChar(10)
+  IGCSE_LanguagesEnglishB                                     String @db.VarChar(10)
+  IGCSE_LanguagesEnglishLiterature                            String @db.VarChar(10)
+  IGCSE_SciencesBiology                                       String @db.VarChar(10)
+  IGCSE_SciencesChemistry                                     String @db.VarChar(10)
+  IGCSE_SciencesPhysics                                       String @db.VarChar(10)
+  IGCSE_SciencesScience                                       String @db.VarChar(10)
+  IGCSE_SciencesGeography                                     String @db.VarChar(10)
+  IGCSE_CreativeTechnicalandVocationalComputerScience         String @db.VarChar(10)
+  IGCSE_CreativeTechnicalandVocationalDesignandTechnology     String @db.VarChar(10)
+  IGCSE_MathematicsMathematicsA                               String @db.VarChar(10)
+  IGCSE_MathematicsMathematicsB                               String @db.VarChar(10)
+  IGCSE_MathematicsFurtherPureMathematics                     String @db.VarChar(10)
+  IGCSE_HumanitiesandSocialSciencesBusiness                   String @db.VarChar(10)
+  IGCSE_HumanitiesandSocialSciencesEconomics                  String @db.VarChar(10)
+  IGCSE_HumanitiesandSocialSciencesHistory                    String @db.VarChar(10)
+  IGCSE_HumanitiesandSocialSciencesAccounting                 String @db.VarChar(10)
+  GCEALevel_LanguagesEnglishLanguage                          String @db.VarChar(10)
+  GCEALevel_LanguagesEnglishLiterature                        String @db.VarChar(10)
+  GCEALevel_SciencesBiology                                   String @db.VarChar(10)
+  GCEALevel_SciencesChemistry                                 String @db.VarChar(10)
+  GCEALevel_SciencesPhysics                                   String @db.VarChar(10)
+  GCEALevel_MathematicsMathematics                            String @db.VarChar(10)
+  GCEALevel_MathematicsFurtherMathematics                     String @db.VarChar(10)
+  GCEALevel_MathematicsPureMathematics                        String @db.VarChar(10)
+  GCEALevel_HumanitiesandSocialSciencesAccounting             String @db.VarChar(10)
+  GCEALevel_HumanitiesandSocialSciencesBusinessStudies        String @db.VarChar(10)
+  GCEALevel_HumanitiesandSocialSciencesEconomics              String @db.VarChar(10)
+  GCEALevel_HumanitiesandSocialSciencesPsychology             String @db.VarChar(10)
+  tutor                                                       tutor  @relation(fields: [tutorid], references: [tutorid])
 }
-
-model HKALE {
-  id                    Int          @id @default(autoincrement())
-  tutorid               Int
-  HKALE_ChineseLanguage       LetterGrade?
-  HKALE_EnglishLanguage       LetterGrade?
-  HKALE_Mathematics           LetterGrade?
-  HKALE_ChineseLiterature     LetterGrade?
-  HKALE_EnglishLiterature     LetterGrade?
-  HKALE_ChineseHistory        LetterGrade?
-  HKALE_WorldHistory          LetterGrade?
-  HKALE_Geography             LetterGrade?
-  HKALE_Music                 LetterGrade?
-  HKALE_AdditionalMathematics LetterGrade?
-  HKALE_Physics               LetterGrade?
-  HKALE_Biology               LetterGrade?
-  HKALE_Chemistry             LetterGrade?
-  HKALE_BusinessStudies       LetterGrade?
-  HKALE_PrinciplesofAccounts  LetterGrade?
-  HKALE_Economics             LetterGrade?
-  HKALE_ComputerStudies       LetterGrade?
-  tutor                 tutor        @relation(fields: [tutorid], references: [tutorid])
-}
-
-model HKDSE {
-  id                                    Int          @id @default(autoincrement())
-  tutorid                               Int
-  HKDSE_ChineseLanguage                       NumberGrade?
-  HKDSE_EnglishLanguage                       NumberGrade?
-  HKDSE_Mathematics                           NumberGrade?
-  HKDSE_LiberalStudies                        NumberGrade?
-  HKDSE_ChineseLiterature                     NumberGrade?
-  HKDSE_EnglishLiterature                     NumberGrade?
-  HKDSE_MathematicsM1                         NumberGrade?
-  HKDSE_MathematicsM2                         NumberGrade?
-  HKDSE_ChineseHistory                        NumberGrade?
-  HKDSE_Economics                             NumberGrade?
-  HKDSE_EthicsandReligiousStudies             NumberGrade?
-  HKDSE_Geography                             NumberGrade?
-  HKDSE_History                               NumberGrade?
-  HKDSE_TourismandHospitalityStudies          NumberGrade?
-  HKDSE_Biology                               NumberGrade?
-  HKDSE_Chemistry                             NumberGrade?
-  HKDSE_Physics                               NumberGrade?
-  HKDSE_IntegratedScienceCombinedScience      NumberGrade?
-  HKDSE_IntegratedScienceIntegratedScience    NumberGrade?
-  HKDSE_InformationandCommunicationTechnology NumberGrade?
-  HKDSE_TechnologyandLiving                   NumberGrade?
-  HKDSE_DesignandAppliedTechnology            NumberGrade?
-  HKDSE_VisualArts                            NumberGrade?
-  HKDSE_Music                                 NumberGrade?
-  HKDSE_PhysicalEducation                     NumberGrade?
-  HKDSE_BusinessAccountingandFinancialStudies NumberGrade?
-  HKDSE_HealthManagementandSocialCare         NumberGrade?
-  HKDSE_OtherLanguagesFrench                  NumberGrade?
-  HKDSE_OtherLanguagesJapanese                NumberGrade?
-  HKDSE_OtherLanguagesGerman                  NumberGrade?
-  HKDSE_OtherLanguagesSpanish                 NumberGrade?
-  HKDSE_OtherLanguagesHindi                   NumberGrade?
-  HKDSE_OtherLanguagesUrdu                    NumberGrade?
-  tutor                                 tutor        @relation(fields: [tutorid], references: [tutorid])
-}
-
-model IB {
-  id                                                       Int          @id @default(autoincrement())
-  tutorid                                                  Int
-  IB_LanguagesEnglishLanguageLiteratureSLHL                   LetterGrade?
-  IB_LanguagesEnglishLiteratureSLHL                           LetterGrade?
-  IB_LanguagesChineseALanguageLiteratureSL                    LetterGrade?
-  IB_LanguagesChineseALiteratureSL                            LetterGrade?
-  IB_LanguagesChineseBSLHL                                    LetterGrade?
-  IB_MathematicsMathematics                                   LetterGrade?
-  IB_MathematicsMathematicsSL                                 LetterGrade?
-  IB_MathematicsMathematicsHL                                 LetterGrade?
-  IB_MathematicsFurtherMathematicsHL                          LetterGrade?
-  IB_HumanitiesandSocialSciencesBusinessManagement            LetterGrade?
-  IB_HumanitiesandSocialSciencesEconomics                     LetterGrade?
-  IB_HumanitiesandSocialSciencesGlobalPolitics                LetterGrade?
-  IB_HumanitiesandSocialSciencesHistory                       LetterGrade?
-  IB_HumanitiesandSocialSciencesPhilosophy                    LetterGrade?
-  IB_HumanitiesandSocialSciencesPsychology                    LetterGrade?
-  IB_HumanitiesandSocialSciencesSocialandCulturalAnthropology LetterGrade?
-  IB_HumanitiesandSocialSciencesWorldReligionsSL              LetterGrade?
-  IB_SciencesBiology                                          LetterGrade?
-  IB_SciencesChemistry                                        LetterGrade?
-  IB_SciencesPhysics                                          LetterGrade?
-  IB_SciencesSportsExerciseandHealthScience                   LetterGrade?
-  IB_SciencesCreativeTechnicalandVocational                   LetterGrade?
-  IB_SciencesInformationTechnology                            LetterGrade?
-  IB_SciencesComputerScience                                  LetterGrade?
-  IB_SciencesDesignTechnology                                 LetterGrade?
-  tutor                                                    tutor        @relation(fields: [tutorid], references: [tutorid])
-}
-
-model IGCSE {
-  id                                                Int          @id @default(autoincrement())
-  tutorid                                           Int
-  IGCSE_LanguagesChinese                                  LetterGrade?
-  IGCSE_LanguagesEnglishA                                 LetterGrade?
-  IGCSE_LanguagesEnglishB                                 LetterGrade?
-  IGCSE_LanguagesEnglishLiterature                        LetterGrade?
-  IGCSE_SciencesBiology                                   LetterGrade?
-  IGCSE_SciencesChemistry                                 LetterGrade?
-  IGCSE_SciencesPhysics                                   LetterGrade?
-  IGCSE_SciencesScience                                   LetterGrade?
-  IGCSE_SciencesGeography                                 LetterGrade?
-  IGCSE_CreativeTechnicalandVocationalComputerScience     LetterGrade?
-  IGCSE_CreativeTechnicalandVocationalDesignandTechnology LetterGrade?
-  IGCSE_MathematicsMathematicsA                           LetterGrade?
-  IGCSE_MathematicsMathematicsB                           LetterGrade?
-  IGCSE_MathematicsFurtherPureMathematics                 LetterGrade?
-  IGCSE_HumanitiesandSocialSciencesBusiness               LetterGrade?
-  IGCSE_HumanitiesandSocialSciencesEconomics              LetterGrade?
-  IGCSE_HumanitiesandSocialSciencesHistory                LetterGrade?
-  IGCSE_HumanitiesandSocialSciencesAccounting             LetterGrade?
-  tutor                                             tutor        @relation(fields: [tutorid], references: [tutorid])
-}
-
-model GCEALevel {
-  id                                         Int          @id @default(autoincrement())
-  tutorid                                    Int
-  GCEALevel_LanguagesEnglishLanguage                   LetterGrade?
-  GCEALevel_LanguagesEnglishLiterature                 LetterGrade?
-  GCEALevel_SciencesBiology                            LetterGrade?
-  GCEALevel_SciencesChemistry                          LetterGrade?
-  GCEALevel_SciencesPhysics                            LetterGrade?
-  GCEALevel_MathematicsMathematics                     LetterGrade?
-  GCEALevel_MathematicsFurtherMathematics              LetterGrade?
-  GCEALevel_MathematicsPureMathematics                 LetterGrade?
-  GCEALevel_HumanitiesandSocialSciencesAccounting      LetterGrade?
-  GCEALevel_HumanitiesandSocialSciencesBusinessStudies LetterGrade?
-  GCEALevel_HumanitiesandSocialSciencesEconomics       LetterGrade?
-  GCEALevel_HumanitiesandSocialSciencesPsychology      LetterGrade?
-  tutor                                      tutor        @relation(fields: [tutorid], references: [tutorid])
-}
-
-
 
 model availtime {
-  id Int @id @default(autoincrement())
-  studentid       Int?
-  tutorid         Int?
-  Mon0800 Boolean @default(false)
-  Mon0900 Boolean @default(false)
-  Mon1000 Boolean @default(false)
-  Mon1100 Boolean @default(false)
-  Mon1200 Boolean @default(false)
-  Mon1300 Boolean @default(false)
-  Mon1400 Boolean @default(false)
-  Mon1500 Boolean @default(false)
-  Mon1600 Boolean @default(false)
-  Mon1700 Boolean @default(false)
-  Mon1800 Boolean @default(false)
-  Mon1900 Boolean @default(false)
-  Mon2000 Boolean @default(false)
-  Mon2100 Boolean @default(false)
-  Mon2200 Boolean @default(false)
+  id        Int     @id @default(autoincrement())
+  studentid Int?
+  tutorid   Int?
+  Mon0800   Boolean @default(false)
+  Mon0900   Boolean @default(false)
+  Mon1000   Boolean @default(false)
+  Mon1100   Boolean @default(false)
+  Mon1200   Boolean @default(false)
+  Mon1300   Boolean @default(false)
+  Mon1400   Boolean @default(false)
+  Mon1500   Boolean @default(false)
+  Mon1600   Boolean @default(false)
+  Mon1700   Boolean @default(false)
+  Mon1800   Boolean @default(false)
+  Mon1900   Boolean @default(false)
+  Mon2000   Boolean @default(false)
+  Mon2100   Boolean @default(false)
+  Mon2200   Boolean @default(false)
 
   Tue0800 Boolean @default(false)
   Tue0900 Boolean @default(false)
@@ -568,22 +511,21 @@ model availtime {
   Sat2100 Boolean @default(false)
   Sat2200 Boolean @default(false)
 
-  Sun0800 Boolean @default(false)
-  Sun0900 Boolean @default(false)
-  Sun1000 Boolean @default(false)
-  Sun1100 Boolean @default(false)
-  Sun1200 Boolean @default(false)
-  Sun1300 Boolean @default(false)
-  Sun1400 Boolean @default(false)
-  Sun1500 Boolean @default(false)
-  Sun1600 Boolean @default(false)
-  Sun1700 Boolean @default(false)
-  Sun1800 Boolean @default(false)
-  Sun1900 Boolean @default(false)
-  Sun2000 Boolean @default(false)
-  Sun2100 Boolean @default(false)
-  Sun2200 Boolean @default(false)
-  tutor           tutor?   @relation(fields: [tutorid], references: [tutorid])
-  student         student? @relation(fields: [studentid], references: [studentid])
+  Sun0800 Boolean  @default(false)
+  Sun0900 Boolean  @default(false)
+  Sun1000 Boolean  @default(false)
+  Sun1100 Boolean  @default(false)
+  Sun1200 Boolean  @default(false)
+  Sun1300 Boolean  @default(false)
+  Sun1400 Boolean  @default(false)
+  Sun1500 Boolean  @default(false)
+  Sun1600 Boolean  @default(false)
+  Sun1700 Boolean  @default(false)
+  Sun1800 Boolean  @default(false)
+  Sun1900 Boolean  @default(false)
+  Sun2000 Boolean  @default(false)
+  Sun2100 Boolean  @default(false)
+  Sun2200 Boolean  @default(false)
+  tutor   tutor?   @relation(fields: [tutorid], references: [tutorid])
+  student student? @relation(fields: [studentid], references: [studentid])
 }
-

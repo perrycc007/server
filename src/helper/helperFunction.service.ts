@@ -184,7 +184,22 @@ export class DataService {
     }
     return transformArray(location, subject);
   }
+
+  RemoveFalse(data: any) {
+    const arrayOfObjects = [];
+
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        const newObj = {};
+        newObj[key] = data[key];
+        arrayOfObjects.push(newObj);
+      }
+    }
+
+    return arrayOfObjects;
+  }
 }
+
 //   Example input
 //   const inputArray = [
 //     {

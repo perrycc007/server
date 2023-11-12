@@ -17,17 +17,27 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
     console.log(request, token);
+    const useridFromBody = request.body.userid;
+    const useridFromParams = request.params.userid;
     if (!token) {
       throw new UnauthorizedException('You must be authenticated.');
     }
 
     try {
       const decodedToken = this.jwtService.verify(token);
-      request.user = decodedToken;
+      const userid = decodedToken.id; // Extract the user ID from the decoded token
       console.log(decodedToken);
-      // Perform additional actions here, e.g., updating the profile
-      await this.updateProfile(request.user);
-      return { access: true, userid: decodedToken.id };
+      if (
+        useridFromBody ? useridFromBody != userid : useridFromParams != userid
+      ) {
+        throw new UnauthorizedException('Invalid token.');
+      } else {
+        // Pass the userId to the controller by setting it on the request object
+        request.userid = userid;
+        // Perform additional actions here, e.g., updating the profile
+        await this.updateProfile(parseInt(userid));
+        return true;
+      } // Return true to indicate that the user is authenticated
     } catch (err) {
       throw new UnauthorizedException('Invalid token.');
     }
@@ -48,13 +58,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return null;
   }
 
-  private async updateProfile(user): Promise<void> {
+  private async updateProfile(userId: number): Promise<void> {
     const date_ob = new Date();
 
     try {
       await this.prisma.profile.updateMany({
         where: {
-          userid: user.id, // Assuming 'user.id' contains the correct user ID
+          userid: userId, // Use the extracted user ID
         },
         data: {
           lastOnline: date_ob,

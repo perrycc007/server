@@ -119,16 +119,93 @@ export class TutorsService {
     subject: [],
   ): Promise<any> {
     const info = this.DataService.PrefereceToDBFormat(location, subject);
-
-    const tutors = await this.prisma.tutor.findMany({
+    const locationQuery = this.DataService.RemoveFalse(info.location[0]);
+    const subjectQuery = this.DataService.RemoveFalse(info.subject[0]);
+    const tutorsid = await this.prisma.tutor.findMany({
       where: {
-        AND: [
-          preference,
-          { location: info.location },
-          { subject: info.subject },
-        ],
+        AND: [preference],
+      },
+      select: {
+        tutorid: true,
       },
     });
-    return tutors;
+    const tutorIds = tutorsid.map((tutor) => tutor.tutorid);
+    const filter1 = await this.prisma.location.findMany({
+      where: {
+        AND: [
+          {
+            tutorid: {
+              in: tutorIds, // Assuming tutorsid is an array of tutor IDs
+            },
+          },
+          {
+            OR: locationQuery, // Your first locationQuery condition
+            // Your second locationQuery condition
+          },
+        ],
+      },
+      select: {
+        tutorid: true,
+      },
+    });
+    const filter1s = filter1.map((tutor) => tutor.tutorid);
+    const filter2 = await this.prisma.subject.findMany({
+      where: {
+        AND: [
+          {
+            tutorid: {
+              in: filter1s, // Assuming tutorsid is an array of tutor IDs
+            },
+          },
+          {
+            OR: subjectQuery, // Your first locationQuery condition
+            // Your second locationQuery condition
+          },
+        ],
+      },
+      select: {
+        tutorid: true,
+      },
+    });
+
+    const filter2s = filter2.map((tutor) => tutor.tutorid);
+
+    const filteredTutors = await this.prisma.tutor.findMany({
+      where: {
+        AND: [
+          // Example preference conditions (adjust according to your actual logic)
+
+          preference,
+          // Example location condition (you need to customize this part)
+          {
+            location: {
+              some: {
+                OR: [
+                  locationQuery, // Your first locationQuery condition
+                  // ... other location conditions
+                ],
+              },
+            },
+          },
+          // Example subject condition (you need to customize this part)
+          {
+            subject: {
+              some: {
+                OR: subjectQuery, // Your first subjectQuery condition
+                // ... other subject conditions
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        user: true, // Assuming you want to include user details
+        location: true, // Include location details
+        subject: true, // Include subject details
+        // ... include other related fields as needed
+      },
+    });
+
+    return filteredTutors;
   }
 }

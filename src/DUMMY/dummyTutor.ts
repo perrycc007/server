@@ -18,7 +18,6 @@ export const dummyTutor = {
   othercert: null,
   caseid: null,
   major: null,
-  subgrade: `[{ id: 'drop', value: '' }]`,
   strength: null,
   fee: null,
   subject: [],
