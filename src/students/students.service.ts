@@ -45,19 +45,7 @@ export class StudentsService {
     preference: any,
     location: [],
     subject: [],
-  ): Promise<any> {
-    // const info = this.DataService.PrefereceToDBFormat(location, subject);
-    // const tutors = await this.prismaService.tutor.findMany({
-    //   where: {
-    //     AND: [
-    //       preference,
-    //       { location: info.location },
-    //       { subject: info.subject },
-    //     ],
-    //   },
-    // });
-    // return tutors;
-  }
+  ): Promise<any> {}
 
   async findUniqueUserFavouriteCases(userId: number): Promise<any> {
     // const favourite = await this.prismaService.user.findUnique({
@@ -87,15 +75,9 @@ export class StudentsService {
       ...studentinfo
     } = information;
     let date_ob = new Date();
-    await this.prisma.student.upsert({
+    await this.prisma.student.update({
       where: { studentid: studentid },
-      update: {
-        ...studentinfo,
-        lastOnline: date_ob,
-        completeFormStatus: false,
-      },
-      create: {
-        // userid: userid,
+      data: {
         ...studentinfo,
         lastOnline: date_ob,
         completeFormStatus: false,
@@ -117,7 +99,7 @@ export class StudentsService {
         const allSubjects = await prisma.subject.findMany({
           select: { subjectId: true, name: true },
         });
-        const allAvailTimes = await prisma.availTime.findMany({
+        const allAvailTimes = await prisma.availtime.findMany({
           select: { id: true, day: true, time: true },
         });
 
@@ -132,13 +114,15 @@ export class StudentsService {
           .filter(Boolean);
         const availTimeIds = availtimes
           .map((at) => {
+            console.log(at);
             const [day, time] = at.split('-');
+
             return allAvailTimes.find(
               (avt) => avt.day === day && avt.time === time,
             )?.id;
           })
           .filter(Boolean);
-
+        console.log(availTimeIds);
         return { locationIds, subjectIds, availTimeIds };
       }
 
@@ -158,41 +142,39 @@ export class StudentsService {
         filteredAvailtime,
         prisma,
       ).then(async (resolvedIds) => {
-        console.log(resolvedIds);
         const studentLocationsData = resolvedIds.locationIds.map((locId) => ({
-          studentId: studentid ? studentid : userid,
+          studentId: studentid,
           locationId: locId,
         }));
         const studentSubjectsData = resolvedIds.subjectIds.map((subId) => ({
-          studentId: studentid ? studentid : userid,
+          studentId: studentid,
           subjectId: subId,
         }));
         const studentAvailTimesData = resolvedIds.availTimeIds.map(
           (availId) => ({
-            studentId: studentid ? studentid : userid,
+            studentId: studentid,
             availTimeId: availId,
           }),
         );
-        console.log(resolvedIds);
 
         prisma.$transaction([
           // Delete existing relations
-          prisma.studentLocation.deleteMany({
-            where: { studentId: studentid ? studentid : userid },
+          prisma.studentlocation.deleteMany({
+            where: { studentId: studentid },
           }),
-          prisma.studentSubject.deleteMany({
-            where: { studentId: studentid ? studentid : userid },
+          prisma.studentsubject.deleteMany({
+            where: { studentId: studentid },
           }),
-          prisma.studentAvailTime.deleteMany({
-            where: { studentId: studentid ? studentid : userid },
+          prisma.studentavailtime.deleteMany({
+            where: { studentId: studentid },
           }),
 
           //   // Prepare batch insert data
 
           // Batch insert new records
-          prisma.studentLocation.createMany({ data: studentLocationsData }),
-          prisma.studentSubject.createMany({ data: studentSubjectsData }),
-          prisma.studentAvailTime.createMany({
+          prisma.studentlocation.createMany({ data: studentLocationsData }),
+          prisma.studentsubject.createMany({ data: studentSubjectsData }),
+          prisma.studentavailtime.createMany({
             data: studentAvailTimesData,
           }),
         ]);
@@ -215,10 +197,12 @@ export class StudentsService {
     let studentid = null;
     await this.prisma.student
       .create({
-        // userid: userid,
-        ...studentinfo,
-        lastOnline: date_ob,
-        completeFormStatus: false,
+        data: {
+          userid: userid,
+          ...studentinfo,
+          lastOnline: date_ob,
+          completeFormStatus: false,
+        },
       })
       .then((result) => {
         studentid = result.studentid;
@@ -238,7 +222,7 @@ export class StudentsService {
         const allSubjects = await prisma.subject.findMany({
           select: { subjectId: true, name: true },
         });
-        const allAvailTimes = await prisma.availTime.findMany({
+        const allAvailTimes = await prisma.availtime.findMany({
           select: { id: true, day: true, time: true },
         });
 
@@ -254,6 +238,7 @@ export class StudentsService {
         const availTimeIds = availtimes
           .map((at) => {
             const [day, time] = at.split('-');
+
             return allAvailTimes.find(
               (avt) => avt.day === day && avt.time === time,
             )?.id;
@@ -279,34 +264,39 @@ export class StudentsService {
         filteredAvailtime,
         prisma,
       ).then(async (resolvedIds) => {
-        console.log(resolvedIds);
         const studentLocationsData = resolvedIds.locationIds.map((locId) => ({
-          studentId: studentid ? studentid : userid,
+          studentId: studentid,
           locationId: locId,
         }));
         const studentSubjectsData = resolvedIds.subjectIds.map((subId) => ({
-          studentId: studentid ? studentid : userid,
+          studentId: studentid,
           subjectId: subId,
         }));
         const studentAvailTimesData = resolvedIds.availTimeIds.map(
           (availId) => ({
-            studentId: studentid ? studentid : userid,
+            studentId: studentid,
             availTimeId: availId,
           }),
         );
-        console.log(resolvedIds);
-
         prisma.$transaction([
-          prisma.studentLocation.createMany({ data: studentLocationsData }),
-          prisma.studentSubject.createMany({ data: studentSubjectsData }),
-          prisma.studentAvailTime.createMany({
+          prisma.studentlocation.createMany({ data: studentLocationsData }),
+          prisma.studentsubject.createMany({ data: studentSubjectsData }),
+          prisma.studentavailtime.createMany({
             data: studentAvailTimesData,
           }),
         ]);
       });
     }
 
-    upsertStudentDetailsRaw(availtimes, locations, subjects, this.prisma);
+    return {
+      func: upsertStudentDetailsRaw(
+        availtimes,
+        locations,
+        subjects,
+        this.prisma,
+      ),
+      studentid: studentid,
+    };
   }
 
   async test() {

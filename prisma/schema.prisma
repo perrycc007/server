@@ -7,56 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum CheckStatus {
-  NOT_YET_CHECKED
-  CHECKING
-  CHECKED
-}
-
-enum MatchStatus {
-  REJECTED
-  ASK_AGAIN
-  NO_LONGER_MATCH
-  OPEN
-}
-
-enum Day {
-  MON
-  TUE
-  WED
-  THU
-  FRI
-  SAT
-  SUN
-}
-
-enum ExamType {
-  HKDSE
-  HKCEE
-  IB
-  HKALE
-  GCEALevel
-  IGCSE
-}
-
-enum Area {
-  LIBERAL_ARTS
-  SCIENCE
-  BUSINESS
-  CORE_SUBJECTS
-  ELECTIVE_SUBJECTS
-  OTHER_LANGUAGE_SUBJECTS
-  LANGUAGES
-  MATHEMATICS
-  HUMANITIES_AND_SOCIAL_SCIENCES
-  CREATIVE_TECHNICAL_AND_VOCATIONAL
-}
-
-enum Role{
-  USER
-  ADMIN
-}
-
 model profile {
   idprofile             Int       @id @default(autoincrement())
   userid                Int       @unique
@@ -83,46 +33,51 @@ model user {
   favouritecaseid  Json?
   favouritetutorid Json?
   role             Role        @default(USER)
-  profile          profile?
-  tutor            tutor?
-  students         student[]
   favourites       favourite[]
-
+  profile          profile?
+  students         student[]
+  tutor            tutor?
 }
 
 model favourite {
   idfavourite Int     @id @default(autoincrement())
   userid      Int
-  studentid   Int // Student ID
-  tutorid     Int // Tutor ID
-  user        user    @relation(fields: [userid], references: [userid])
+  studentid   Int
+  tutorid     Int
   student     student @relation(fields: [studentid], references: [studentid])
   tutor       tutor   @relation(fields: [tutorid], references: [tutorid])
+  user        user    @relation(fields: [userid], references: [userid])
+
+  @@index([studentid], map: "favourite_studentid_fkey")
+  @@index([tutorid], map: "favourite_tutorid_fkey")
+  @@index([userid], map: "favourite_userid_fkey")
 }
 
 model student {
-  studentid         Int                @id @default(autoincrement())
-  userid            Int
-  lowestfrequency   Int?
-  lowestfee         Int?
-  lowestduration    Int?
-  language          String?            @db.VarChar(45)
-  others            String?            @db.VarChar(45)
-  expectation       String?            @db.VarChar(45)
-  genderrequirement String?            @db.VarChar(45)
-  status            String?            @db.VarChar(45)
-  highestfee        Int?
-  highestfrequency  Int?
-  highestduration   Int?
-  level             String?            @db.VarChar(45)
-  lastOnline        DateTime?          @db.DateTime(0)
-  matches           match[] // Back-relation for matches
-  user              user               @relation(fields: [userid], references: [userid])
-  favourites        favourite[] // Add this line
-  studentLocation   studentLocation[]
-  studentSubjects   StudentSubject[]
-  StudentAvailTime  StudentAvailTime[]
-  completeFormStatus Boolean          @default(false)
+  studentid          Int                @id @default(autoincrement())
+  lowestfrequency    Int?
+  lowestfee          Int?
+  lowestduration     Int?
+  language           String?            @db.VarChar(45)
+  others             String?            @db.VarChar(45)
+  expectation        String?            @db.VarChar(45)
+  genderrequirement  String?            @db.VarChar(45)
+  status             String?            @db.VarChar(45)
+  highestfee         Int?
+  highestfrequency   Int?
+  highestduration    Int?
+  level              String?            @db.VarChar(45)
+  lastOnline         DateTime?          @db.DateTime(0)
+  userid             Int
+  completeFormStatus Boolean            @default(false)
+  favourites         favourite[]
+  matches            match[]
+  user               user               @relation(fields: [userid], references: [userid])
+  studentavailtime   studentavailtime[]
+  studentlocation    studentlocation[]
+  studentsubject     studentsubject[]
+
+  @@index([userid], map: "student_userid_fkey")
 }
 
 model tutor {
@@ -153,120 +108,181 @@ model tutor {
   status               String?          @default("open") @db.VarChar(45)
   lastOnline           DateTime?        @db.DateTime(0)
   verify               String?          @default("未驗證") @db.VarChar(45)
-  completeFormStatus Boolean          @default(false)
+  completeFormStatus   Boolean          @default(false)
+  favourites           favourite[]
+  matches              match[]
   user                 user?            @relation(fields: [userid], references: [userid])
-  matches              match[] // Back-relation for matches
-  favourites           favourite[] // Add this line
-  tutorLocation        tutorLocation[]
-  tutorGrades          TutorGrade[]
-  tutorAvailTimes      TutorAvailTime[]
-  tutorSubjects        TutorSubject[]
+  tutoravailtime       tutoravailtime[]
+  tutorgrade           tutorgrade[]
+  tutorlocation        tutorlocation[]
+  tutorsubject         tutorsubject[]
+
+  @@index([userid], map: "tutor_userid_key_idx")
 }
 
 model match {
   idmatch      Int         @id @default(autoincrement())
-  studentid    Int // Student ID
-  tutorid      Int // Tutor ID
-  availability Boolean // Indicates availability for the match
-  checkStatus  CheckStatus // Status of the check
+  studentid    Int
+  availability Boolean
+  checkStatus  CheckStatus
+  tutorid      Int
+  matchstatus  MatchStatus
   student      student     @relation(fields: [studentid], references: [studentid])
   tutor        tutor       @relation(fields: [tutorid], references: [tutorid])
-  matchstatus  MatchStatus
+
+  @@index([studentid], map: "match_studentid_fkey")
+  @@index([tutorid], map: "match_tutorid_fkey")
 }
 
 model location {
-  locationId       Int               @id @default(autoincrement())
-  region           String?
-  location         String?
-  tutorLocations   tutorLocation[]
-  studentLocations studentLocation[]
+  location        String?
+  locationId      Int               @id @default(autoincrement())
+  region          String?
+  studentlocation studentlocation[]
+  tutorlocation   tutorlocation[]
 }
 
-model tutorLocation {
-  tutorId    Int
-  locationId Int
-  tutor      tutor    @relation(fields: [tutorId], references: [tutorid])
-  location   location @relation(fields: [locationId], references: [locationId])
-
-  @@id([tutorId, locationId]) // Composite primary key
+model availtime {
+  id               Int                @id @default(autoincrement())
+  day              availtime_day
+  time             String
+  studentavailtime studentavailtime[]
+  tutoravailtime   tutoravailtime[]
 }
 
-model studentLocation {
-  studentid  Int
-  locationId Int
-  student    student  @relation(fields: [studentid], references: [studentid])
-  location   location @relation(fields: [locationId], references: [locationId])
-
-  @@id([studentid, locationId]) // Composite primary key
+model grade {
+  id         Int            @id @default(autoincrement())
+  area       grade_area
+  examtype   grade_examtype
+  subject    String?
+  tutorgrade tutorgrade[]
 }
 
-model Subject {
-  subjectId       Int              @id @default(autoincrement())
-  name            String?
-  category        String?
-  tutorSubjects   TutorSubject[]
-  studentSubjects StudentSubject[]
-}
-
-model TutorSubject {
-  tutorId   Int
-  subjectId Int
-  tutor     tutor   @relation(fields: [tutorId], references: [tutorid])
-  subject   Subject @relation(fields: [subjectId], references: [subjectId])
-
-  @@id([tutorId, subjectId]) // Composite primary key
-}
-
-model StudentSubject {
-  studentId Int
-  subjectId Int
-  student   student @relation(fields: [studentId], references: [studentid])
-  subject   Subject @relation(fields: [subjectId], references: [subjectId])
-
-  @@id([studentId, subjectId]) // Composite primary key
-}
-
-model Grade {
-  id          Int          @id @default(autoincrement())
-  examtype    ExamType
-  area        Area
-  subject     String?
-  tutorGrades TutorGrade[]
-}
-
-model TutorGrade {
-  tutorId Int
-  gradeId Int
-  examGrade  String?
-  tutor   tutor @relation(fields: [tutorId], references: [tutorid])
-  grade   Grade @relation(fields: [gradeId], references: [id])
-
-  @@id([tutorId, gradeId]) // Composite primary key
-}
-
-model AvailTime {
-  id                Int                @id @default(autoincrement())
-  day               Day
-  time              String
-  tutorAvailTimes   TutorAvailTime[]
-  studentAvailTimes StudentAvailTime[]
-
-}
-
-model TutorAvailTime {
-  tutorId     Int
-  availTimeId Int
-  tutor       tutor     @relation(fields: [tutorId], references: [tutorid])
-  availTime   AvailTime @relation(fields: [availTimeId], references: [id])
-
-  @@id([tutorId, availTimeId]) // Composite primary key
-}
-
-model StudentAvailTime {
+model studentavailtime {
   studentId   Int
   availTimeId Int
-  student     student   @relation(fields: [studentId], references: [studentid])
-  availTime   AvailTime @relation(fields: [availTimeId], references: [id])
+  availtime   availtime @relation(fields: [availTimeId], references: [id], map: "StudentAvailTime_availTimeId_fkey")
+  student     student   @relation(fields: [studentId], references: [studentid], map: "StudentAvailTime_studentId_fkey")
 
-  @@id([studentId, availTimeId]) // Composite primary key
+  @@id([studentId, availTimeId])
+  @@index([availTimeId], map: "StudentAvailTime_availTimeId_fkey")
+}
+
+model studentlocation {
+  studentId  Int
+  locationId Int
+  location   location @relation(fields: [locationId], references: [locationId], map: "studentLocation_locationId_fkey")
+  student    student  @relation(fields: [studentId], references: [studentid], map: "studentLocation_studentid_fkey")
+
+  @@id([studentId, locationId])
+  @@index([locationId], map: "studentLocation_locationId_fkey")
+}
+
+model studentsubject {
+  studentId Int
+  subjectId Int
+  student   student @relation(fields: [studentId], references: [studentid], map: "StudentSubject_studentId_fkey")
+  subject   subject @relation(fields: [subjectId], references: [subjectId], map: "StudentSubject_subjectId_fkey")
+
+  @@id([studentId, subjectId])
+  @@index([subjectId], map: "StudentSubject_subjectId_fkey")
+}
+
+model subject {
+  category       String?
+  name           String?
+  subjectId      Int              @id @default(autoincrement())
+  studentsubject studentsubject[]
+  tutorsubject   tutorsubject[]
+}
+
+model tutoravailtime {
+  tutorId     Int
+  availTimeId Int
+  availtime   availtime @relation(fields: [availTimeId], references: [id], map: "TutorAvailTime_availTimeId_fkey")
+  tutor       tutor     @relation(fields: [tutorId], references: [tutorid], map: "TutorAvailTime_tutorId_fkey")
+
+  @@id([tutorId, availTimeId])
+  @@index([availTimeId], map: "TutorAvailTime_availTimeId_fkey")
+}
+
+model tutorgrade {
+  tutorId   Int
+  gradeId   Int
+  examGrade String?
+  grade     grade   @relation(fields: [gradeId], references: [id], map: "TutorGrade_gradeId_fkey")
+  tutor     tutor   @relation(fields: [tutorId], references: [tutorid], map: "TutorGrade_tutorId_fkey")
+
+  @@id([tutorId, gradeId])
+  @@index([gradeId], map: "TutorGrade_gradeId_fkey")
+}
+
+model tutorlocation {
+  tutorId    Int
+  locationId Int
+  location   location @relation(fields: [locationId], references: [locationId], map: "tutorLocation_locationId_fkey")
+  tutor      tutor    @relation(fields: [tutorId], references: [tutorid], map: "tutorLocation_tutorId_fkey")
+
+  @@id([tutorId, locationId])
+  @@index([locationId], map: "tutorLocation_locationId_fkey")
+}
+
+model tutorsubject {
+  tutorId   Int
+  subjectId Int
+  subject   subject @relation(fields: [subjectId], references: [subjectId], map: "TutorSubject_subjectId_fkey")
+  tutor     tutor   @relation(fields: [tutorId], references: [tutorid], map: "TutorSubject_tutorId_fkey")
+
+  @@id([tutorId, subjectId])
+  @@index([subjectId], map: "TutorSubject_subjectId_fkey")
+}
+
+enum CheckStatus {
+  NOT_YET_CHECKED
+  CHECKING
+  CHECKED
+}
+
+enum MatchStatus {
+  REJECTED
+  ASK_AGAIN
+  NO_LONGER_MATCH
+  OPEN
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum availtime_day {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum grade_area {
+  LIBERAL_ARTS
+  SCIENCE
+  BUSINESS
+  CORE_SUBJECTS
+  ELECTIVE_SUBJECTS
+  OTHER_LANGUAGE_SUBJECTS
+  LANGUAGES
+  MATHEMATICS
+  HUMANITIES_AND_SOCIAL_SCIENCES
+  CREATIVE_TECHNICAL_AND_VOCATIONAL
+}
+
+enum grade_examtype {
+  HKDSE
+  HKCEE
+  IB
+  HKALE
+  GCEALevel
+  IGCSE
 }

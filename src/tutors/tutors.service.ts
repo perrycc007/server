@@ -14,7 +14,7 @@ export class TutorsService {
     t.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
-    GROUP_CONCAT(DISTINCT CONCAT(at.day, '', at.time) SEPARATOR ',') AS availtimes
+    GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
@@ -80,7 +80,7 @@ ORDER BY
     t.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
-    GROUP_CONCAT(DISTINCT CONCAT(at.day, '', at.time) SEPARATOR ',') AS availtimes
+    GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
@@ -150,7 +150,7 @@ ORDER BY
         const allSubjects = await prisma.subject.findMany({
           select: { subjectId: true, name: true },
         });
-        const allAvailTimes = await prisma.availTime.findMany({
+        const allAvailTimes = await prisma.availtime.findMany({
           select: { id: true, day: true, time: true },
         });
 
@@ -166,6 +166,7 @@ ORDER BY
         const availTimeIds = availtimes
           .map((at) => {
             const [day, time] = at.split('-');
+            console.log(at);
             return allAvailTimes.find(
               (avt) => avt.day === day && avt.time === time,
             )?.id;
@@ -208,22 +209,22 @@ ORDER BY
 
         prisma.$transaction([
           // Delete existing relations
-          prisma.tutorLocation.deleteMany({
+          prisma.tutorlocation.deleteMany({
             where: { tutorId: tutorid ? tutorid : userid },
           }),
-          prisma.tutorSubject.deleteMany({
+          prisma.tutorsubject.deleteMany({
             where: { tutorId: tutorid ? tutorid : userid },
           }),
-          prisma.tutorAvailTime.deleteMany({
+          prisma.tutoravailtime.deleteMany({
             where: { tutorId: tutorid ? tutorid : userid },
           }),
 
           //   // Prepare batch insert data
 
           // Batch insert new records
-          prisma.tutorLocation.createMany({ data: tutorLocationsData }),
-          prisma.tutorSubject.createMany({ data: tutorSubjectsData }),
-          prisma.tutorAvailTime.createMany({
+          prisma.tutorlocation.createMany({ data: tutorLocationsData }),
+          prisma.tutorsubject.createMany({ data: tutorSubjectsData }),
+          prisma.tutoravailtime.createMany({
             data: tutorAvailTimesData,
           }),
         ]);
