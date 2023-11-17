@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
+export class JwtAdminGuard extends AuthGuard('jwt') {
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
@@ -27,8 +27,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       // Pass the userId to the controller by setting it on the request object
       request.userid = userid;
       // Perform additional actions here, e.g., updating the profile
-      await this.updateProfile(parseInt(userid));
-      return true;
+      const role = await this.checkRole(parseInt(userid));
+      if (role.data == 'admin') {
+        return true;
+      } else {
+        throw new UnauthorizedException('You must be admin.');
+      }
+
       // Return true to indicate that the user is authenticated
     } catch (err) {
       throw new UnauthorizedException('Invalid token.');
@@ -50,18 +55,17 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return null;
   }
 
-  private async updateProfile(userId: number): Promise<void> {
-    const date_ob = new Date();
-
+  private async checkRole(userId: number): Promise<any> {
     try {
-      await this.prisma.profile.updateMany({
+      const result = await this.prisma.user.findUnique({
         where: {
           userid: userId, // Use the extracted user ID
         },
-        data: {
-          lastOnline: date_ob,
+        select: {
+          role: true,
         },
       });
+      return result;
     } catch (error) {
       console.error('Error updating profile:', error);
       throw new UnauthorizedException('Profile update failed.');

@@ -39,10 +39,7 @@ export class TutorsController {
     const { fee, location, highestteachinglevel, subject } = preferences;
     const pref = {
       highestteachinglevel: highestteachinglevel,
-      lowestfee: {
-        gte: fee[0],
-      },
-      status: 'open',
+      lowestfee: fee[0],
     };
     if (fee[0] == null) {
       delete pref.lowestfee;

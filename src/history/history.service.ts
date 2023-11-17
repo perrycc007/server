@@ -11,21 +11,21 @@ export class HistoryService {
   async getHistoryByUserId(userId: string) {
     // Implement the logic for getting history by user ID
     // You can reuse your existing logic from the Express router
-    const result = this.prisma.student.findMany({
-      where: {
-        userid: parseInt(userId),
-      },
-      include: {
-        location: true,
-        availtime: true,
-        subject: true,
-      },
-    });
-    result.then((data) => {
-      const object = this.DataService.formatObject(data, 'student');
-      console.log(object);
-      return object;
-    });
+    // const result = this.prisma.student.findMany({
+    //   where: {
+    //     userid: parseInt(userId),
+    //   },
+    //   include: {
+    //     location: true,
+    //     availtime: true,
+    //     subject: true,
+    //   },
+    // });
+    // result.then((data) => {
+    //   const object = this.DataService.formatObject(data, 'student');
+    //   console.log(object);
+    //   return object;
+    // });
   }
 
   async updateCaseStatus(studentId: string, status: string) {

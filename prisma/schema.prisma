@@ -20,6 +20,43 @@ enum MatchStatus {
   OPEN
 }
 
+enum Day {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum ExamType {
+  HKDSE
+  HKCEE
+  IB
+  HKALE
+  GCEALevel
+  IGCSE
+}
+
+enum Area {
+  LIBERAL_ARTS
+  SCIENCE
+  BUSINESS
+  CORE_SUBJECTS
+  ELECTIVE_SUBJECTS
+  OTHER_LANGUAGE_SUBJECTS
+  LANGUAGES
+  MATHEMATICS
+  HUMANITIES_AND_SOCIAL_SCIENCES
+  CREATIVE_TECHNICAL_AND_VOCATIONAL
+}
+
+enum Role{
+  USER
+  ADMIN
+}
+
 model profile {
   idprofile             Int       @id @default(autoincrement())
   userid                Int       @unique
@@ -45,12 +82,12 @@ model user {
   password         String      @db.TinyText
   favouritecaseid  Json?
   favouritetutorid Json?
+  role             Role        @default(USER)
   profile          profile?
   tutor            tutor?
   students         student[]
-  favourites       favourite[] // Add this line
-  location         location[]
-  subject          subject[]
+  favourites       favourite[]
+
 }
 
 model favourite {
@@ -64,64 +101,66 @@ model favourite {
 }
 
 model student {
-  studentid         Int         @id @default(autoincrement())
+  studentid         Int                @id @default(autoincrement())
   userid            Int
   lowestfrequency   Int?
   lowestfee         Int?
   lowestduration    Int?
-  language          String?     @db.VarChar(45)
-  others            String?     @db.VarChar(45)
-  expectation       String?     @db.VarChar(45)
-  genderrequirement String?     @db.VarChar(45)
-  status            String?     @db.VarChar(45)
+  language          String?            @db.VarChar(45)
+  others            String?            @db.VarChar(45)
+  expectation       String?            @db.VarChar(45)
+  genderrequirement String?            @db.VarChar(45)
+  status            String?            @db.VarChar(45)
   highestfee        Int?
   highestfrequency  Int?
   highestduration   Int?
-  level             String?     @db.VarChar(45)
-  lastOnline        DateTime?   @db.DateTime(0)
+  level             String?            @db.VarChar(45)
+  lastOnline        DateTime?          @db.DateTime(0)
   matches           match[] // Back-relation for matches
-  user              user        @relation(fields: [userid], references: [userid])
+  user              user               @relation(fields: [userid], references: [userid])
   favourites        favourite[] // Add this line
-  location          location[]
-  subject           subject[]
-  availtime         availtime[]
+  studentLocation   studentLocation[]
+  studentSubjects   StudentSubject[]
+  StudentAvailTime  StudentAvailTime[]
+  completeFormStatus Boolean          @default(false)
 }
 
 model tutor {
-  tutorid              Int         @id @default(autoincrement())
-  userid               Int?        @unique
-  intro                String?     @db.VarChar(45)
-  language             String?     @db.VarChar(45)
-  occupation           String?     @db.VarChar(45)
-  secondaryschool      String?     @db.VarChar(45)
-  primaryschool        String?     @db.VarChar(45)
-  yearofexperience     String?     @db.VarChar(45)
-  experience           String?     @db.VarChar(45)
-  highestteachinglevel String?     @db.VarChar(45)
-  educationallevel     String?     @db.VarChar(45)
-  notes                String?     @db.VarChar(45)
-  schoolcat            String?     @db.VarChar(45)
-  year                 String?     @db.VarChar(45)
-  publicexamgrade      String?     @db.VarChar(45)
-  university           String?     @db.VarChar(45)
-  othercert            String?     @db.VarChar(45)
-  caseid               String?     @db.VarChar(45)
-  major                String?     @db.VarChar(45)
+  tutorid              Int              @id @default(autoincrement())
+  userid               Int?             @unique
+  intro                String?          @db.VarChar(45)
+  language             String?          @db.VarChar(45)
+  occupation           String?          @db.VarChar(45)
+  secondaryschool      String?          @db.VarChar(45)
+  primaryschool        String?          @db.VarChar(45)
+  yearofexperience     String?          @db.VarChar(45)
+  experience           String?          @db.VarChar(45)
+  highestteachinglevel String?          @db.VarChar(45)
+  educationallevel     String?          @db.VarChar(45)
+  notes                String?          @db.VarChar(45)
+  schoolcat            String?          @db.VarChar(45)
+  year                 String?          @db.VarChar(45)
+  publicexamgrade      String?          @db.VarChar(45)
+  university           String?          @db.VarChar(45)
+  othercert            String?          @db.VarChar(45)
+  caseid               String?          @db.VarChar(45)
+  major                String?          @db.VarChar(45)
   subgrade             Json?
-  strength             String?     @db.VarChar(45)
+  strength             String?          @db.VarChar(45)
   highestfee           Int?
   lowestfee            Int?
   matchedbefore        Json?
-  status               String?     @default("open") @db.VarChar(45)
-  lastOnline           DateTime?   @db.DateTime(0)
-  verify               String?     @default("未驗證") @db.VarChar(45)
-  user                 user?       @relation(fields: [userid], references: [userid])
+  status               String?          @default("open") @db.VarChar(45)
+  lastOnline           DateTime?        @db.DateTime(0)
+  verify               String?          @default("未驗證") @db.VarChar(45)
+  completeFormStatus Boolean          @default(false)
+  user                 user?            @relation(fields: [userid], references: [userid])
   matches              match[] // Back-relation for matches
   favourites           favourite[] // Add this line
-  location             location[]
-  grade                grade[]
-  availtime            availtime[]
-  subject              subject[]
+  tutorLocation        tutorLocation[]
+  tutorGrades          TutorGrade[]
+  tutorAvailTimes      TutorAvailTime[]
+  tutorSubjects        TutorSubject[]
 }
 
 model match {
@@ -136,396 +175,98 @@ model match {
 }
 
 model location {
-  id              Int      @id @default(autoincrement())
-  userid          Int?
-  studentid       Int?
-  tutorid         Int?
-  Midlevels       Boolean  @default(false)
-  Pokfulam        Boolean  @default(false)
-  Central         Boolean  @default(false)
-  Western         Boolean  @default(false)
-  WanChai         Boolean  @default(false)
-  CausewayBay     Boolean  @default(false)
-  HappyValley     Boolean  @default(false)
-  NorthPoint      Boolean  @default(false)
-  QuarryBay       Boolean  @default(false)
-  TaiKoo          Boolean  @default(false)
-  ShauKeiWan      Boolean  @default(false)
-  SaiWanHo        Boolean  @default(false)
-  ChaiWan         Boolean  @default(false)
-  SiuSaiWan       Boolean  @default(false)
-  Aberdeen        Boolean  @default(false)
-  ApLeiChau       Boolean  @default(false)
-  Stanley         Boolean  @default(false)
-  MeiFoo          Boolean  @default(false)
-  LaiChiKok       Boolean  @default(false)
-  CheungShaWan    Boolean  @default(false)
-  ShamShuiPo      Boolean  @default(false)
-  TaiKokTsui      Boolean  @default(false)
-  MongKok         Boolean  @default(false)
-  HoManTin        Boolean  @default(false)
-  YauMaTei        Boolean  @default(false)
-  TsimShaTsui     Boolean  @default(false)
-  ToKwaWan        Boolean  @default(false)
-  HungHom         Boolean  @default(false)
-  Whampoa         Boolean  @default(false)
-  LokFu           Boolean  @default(false)
-  TseungKwanO     Boolean  @default(false)
-  LamTin          Boolean  @default(false)
-  NgauTauKok      Boolean  @default(false)
-  KowloonCity     Boolean  @default(false)
-  SheungShui      Boolean  @default(false)
-  FanLing         Boolean  @default(false)
-  TaiPo           Boolean  @default(false)
-  MaOnShan        Boolean  @default(false)
-  TseungKwanOArea Boolean  @default(false)
-  TuenMun         Boolean  @default(false)
-  YuenLong        Boolean  @default(false)
-  TuenMunRoad     Boolean  @default(false)
-  ShamTseng       Boolean  @default(false)
-  TsingYi         Boolean  @default(false)
-  KwaiFong        Boolean  @default(false)
-  KwaiChung       Boolean  @default(false)
-  LaiKing         Boolean  @default(false)
-  TsingYiIsland   Boolean  @default(false)
-  MaWan           Boolean  @default(false)
-  TungChung       Boolean  @default(false)
-  OutlyingIslands Boolean  @default(false)
-  user            user?    @relation(fields: [userid], references: [userid])
-  tutor           tutor?   @relation(fields: [tutorid], references: [tutorid])
-  student         student? @relation(fields: [studentid], references: [studentid])
+  locationId       Int               @id @default(autoincrement())
+  region           String?
+  location         String?
+  tutorLocations   tutorLocation[]
+  studentLocations studentLocation[]
 }
 
-model subject {
-  id                       Int      @id @default(autoincrement())
-  userid                   Int?
-  studentid                Int?
-  tutorid                  Int?
-  GeneralStudies           Boolean  @default(false)
-  Arts                     Boolean  @default(false)
-  Science                  Boolean  @default(false)
-  Business                 Boolean  @default(false)
-  Chinese                  Boolean  @default(false)
-  English                  Boolean  @default(false)
-  Mathematics              Boolean  @default(false)
-  MathematicsM1            Boolean  @default(false)
-  MathematicsM2            Boolean  @default(false)
-  ChineseLiterature        Boolean  @default(false)
-  EnglishLiterature        Boolean  @default(false)
-  ChineseHistory           Boolean  @default(false)
-  WorldHistory             Boolean  @default(false)
-  Geography                Boolean  @default(false)
-  LiberalStudies           Boolean  @default(false)
-  IntegratedScience        Boolean  @default(false)
-  IntegratedHumanities     Boolean  @default(false)
-  AdditionalMathematics    Boolean  @default(false)
-  PureMathematics          Boolean  @default(false)
-  AppliedMathematics       Boolean  @default(false)
-  Physics                  Boolean  @default(false)
-  Biology                  Boolean  @default(false)
-  Chemistry                Boolean  @default(false)
-  BusinessStudies          Boolean  @default(false)
-  Accounting               Boolean  @default(false)
-  Economics                Boolean  @default(false)
-  BusinessandPublicAffairs Boolean  @default(false)
-  MathematicsandStatistics Boolean  @default(false)
-  BAFS                     Boolean  @default(false)
-  Putonghua                Boolean  @default(false)
-  Cantonese                Boolean  @default(false)
-  EnglishPhonics           Boolean  @default(false)
-  Japanese                 Boolean  @default(false)
-  Korean                   Boolean  @default(false)
-  French                   Boolean  @default(false)
-  Italian                  Boolean  @default(false)
-  German                   Boolean  @default(false)
-  Spanish                  Boolean  @default(false)
-  EnglishConversation      Boolean  @default(false)
-  GCE                      Boolean  @default(false)
-  TOEFL                    Boolean  @default(false)
-  IELTS                    Boolean  @default(false)
-  Cello                    Boolean  @default(false)
-  Viola                    Boolean  @default(false)
-  Violin                   Boolean  @default(false)
-  Trumpet                  Boolean  @default(false)
-  Harmonica                Boolean  @default(false)
-  Recorder                 Boolean  @default(false)
-  Flute                    Boolean  @default(false)
-  Ocarina                  Boolean  @default(false)
-  Clarinet                 Boolean  @default(false)
-  Saxophone                Boolean  @default(false)
-  Erhu                     Boolean  @default(false)
-  Guzheng                  Boolean  @default(false)
-  Pipa                     Boolean  @default(false)
-  Yangqin                  Boolean  @default(false)
-  Liuqin                   Boolean  @default(false)
-  Guitar                   Boolean  @default(false)
-  AcousticGuitar           Boolean  @default(false)
-  ElectricGuitar           Boolean  @default(false)
-  ElectronicKeyboard       Boolean  @default(false)
-  Piano                    Boolean  @default(false)
-  Vocal                    Boolean  @default(false)
-  MusicTheory              Boolean  @default(false)
-  SwimmingFreestyle        Boolean  @default(false)
-  SwimmingBackstroke       Boolean  @default(false)
-  SwimmingBreaststroke     Boolean  @default(false)
-  SwimmingButterfly        Boolean  @default(false)
-  Painting                 Boolean  @default(false)
-  Computer                 Boolean  @default(false)
-  CambridgeEnglish         Boolean  @default(false)
-  OlympiadMath             Boolean  @default(false)
-  Abacus                   Boolean  @default(false)
-  KumanMath                Boolean  @default(false)
-  IGCSE                    Boolean  @default(false)
-  IBOthers                 Boolean  @default(false)
-  user                     user?    @relation(fields: [userid], references: [userid])
-  tutor                    tutor?   @relation(fields: [tutorid], references: [tutorid])
-  student                  student? @relation(fields: [studentid], references: [studentid])
+model tutorLocation {
+  tutorId    Int
+  locationId Int
+  tutor      tutor    @relation(fields: [tutorId], references: [tutorid])
+  location   location @relation(fields: [locationId], references: [locationId])
+
+  @@id([tutorId, locationId]) // Composite primary key
 }
 
-model grade {
-  id                          Int    @id @default(autoincrement())
-  tutorid                     Int
-  HKCEE_ChineseLanguage       String @db.VarChar(10)
-  HKCEE_EnglishLanguage       String @db.VarChar(10)
-  HKCEE_Mathematics           String @db.VarChar(10)
-  HKCEE_ChineseLiterature     String @db.VarChar(10)
-  HKCEE_EnglishLiterature     String @db.VarChar(10)
-  HKCEE_ChineseHistory        String @db.VarChar(10)
-  HKCEE_WorldHistory          String @db.VarChar(10)
-  HKCEE_Geography             String @db.VarChar(10)
-  HKCEE_Music                 String @db.VarChar(10)
-  HKCEE_AdditionalMathematics String @db.VarChar(10)
-  HKCEE_Physics               String @db.VarChar(10)
-  HKCEE_Biology               String @db.VarChar(10)
-  HKCEE_Chemistry             String @db.VarChar(10)
-  HKCEE_BusinessStudies       String @db.VarChar(10)
-  HKCEE_PrinciplesofAccounts  String @db.VarChar(10)
-  HKCEE_Economics             String @db.VarChar(10)
-  HKCEE_ComputerStudies       String @db.VarChar(10)
-  HKALE_ChineseLanguage       String @db.VarChar(10)
-  HKALE_EnglishLanguage       String @db.VarChar(10)
-  HKALE_Mathematics           String @db.VarChar(10)
-  HKALE_ChineseLiterature     String @db.VarChar(10)
-  HKALE_EnglishLiterature     String @db.VarChar(10)
-  HKALE_ChineseHistory        String @db.VarChar(10)
-  HKALE_WorldHistory          String @db.VarChar(10)
-  HKALE_Geography             String @db.VarChar(10)
-  HKALE_Music                 String @db.VarChar(10)
-  HKALE_AdditionalMathematics String @db.VarChar(10)
-  HKALE_Physics               String @db.VarChar(10)
-  HKALE_Biology               String @db.VarChar(10)
-  HKALE_Chemistry             String @db.VarChar(10)
-  HKALE_BusinessStudies       String @db.VarChar(10)
-  HKALE_PrinciplesofAccounts  String @db.VarChar(10)
-  HKALE_Economics             String @db.VarChar(10)
-  HKALE_ComputerStudies       String @db.VarChar(10)
+model studentLocation {
+  studentid  Int
+  locationId Int
+  student    student  @relation(fields: [studentid], references: [studentid])
+  location   location @relation(fields: [locationId], references: [locationId])
 
-  HKDSE_ChineseLanguage                                       String @db.VarChar(10)
-  HKDSE_EnglishLanguage                                       String @db.VarChar(10)
-  HKDSE_Mathematics                                           String @db.VarChar(10)
-  HKDSE_LiberalStudies                                        String @db.VarChar(10)
-  HKDSE_ChineseLiterature                                     String @db.VarChar(10)
-  HKDSE_EnglishLiterature                                     String @db.VarChar(10)
-  HKDSE_MathematicsM1                                         String @db.VarChar(10)
-  HKDSE_MathematicsM2                                         String @db.VarChar(10)
-  HKDSE_ChineseHistory                                        String @db.VarChar(10)
-  HKDSE_Economics                                             String @db.VarChar(10)
-  HKDSE_EthicsandReligiousStudies                             String @db.VarChar(10)
-  HKDSE_Geography                                             String @db.VarChar(10)
-  HKDSE_History                                               String @db.VarChar(10)
-  HKDSE_TourismandHospitalityStudies                          String @db.VarChar(10)
-  HKDSE_Biology                                               String @db.VarChar(10)
-  HKDSE_Chemistry                                             String @db.VarChar(10)
-  HKDSE_Physics                                               String @db.VarChar(10)
-  HKDSE_IntegratedScienceCombinedScience                      String @db.VarChar(10)
-  HKDSE_IntegratedScienceIntegratedScience                    String @db.VarChar(10)
-  HKDSE_InformationandCommunicationTechnology                 String @db.VarChar(10)
-  HKDSE_TechnologyandLiving                                   String @db.VarChar(10)
-  HKDSE_DesignandAppliedTechnology                            String @db.VarChar(10)
-  HKDSE_VisualArts                                            String @db.VarChar(10)
-  HKDSE_Music                                                 String @db.VarChar(10)
-  HKDSE_PhysicalEducation                                     String @db.VarChar(10)
-  HKDSE_BusinessAccountingandFinancialStudies                 String @db.VarChar(10)
-  HKDSE_HealthManagementandSocialCare                         String @db.VarChar(10)
-  HKDSE_OtherLanguagesFrench                                  String @db.VarChar(10)
-  HKDSE_OtherLanguagesJapanese                                String @db.VarChar(10)
-  HKDSE_OtherLanguagesGerman                                  String @db.VarChar(10)
-  HKDSE_OtherLanguagesSpanish                                 String @db.VarChar(10)
-  HKDSE_OtherLanguagesHindi                                   String @db.VarChar(10)
-  HKDSE_OtherLanguagesUrdu                                    String @db.VarChar(10)
-  IB_LanguagesEnglishLanguageLiteratureSLHL                   String @db.VarChar(10)
-  IB_LanguagesEnglishLiteratureSLHL                           String @db.VarChar(10)
-  IB_LanguagesChineseALanguageLiteratureSL                    String @db.VarChar(10)
-  IB_LanguagesChineseALiteratureSL                            String @db.VarChar(10)
-  IB_LanguagesChineseBSLHL                                    String @db.VarChar(10)
-  IB_MathematicsMathematics                                   String @db.VarChar(10)
-  IB_MathematicsMathematicsSL                                 String @db.VarChar(10)
-  IB_MathematicsMathematicsHL                                 String @db.VarChar(10)
-  IB_MathematicsFurtherMathematicsHL                          String @db.VarChar(10)
-  IB_HumanitiesandSocialSciencesBusinessManagement            String @db.VarChar(10)
-  IB_HumanitiesandSocialSciencesEconomics                     String @db.VarChar(10)
-  IB_HumanitiesandSocialSciencesGlobalPolitics                String @db.VarChar(10)
-  IB_HumanitiesandSocialSciencesHistory                       String @db.VarChar(10)
-  IB_HumanitiesandSocialSciencesPhilosophy                    String @db.VarChar(10)
-  IB_HumanitiesandSocialSciencesPsychology                    String @db.VarChar(10)
-  IB_HumanitiesandSocialSciencesSocialandCulturalAnthropology String @db.VarChar(10)
-  IB_HumanitiesandSocialSciencesWorldReligionsSL              String @db.VarChar(10)
-  IB_SciencesBiology                                          String @db.VarChar(10)
-  IB_SciencesChemistry                                        String @db.VarChar(10)
-  IB_SciencesPhysics                                          String @db.VarChar(10)
-  IB_SciencesSportsExerciseandHealthScience                   String @db.VarChar(10)
-  IB_SciencesCreativeTechnicalandVocational                   String @db.VarChar(10)
-  IB_SciencesInformationTechnology                            String @db.VarChar(10)
-  IB_SciencesComputerScience                                  String @db.VarChar(10)
-  IB_SciencesDesignTechnology                                 String @db.VarChar(10)
-  IGCSE_LanguagesChinese                                      String @db.VarChar(10)
-  IGCSE_LanguagesEnglishA                                     String @db.VarChar(10)
-  IGCSE_LanguagesEnglishB                                     String @db.VarChar(10)
-  IGCSE_LanguagesEnglishLiterature                            String @db.VarChar(10)
-  IGCSE_SciencesBiology                                       String @db.VarChar(10)
-  IGCSE_SciencesChemistry                                     String @db.VarChar(10)
-  IGCSE_SciencesPhysics                                       String @db.VarChar(10)
-  IGCSE_SciencesScience                                       String @db.VarChar(10)
-  IGCSE_SciencesGeography                                     String @db.VarChar(10)
-  IGCSE_CreativeTechnicalandVocationalComputerScience         String @db.VarChar(10)
-  IGCSE_CreativeTechnicalandVocationalDesignandTechnology     String @db.VarChar(10)
-  IGCSE_MathematicsMathematicsA                               String @db.VarChar(10)
-  IGCSE_MathematicsMathematicsB                               String @db.VarChar(10)
-  IGCSE_MathematicsFurtherPureMathematics                     String @db.VarChar(10)
-  IGCSE_HumanitiesandSocialSciencesBusiness                   String @db.VarChar(10)
-  IGCSE_HumanitiesandSocialSciencesEconomics                  String @db.VarChar(10)
-  IGCSE_HumanitiesandSocialSciencesHistory                    String @db.VarChar(10)
-  IGCSE_HumanitiesandSocialSciencesAccounting                 String @db.VarChar(10)
-  GCEALevel_LanguagesEnglishLanguage                          String @db.VarChar(10)
-  GCEALevel_LanguagesEnglishLiterature                        String @db.VarChar(10)
-  GCEALevel_SciencesBiology                                   String @db.VarChar(10)
-  GCEALevel_SciencesChemistry                                 String @db.VarChar(10)
-  GCEALevel_SciencesPhysics                                   String @db.VarChar(10)
-  GCEALevel_MathematicsMathematics                            String @db.VarChar(10)
-  GCEALevel_MathematicsFurtherMathematics                     String @db.VarChar(10)
-  GCEALevel_MathematicsPureMathematics                        String @db.VarChar(10)
-  GCEALevel_HumanitiesandSocialSciencesAccounting             String @db.VarChar(10)
-  GCEALevel_HumanitiesandSocialSciencesBusinessStudies        String @db.VarChar(10)
-  GCEALevel_HumanitiesandSocialSciencesEconomics              String @db.VarChar(10)
-  GCEALevel_HumanitiesandSocialSciencesPsychology             String @db.VarChar(10)
-  tutor                                                       tutor  @relation(fields: [tutorid], references: [tutorid])
+  @@id([studentid, locationId]) // Composite primary key
 }
 
-model availtime {
-  id        Int     @id @default(autoincrement())
-  studentid Int?
-  tutorid   Int?
-  Mon0800   Boolean @default(false)
-  Mon0900   Boolean @default(false)
-  Mon1000   Boolean @default(false)
-  Mon1100   Boolean @default(false)
-  Mon1200   Boolean @default(false)
-  Mon1300   Boolean @default(false)
-  Mon1400   Boolean @default(false)
-  Mon1500   Boolean @default(false)
-  Mon1600   Boolean @default(false)
-  Mon1700   Boolean @default(false)
-  Mon1800   Boolean @default(false)
-  Mon1900   Boolean @default(false)
-  Mon2000   Boolean @default(false)
-  Mon2100   Boolean @default(false)
-  Mon2200   Boolean @default(false)
+model Subject {
+  subjectId       Int              @id @default(autoincrement())
+  name            String?
+  category        String?
+  tutorSubjects   TutorSubject[]
+  studentSubjects StudentSubject[]
+}
 
-  Tue0800 Boolean @default(false)
-  Tue0900 Boolean @default(false)
-  Tue1000 Boolean @default(false)
-  Tue1100 Boolean @default(false)
-  Tue1200 Boolean @default(false)
-  Tue1300 Boolean @default(false)
-  Tue1400 Boolean @default(false)
-  Tue1500 Boolean @default(false)
-  Tue1600 Boolean @default(false)
-  Tue1700 Boolean @default(false)
-  Tue1800 Boolean @default(false)
-  Tue1900 Boolean @default(false)
-  Tue2000 Boolean @default(false)
-  Tue2100 Boolean @default(false)
-  Tue2200 Boolean @default(false)
+model TutorSubject {
+  tutorId   Int
+  subjectId Int
+  tutor     tutor   @relation(fields: [tutorId], references: [tutorid])
+  subject   Subject @relation(fields: [subjectId], references: [subjectId])
 
-  Wed0800 Boolean @default(false)
-  Wed0900 Boolean @default(false)
-  Wed1000 Boolean @default(false)
-  Wed1100 Boolean @default(false)
-  Wed1200 Boolean @default(false)
-  Wed1300 Boolean @default(false)
-  Wed1400 Boolean @default(false)
-  Wed1500 Boolean @default(false)
-  Wed1600 Boolean @default(false)
-  Wed1700 Boolean @default(false)
-  Wed1800 Boolean @default(false)
-  Wed1900 Boolean @default(false)
-  Wed2000 Boolean @default(false)
-  Wed2100 Boolean @default(false)
-  Wed2200 Boolean @default(false)
+  @@id([tutorId, subjectId]) // Composite primary key
+}
 
-  Thur0800 Boolean @default(false)
-  Thur0900 Boolean @default(false)
-  Thur1000 Boolean @default(false)
-  Thur1100 Boolean @default(false)
-  Thur1200 Boolean @default(false)
-  Thur1300 Boolean @default(false)
-  Thur1400 Boolean @default(false)
-  Thur1500 Boolean @default(false)
-  Thur1600 Boolean @default(false)
-  Thur1700 Boolean @default(false)
-  Thur1800 Boolean @default(false)
-  Thur1900 Boolean @default(false)
-  Thur2000 Boolean @default(false)
-  Thur2100 Boolean @default(false)
-  Thur2200 Boolean @default(false)
+model StudentSubject {
+  studentId Int
+  subjectId Int
+  student   student @relation(fields: [studentId], references: [studentid])
+  subject   Subject @relation(fields: [subjectId], references: [subjectId])
 
-  Fri0800 Boolean @default(false)
-  Fri0900 Boolean @default(false)
-  Fri1000 Boolean @default(false)
-  Fri1100 Boolean @default(false)
-  Fri1200 Boolean @default(false)
-  Fri1300 Boolean @default(false)
-  Fri1400 Boolean @default(false)
-  Fri1500 Boolean @default(false)
-  Fri1600 Boolean @default(false)
-  Fri1700 Boolean @default(false)
-  Fri1800 Boolean @default(false)
-  Fri1900 Boolean @default(false)
-  Fri2000 Boolean @default(false)
-  Fri2100 Boolean @default(false)
-  Fri2200 Boolean @default(false)
+  @@id([studentId, subjectId]) // Composite primary key
+}
 
-  Sat0800 Boolean @default(false)
-  Sat0900 Boolean @default(false)
-  Sat1000 Boolean @default(false)
-  Sat1100 Boolean @default(false)
-  Sat1200 Boolean @default(false)
-  Sat1300 Boolean @default(false)
-  Sat1400 Boolean @default(false)
-  Sat1500 Boolean @default(false)
-  Sat1600 Boolean @default(false)
-  Sat1700 Boolean @default(false)
-  Sat1800 Boolean @default(false)
-  Sat1900 Boolean @default(false)
-  Sat2000 Boolean @default(false)
-  Sat2100 Boolean @default(false)
-  Sat2200 Boolean @default(false)
+model Grade {
+  id          Int          @id @default(autoincrement())
+  examtype    ExamType
+  area        Area
+  subject     String?
+  tutorGrades TutorGrade[]
+}
 
-  Sun0800 Boolean  @default(false)
-  Sun0900 Boolean  @default(false)
-  Sun1000 Boolean  @default(false)
-  Sun1100 Boolean  @default(false)
-  Sun1200 Boolean  @default(false)
-  Sun1300 Boolean  @default(false)
-  Sun1400 Boolean  @default(false)
-  Sun1500 Boolean  @default(false)
-  Sun1600 Boolean  @default(false)
-  Sun1700 Boolean  @default(false)
-  Sun1800 Boolean  @default(false)
-  Sun1900 Boolean  @default(false)
-  Sun2000 Boolean  @default(false)
-  Sun2100 Boolean  @default(false)
-  Sun2200 Boolean  @default(false)
-  tutor   tutor?   @relation(fields: [tutorid], references: [tutorid])
-  student student? @relation(fields: [studentid], references: [studentid])
+model TutorGrade {
+  tutorId Int
+  gradeId Int
+  examGrade  String?
+  tutor   tutor @relation(fields: [tutorId], references: [tutorid])
+  grade   Grade @relation(fields: [gradeId], references: [id])
+
+  @@id([tutorId, gradeId]) // Composite primary key
+}
+
+model AvailTime {
+  id                Int                @id @default(autoincrement())
+  day               Day
+  time              String
+  tutorAvailTimes   TutorAvailTime[]
+  studentAvailTimes StudentAvailTime[]
+
+}
+
+model TutorAvailTime {
+  tutorId     Int
+  availTimeId Int
+  tutor       tutor     @relation(fields: [tutorId], references: [tutorid])
+  availTime   AvailTime @relation(fields: [availTimeId], references: [id])
+
+  @@id([tutorId, availTimeId]) // Composite primary key
+}
+
+model StudentAvailTime {
+  studentId   Int
+  availTimeId Int
+  student     student   @relation(fields: [studentId], references: [studentid])
+  availTime   AvailTime @relation(fields: [availTimeId], references: [id])
+
+  @@id([studentId, availTimeId]) // Composite primary key
 }

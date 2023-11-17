@@ -95,72 +95,70 @@ export class DataService {
       return obj;
     }
 
-    function transformArray(inputArray: any[], type): any[] {
-      return inputArray.map((item) => {
-        const locationObj = initializeObject(location);
-        item.location.forEach((loc) => (locationObj[loc] = true));
+    function transformArray(data: any, type): any {
+      const locationObj = initializeObject(location);
+      data.location.forEach((loc) => (locationObj[loc] = true));
 
-        const timeslotObj = initializeObject(timeslot);
-        item.availtime.forEach((time) => (timeslotObj[time] = true));
+      const timeslotObj = initializeObject(timeslot);
+      data.availtime.forEach((time) => (timeslotObj[time] = true));
 
-        const subjectObj = initializeObject(subject);
-        // Assuming you have a 'subject' field in your input
-        item.subject?.forEach((sub) => (subjectObj[sub] = true));
-
-        if (type == 'student') {
-          const outputObject = {
-            studentid: item.studentid,
-            lowestfrequency: item.lowestfrequency,
-            lowestfee: item.lowestfee,
-            lowestduration: item.lowestduration,
-            language: item.language,
-            others: item.others,
-            expectation: item.expectation,
-            genderrequirement: item.genderrequirement,
-            status: item.status,
-            highestfee: item.highestfee,
-            highestfrequency: item.highestfrequency,
-            highestduration: item.highestduration,
-            level: item.level,
-            location: [locationObj],
-            availtime: [timeslotObj],
-            subject: [subjectObj],
-          };
-          return outputObject;
-        } else {
-          const outputObject = {
-            tutorid: item.tutorid,
-            userid: item.userid,
-            intro: item.intro,
-            language: item.language,
-            occupation: item.occupation,
-            secondaryschool: item.secondaryschool,
-            primaryschool: item.primaryschool,
-            yearofexperience: item.yearofexperience,
-            experience: item.experience,
-            highestteachinglevel: item.highestteachinglevel,
-            educationallevel: item.educationallevel,
-            notes: item.notes,
-            schoolcat: item.schoolcat,
-            year: item.year,
-            publicexamgrade: item.publicexamgrade,
-            university: item.university,
-            othercert: item.othercert,
-            caseid: item.caseid,
-            major: item.major,
-            subgrade: item.subgrade,
-            strength: item.strength,
-            highestfee: item.highestfee,
-            lowestfee: item.lowestfee,
-            matchedbefore: item.matchedbefore,
-            status: item.status,
-            location: [locationObj],
-            availtime: [timeslotObj],
-            subject: [subjectObj], // Adjust if 'subject' is not in your input
-          };
-          return outputObject;
-        }
-      });
+      const subjectObj = initializeObject(subject);
+      // Assuming you have a 'subject' field in your input
+      data.subject?.forEach((sub) => (subjectObj[sub] = true));
+      let outputObject;
+      if (type == 'student') {
+        outputObject = {
+          studentid: data.studentid,
+          lowestfrequency: data.lowestfrequency,
+          lowestfee: data.lowestfee,
+          lowestduration: data.lowestduration,
+          language: data.language,
+          others: data.others,
+          expectation: data.expectation,
+          genderrequirement: data.genderrequirement,
+          status: data.status,
+          highestfee: data.highestfee,
+          highestfrequency: data.highestfrequency,
+          highestduration: data.highestduration,
+          level: data.level,
+          location: locationObj,
+          availtime: timeslotObj,
+          subject: subjectObj,
+        };
+      } else {
+        outputObject = {
+          tutorid: data.tutorid,
+          userid: data.userid,
+          intro: data.intro,
+          language: data.language,
+          occupation: data.occupation,
+          secondaryschool: data.secondaryschool,
+          primaryschool: data.primaryschool,
+          yearofexperience: data.yearofexperience,
+          experience: data.experience,
+          highestteachinglevel: data.highestteachinglevel,
+          educationallevel: data.educationallevel,
+          notes: data.notes,
+          schoolcat: data.schoolcat,
+          year: data.year,
+          publicexamgrade: data.publicexamgrade,
+          university: data.university,
+          othercert: data.othercert,
+          caseid: data.caseid,
+          major: data.major,
+          subgrade: data.subgrade,
+          strength: data.strength,
+          highestfee: data.highestfee,
+          lowestfee: data.lowestfee,
+          matchedbefore: data.matchedbefore,
+          status: data.status,
+          location: locationObj,
+          availtime: timeslotObj,
+          subject: subjectObj, // Adjust if 'subject' is not in your input
+        };
+      }
+      console.log(outputObject);
+      return outputObject;
     }
 
     return transformArray(data, type);
@@ -198,17 +196,43 @@ export class DataService {
 
     return arrayOfObjects;
   }
+  QueryBuilder(data: any, type: string) {
+    function generateLocationFilter(itemArray) {
+      if (type == 'location') {
+        const lConditions = itemArray.map((item) => `l.location = '${item}'`);
+        return `(${lConditions.join(' OR ')})`;
+      } else if (type == 'subject') {
+        const lConditions = itemArray.map((item) => `s.subject = '${item}'`);
+        return `(${lConditions.join(' OR ')})`;
+      }
+    }
+    const outputString = generateLocationFilter(data);
+
+    console.log(outputString);
+
+    return;
+  }
+
+  LowestFeeQuery(data: any) {
+    if (data.lowestfee == null) {
+      return;
+    } else {
+      const outputString = `t.lowestfee >= ${data.lowestfee} AND`;
+      return outputString;
+    }
+  }
 }
 
 //   Example input
 //   const inputArray = [
-//     {
-//       "id": 1,
-//       "studentid": null,
-//       "tutorid": 1,
-//       "location": ['CentralMidLevels'],
-//       "availtime": ['Sun0900']
-//     },
+// {
+//   "id": 1,
+//   "studentid": null,
+//   "tutorid": 1,
+//   "location": ['中半山','薄扶林'],
+//   "availtime": ['SUN0900','MON1000'],
+//   "subject": ['文科','商科']
+// },
 //     {
 //       "id": 2,
 //       "studentid": null,
