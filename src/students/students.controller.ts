@@ -41,15 +41,14 @@ export class StudentsController {
   @UseGuards(JwtAuthGuard)
   @Patch()
   async updateStudent(@Body() requestBody) {
-    const result =
-      await this.studentsService.createOrUpdateStudent(requestBody);
+    const result = await this.studentsService.updateStudent(requestBody);
     return { result };
   }
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() requestBody) {
     // Implement logic to create a student
-    return this.studentsService.createOrUpdateStudent(requestBody);
+    return this.studentsService.createStudent(requestBody);
   }
 
   @Post('filter')

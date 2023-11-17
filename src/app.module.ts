@@ -30,7 +30,7 @@ import { PrismaService } from './prisma/prisma.service';
   imports: [
     JwtModule.register({
       secret: 'your-secret-key', // Replace with your actual secret key
-      signOptions: { expiresIn: '1h' }, // Optional: Set token expiration
+      // signOptions: { expiresIn: '1h' }, // Optional: Set token expiration
     }),
   ],
   controllers: [

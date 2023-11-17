@@ -75,55 +75,168 @@ ORDER BY
   }
 
   async getTutorByUserId(userId: number, dummyTutor: any): Promise<any> {
-    const result = await this.prisma.tutor.findUnique({
-      where: {
-        tutorid: userId,
-      },
-    });
+    const result = await this.prisma.$queryRaw` 
+    SELECT 
+    t.*,
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+    GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
+    GROUP_CONCAT(DISTINCT CONCAT(at.day, '', at.time) SEPARATOR ',') AS availtimes
+FROM 
+    tutorperry.tutor t
+LEFT JOIN 
+    tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+LEFT JOIN 
+    tutorperry.location l ON tl.locationId = l.locationId
+LEFT JOIN 
+    tutorperry.TutorSubject ts ON t.tutorid = ts.tutorId
+LEFT JOIN 
+    tutorperry.Subject s ON ts.subjectId = s.subjectId
+LEFT JOIN 
+    tutorperry.TutorAvailTime tat ON t.tutorid = tat.tutorId
+LEFT JOIN 
+    tutorperry.AvailTime at ON tat.availTimeId = at.id
+WHERE 
+    t.status = 'open' AND t.userid = ${userId}
+GROUP BY 
+    t.tutorid
+ORDER BY 
+    t.lastOnline DESC;
+
+`;
     if (result !== null) {
-      const object = this.DataService.formatObject([result], 'tutor');
-      console.log(object);
-      return object;
+      result[0].locations = result[0].locations
+        ? result[0].locations.split(',')
+        : [];
+      result[0].subjects = result[0].subjects
+        ? result[0].subjects.split(',')
+        : [];
+      result[0].availtimes = result[0].availtimes
+        ? result[0].availtimes.split(',')
+        : [];
+      console.log(result[0]);
+      return result[0];
     } else {
       return { userid: userId, ...dummyTutor };
     }
   }
 
   async createOrUpdateTutor(information: any): Promise<any> {
-    console.log(information);
-    const formatData = this.DataService.ToDBFormat(information, 'tutor');
-    const { userid, tutorid, availtime, location, subject, ...tutorinfo } =
-      formatData;
+    const { userid, tutorid, availtimes, locations, subjects, ...tutorinfo } =
+      information;
     let date_ob = new Date();
-    // async function upsertTutorDetailsRaw(tutorData) {
-    //   const { id, location, availtime, subject } = tutorData;
+    await this.prisma.tutor.upsert({
+      where: { userid: userid },
+      update: { ...tutorinfo, lastOnline: date_ob, completeFormStatus: false },
+      create: {
+        // userid: userid,
+        ...tutorinfo,
+        lastOnline: date_ob,
+        completeFormStatus: false,
+      },
+    });
 
-    //   // Convert location names, subjects, and available times to their respective IDs
-    //   const locationIds = await resolveLocationIds(location); // Implement this
-    //   const subjectIds = await resolveSubjectIds(subject); // Implement this
-    //   const availTimeIds = await resolveAvailTimeIds(availtime); // Implement this
+    async function upsertTutorDetailsRaw(
+      tutorid,
+      availtime,
+      location,
+      subject,
+      prisma,
+    ) {
+      async function resolveIds(locations, subjects, availtimes, prisma) {
+        // Query each table once
+        const allLocations = await prisma.location.findMany({
+          select: { locationId: true, location: true },
+        });
+        const allSubjects = await prisma.subject.findMany({
+          select: { subjectId: true, name: true },
+        });
+        const allAvailTimes = await prisma.availTime.findMany({
+          select: { id: true, day: true, time: true },
+        });
 
-    //   // Start transaction
-    //   await this.prisma.$transaction(async (prisma) => {
-    //     // Delete existing relations
-    //     await prisma.$executeRaw`DELETE FROM tutorLocation WHERE tutorId = ${id}`;
-    //     await prisma.$executeRaw`DELETE FROM tutorSubject WHERE tutorId = ${id}`;
-    //     await prisma.$executeRaw`DELETE FROM tutorAvailTime WHERE tutorId = ${id}`;
+        // Map names to IDs
+        const locationIds = locations
+          .map(
+            (loc) => allLocations.find((l) => l.location === loc)?.locationId,
+          )
+          .filter(Boolean);
+        const subjectIds = subjects
+          .map((sub) => allSubjects.find((s) => s.name === sub)?.subjectId)
+          .filter(Boolean);
+        const availTimeIds = availtimes
+          .map((at) => {
+            const [day, time] = at.split('-');
+            return allAvailTimes.find(
+              (avt) => avt.day === day && avt.time === time,
+            )?.id;
+          })
+          .filter(Boolean);
 
-    //     // Insert new records for each table
-    //     for (const locId of locationIds) {
-    //       await prisma.$executeRaw`INSERT INTO tutorLocation (tutorId, locationId) VALUES (${id}, ${locId})`;
-    //     }
+        return { locationIds, subjectIds, availTimeIds };
+      }
 
-    //     for (const subId of subjectIds) {
-    //       await prisma.$executeRaw`INSERT INTO tutorSubject (tutorId, subjectId) VALUES (${id}, ${subId})`;
-    //     }
+      // Example usage
+      const filteredLocation = location
+        ? location.filter((item) => item !== null)
+        : [];
+      const filteredSubject = subject
+        ? subject.filter((item) => item !== null)
+        : [];
+      const filteredAvailtime = availtime
+        ? availtime.filter((item) => item !== null)
+        : [];
+      resolveIds(
+        filteredLocation,
+        filteredSubject,
+        filteredAvailtime,
+        prisma,
+      ).then(async (resolvedIds) => {
+        console.log(resolvedIds);
+        const tutorLocationsData = resolvedIds.locationIds.map((locId) => ({
+          tutorId: tutorid ? tutorid : userid,
+          locationId: locId,
+        }));
+        const tutorSubjectsData = resolvedIds.subjectIds.map((subId) => ({
+          tutorId: tutorid ? tutorid : userid,
+          subjectId: subId,
+        }));
+        const tutorAvailTimesData = resolvedIds.availTimeIds.map((availId) => ({
+          tutorId: tutorid ? tutorid : userid,
+          availTimeId: availId,
+        }));
+        console.log(resolvedIds);
 
-    //     for (const availId of availTimeIds) {
-    //       await prisma.$executeRaw`INSERT INTO tutorAvailTime (tutorId, availTimeId) VALUES (${id}, ${availId})`;
-    //     }
-    //   });
-    // }
+        prisma.$transaction([
+          // Delete existing relations
+          prisma.tutorLocation.deleteMany({
+            where: { tutorId: tutorid ? tutorid : userid },
+          }),
+          prisma.tutorSubject.deleteMany({
+            where: { tutorId: tutorid ? tutorid : userid },
+          }),
+          prisma.tutorAvailTime.deleteMany({
+            where: { tutorId: tutorid ? tutorid : userid },
+          }),
+
+          //   // Prepare batch insert data
+
+          // Batch insert new records
+          prisma.tutorLocation.createMany({ data: tutorLocationsData }),
+          prisma.tutorSubject.createMany({ data: tutorSubjectsData }),
+          prisma.tutorAvailTime.createMany({
+            data: tutorAvailTimesData,
+          }),
+        ]);
+      });
+    }
+
+    upsertTutorDetailsRaw(
+      tutorid,
+      availtimes,
+      locations,
+      subjects,
+      this.prisma,
+    );
   }
 
   async findTutorsByPreference(
@@ -136,22 +249,30 @@ ORDER BY
     const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
     const result = await this.prisma.$queryRaw`
     SELECT 
-        t.*,
-        GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
+    t.*,
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+    GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
     FROM 
-        tutor t
+        tutorperry.tutor t
     LEFT JOIN 
-        tutorLocation tl ON t.tutorid = tl.tutorId
+        tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
     LEFT JOIN 
-        location l ON tl.locationId = l.locationId
+        tutorperry.location l ON tl.locationId = l.locationId
     LEFT JOIN
-        tutorSubject ts ON t.tutorid = ts.tutorId
+        tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
     LEFT JOIN
-        subject s ON ts.subjectId = s.subjectId
+        tutorperry.subject s ON ts.subjectId = s.subjectId
     WHERE 
-        t.status = 'open' AND
-        ${lowestFee}
+    t.status = 'open' AND
+    ${lowestFee}
+    t.tutorid IN (
+        SELECT DISTINCT t.tutorid
+        FROM tutorperry.tutor t
+        LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+        LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+        LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+        LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+        WHERE
         ${locationQuery} AND
         ${subjectQuery}
     GROUP BY 
