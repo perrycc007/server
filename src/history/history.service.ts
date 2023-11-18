@@ -13,9 +13,9 @@ export class HistoryService {
     // You can reuse your existing logic from the Express router
     const result = await this.prisma.$queryRaw`
     SELECT 
-    t.*,
+    s.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-    GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
+    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects
     FROM 
       tutorperry.student s
     LEFT JOIN 
@@ -27,26 +27,15 @@ export class HistoryService {
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
     WHERE 
-      s.status = 'open' AND
+
       s.userid = ${userId}
     GROUP BY 
       s.studentid
     ORDER BY 
       s.lastOnline DESC;
   `;
-    if (result !== null) {
-      result[0].locations = result[0].locations
-        ? result[0].locations.split(',')
-        : [];
-      result[0].subjects = result[0].subjects
-        ? result[0].subjects.split(',')
-        : [];
-      result[0].availtimes = result[0].availtimes
-        ? result[0].availtimes.split(',')
-        : [];
-      console.log(result[0]);
-      return result[0];
-    }
+    console.log(result);
+    return result;
   }
 
   async updateCaseStatus(studentId: string, status: string) {

@@ -5,8 +5,8 @@ import { JwtAuthGuard } from '../auth/guard/auth.guard';
 @Controller('history')
 export class HistoryController {
   constructor(private readonly historyService: HistoryService) {}
-  @UseGuards(JwtAuthGuard)
-  @Get()
+  // @UseGuards(JwtAuthGuard)
+  @Get(':userid')
   async getHistoryByUserId(@Param('userid') userid: string) {
     return this.historyService.getHistoryByUserId(userid);
   }
