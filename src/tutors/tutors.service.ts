@@ -239,48 +239,57 @@ ORDER BY
       this.prisma,
     );
   }
-
+  // t.status = 'open' AND
   async findTutorsByPreference(
-    preference: any,
-    location: [],
-    subject: [],
+    highestfee: any,
+    locations: [],
+    subjects: [],
   ): Promise<any> {
-    const lowestFee = this.DataService.LowestFeeQuery(preference.lowestfee);
-    const locationQuery = this.DataService.QueryBuilder(location, 'location');
-    const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
-    const result = await this.prisma.$queryRaw`
-    SELECT 
-    t.*,
-    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-    GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
-    FROM 
-        tutorperry.tutor t
-    LEFT JOIN 
-        tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
-    LEFT JOIN 
-        tutorperry.location l ON tl.locationId = l.locationId
-    LEFT JOIN
-        tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
-    LEFT JOIN
-        tutorperry.subject s ON ts.subjectId = s.subjectId
-    WHERE 
-    t.status = 'open' AND
-    ${lowestFee}
-    t.tutorid IN (
-        SELECT DISTINCT t.tutorid
-        FROM tutorperry.tutor t
-        LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
-        LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-        LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
-        LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
-        WHERE
-        ${locationQuery} AND
-        ${subjectQuery}
-    GROUP BY 
-        t.tutorid
-    ORDER BY 
-        t.lastOnline DESC;
-`;
+    console.log(locations);
+    const highestFee = this.DataService.HighestFeeQuery(highestfee);
+    const locationQuery = this.DataService.QueryBuilder(
+      locations,
+      'locations',
+      'tutor',
+    );
+    const subjectQuery = this.DataService.QueryBuilder(
+      subjects,
+      'subjects',
+      'tutor',
+    );
+
+    const result = await this.prisma.$queryRaw`  SELECT 
+        t.*,
+        GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
+        FROM 
+            tutorperry.tutor t
+        LEFT JOIN 
+            tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+        LEFT JOIN 
+            tutorperry.location l ON tl.locationId = l.locationId
+        LEFT JOIN
+            tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+        LEFT JOIN
+            tutorperry.subject s ON ts.subjectId = s.subjectId
+        WHERE 
+        ${highestFee}
+        t.tutorid IN (
+          SELECT DISTINCT t.tutorid
+          FROM tutorperry.tutor t
+          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+          LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+          LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+          WHERE
+          ${locationQuery} AND
+          ${subjectQuery}
+      )
+        GROUP BY 
+            t.tutorid
+        ORDER BY 
+            t.lastOnline DESC;
+    `;
     return result;
   }
 }

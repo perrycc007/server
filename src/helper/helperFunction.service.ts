@@ -196,31 +196,41 @@ export class DataService {
 
     return arrayOfObjects;
   }
-  QueryBuilder(data: any, type: string) {
+  QueryBuilder(data: any, type: string, category: string) {
     function generateLocationFilter(itemArray) {
-      if (type == 'location') {
+      if (type == 'locations') {
         const lConditions = itemArray.map((item) => `l.location = '${item}'`);
         return `(${lConditions.join(' OR ')})`;
-      } else if (type == 'subject') {
-        const lConditions = itemArray.map((item) => `s.subject = '${item}'`);
+      } else if (type == 'subjects' && category == 'student') {
+        const lConditions = itemArray.map((item) => `su.name = '${item}'`);
+        return `(${lConditions.join(' OR ')})`;
+      } else if (type == 'subjects' && category == 'tutor') {
+        const lConditions = itemArray.map((item) => `s.name = '${item}'`);
         return `(${lConditions.join(' OR ')})`;
       }
     }
     const outputString = generateLocationFilter(data);
 
-    console.log(outputString);
-
-    return;
+    return outputString;
   }
 
-  LowestFeeQuery(data: any) {
-    if (data.lowestfee == null) {
+  LowestFeeQuery(lowestfee: any) {
+    if (lowestfee == null) {
       return;
     } else {
-      const outputString = `t.lowestfee >= ${data.lowestfee} AND`;
+      const outputString = `s.highestfee >= ${lowestfee} AND`;
       return outputString;
     }
   }
+  HighestFeeQuery(highestfee: any) {
+    if (highestfee == null) {
+      return;
+    } else {
+      const outputString = `t.lowestfee <= ${highestfee} AND`;
+      return outputString;
+    }
+  }
+
   ResolveIds(locations, subjects, availtimes, prisma) {
     async function resolveIds(locations, subjects, availtimes, prisma) {
       // Query each table once

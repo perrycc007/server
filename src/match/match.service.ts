@@ -11,17 +11,12 @@ export class MatchService {
     // You can reuse your existing logic from the Express router
 
     try {
-      const { location, subject, lowestfee, tutorid } = req.body.information;
-
-      const preference = {
-        ...(lowestfee != null && { highestfee: { gte: lowestfee } }),
-        status: 'open',
-      };
+      const { locations, subjects, lowestfee, tutorid } = req.body.information;
 
       const students = await findMatchingStudents(
-        location,
-        subject,
-        preference,
+        locations,
+        subjects,
+        lowestfee,
       );
       const matchedStudentIds = students.map((student) => student.studentid);
 
@@ -92,15 +87,10 @@ export class MatchService {
     // You can reuse your existing logic from the Express router
 
     try {
-      const { location, subject, highestfee } = req.body.information;
-      const studentid = req.body.studentid;
+      const { locations, subjects, highestfee, studentid } =
+        req.body.information;
 
-      const preference = {
-        ...(highestfee != null ? { lowestfee: { lte: highestfee } } : {}),
-        status: 'open',
-      };
-
-      const tutors = await findMatchingTutors(location, subject, preference);
+      const tutors = await findMatchingTutors(locations, subjects, highestfee);
       const matchedTutorIds = tutors.map((tutor) => tutor.tutorid);
       await this.prisma.match.updateMany({
         where: {
@@ -169,81 +159,79 @@ export class MatchService {
   }
 }
 
-async function findMatchingStudents(location, subject, preference) {
-  const lowestFee = this.DataService.LowestFeeQuery(preference.lowestfee);
+async function findMatchingStudents(location, subject, lowestfee) {
+  const lowestFee = this.DataService.LowestFeeQuery(lowestfee);
   const locationQuery = this.DataService.QueryBuilder(location, 'location');
   const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
   const result = await this.prisma.$queryRaw`
   SELECT 
     s.studentid
-  FROM 
-    tutorperry.student s
-  LEFT JOIN 
-    tutorperry.studentLocation sl ON s.studentid = sl.studentid
-  LEFT JOIN 
-    tutorperry.location l ON sl.locationId = l.locationId
-  LEFT JOIN
-    tutorperry.studentSubject ss ON s.studentid = ss.studentid
-  LEFT JOIN
-    tutorperry.subject su ON ss.subjectId = su.subjectId
-  WHERE 
-    s.status = 'open' AND
-    ${lowestFee}
-    s.studentid IN (
-      SELECT DISTINCT s.studentid
-      FROM tutorperry.student s
-      LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
-      LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-      LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
-      LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+    FROM
+      tutorperry.student s
+    LEFT JOIN
+      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+    LEFT JOIN
+      tutorperry.location l ON sl.locationId = l.locationId
+    LEFT JOIN
+      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+    LEFT JOIN
+      tutorperry.subject su ON ss.subjectId = su.subjectId
       WHERE
-      ${locationQuery} AND
-      ${subjectQuery}
-    )
-  GROUP BY 
-    s.studentid
-  ORDER BY 
-    s.lastOnline DESC;
+      ${lowestFee}
+      s.studentid IN (
+        SELECT DISTINCT s.studentid
+        FROM tutorperry.student s
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+        WHERE
+        ${locationQuery} AND
+        ${subjectQuery}
+      )
+    GROUP BY
+      s.studentid
+    ORDER BY
+      s.lastOnline DESC;
 `;
   return result;
 }
 
 // Helper function to find matching tutors
-async function findMatchingTutors(location, subject, preference) {
-  const lowestFee = this.DataService.LowestFeeQuery(preference.lowestfee);
+async function findMatchingTutors(location, subject, highestFee) {
+  const highestFeeQuery = this.DataService.LowestFeeQuery(highestFee);
   const locationQuery = this.DataService.QueryBuilder(location, 'location');
   const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
   const result = await this.prisma.$queryRaw`
   SELECT 
     t.tutorid
-  FROM 
-      tutorperry.tutor t
-  LEFT JOIN 
-      tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
-  LEFT JOIN 
-      tutorperry.location l ON tl.locationId = l.locationId
-  LEFT JOIN
-      tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
-  LEFT JOIN
-      tutorperry.subject s ON ts.subjectId = s.subjectId
-  WHERE 
-      t.status = 'open' AND
-      ${lowestFee}
-      t.tutorid IN (
-          SELECT DISTINCT t.tutorid
-          FROM tutorperry.tutor t
-          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
-          LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
-          LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
-          WHERE
-          ${locationQuery} AND
-          ${subjectQuery}
-      )
-  GROUP BY 
-      t.tutorid
-  ORDER BY 
-      t.lastOnline DESC;
+    FROM 
+    tutorperry.tutor t
+LEFT JOIN 
+    tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+LEFT JOIN 
+    tutorperry.location l ON tl.locationId = l.locationId
+LEFT JOIN
+    tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+LEFT JOIN
+    tutorperry.subject s ON ts.subjectId = s.subjectId
+WHERE 
+${highestFeeQuery}
+t.tutorid IN (
+  SELECT DISTINCT t.tutorid
+  FROM tutorperry.tutor t
+  LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+  LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+  LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+  LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+  WHERE
+  ${locationQuery} AND
+  ${subjectQuery}
+)
+GROUP BY 
+    t.tutorid
+ORDER BY 
+    t.lastOnline DESC;
 `;
 
   return result;

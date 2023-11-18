@@ -34,20 +34,19 @@ export class TutorsController {
     return this.tutorsService.getTutorByUserId(userId, dummyTutor);
   }
 
-  @Post()
-  async findTutorsByPreferences(@Body() preferences: any) {
-    const { fee, location, highestteachinglevel, subject } = preferences;
-    const pref = {
-      highestteachinglevel: highestteachinglevel,
-      lowestfee: fee[0],
-    };
-    if (fee[0] == null) {
-      delete pref.lowestfee;
-    }
-    if (highestteachinglevel[0] == null) {
-      delete pref.highestteachinglevel;
-    }
-    return this.tutorsService.findTutorsByPreference(pref, location, subject);
+  @Post('filter')
+  async findTutorsByPreferences(@Body() requestBody: any) {
+    const { lowestfee, locations, highestfee, subjects } =
+      requestBody.preference;
+
+    // if (highestteachinglevel[0] == null) {
+    //   delete pref.highestteachinglevel;
+    // }
+    return this.tutorsService.findTutorsByPreference(
+      highestfee,
+      locations,
+      subjects,
+    );
   }
   @UseGuards(JwtAuthGuard)
   @Patch()

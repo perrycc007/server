@@ -52,25 +52,16 @@ export class StudentsController {
   }
 
   @Post('filter')
-  async findTutorsByPreferences(@Body() preferences: any) {
-    const { fee, location, highestteachinglevel, subject } = preferences;
-    const pref = {
-      highestteachinglevel: highestteachinglevel,
-      lowestfee: {
-        gte: fee[0],
-      },
-      status: 'open',
-    };
-    if (fee[0] == null) {
-      delete pref.lowestfee;
-    }
-    if (highestteachinglevel[0] == null) {
-      delete pref.highestteachinglevel;
-    }
+  async findTutorsByPreferences(@Body() requestBody: any) {
+    const { lowestfee, locations, highestfee, subjects } =
+      requestBody.preference;
+    // if (highestteachinglevel[0] == null) {
+    //   delete pref.highestteachinglevel;
+    // }
     return this.studentsService.findStudentByPreference(
-      pref,
-      location,
-      subject,
+      lowestfee,
+      locations,
+      subjects,
     );
   }
 }

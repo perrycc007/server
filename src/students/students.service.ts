@@ -78,30 +78,37 @@ export class StudentsService {
   }
 
   async findStudentByPreference(
-    preference: any,
-    location: [],
-    subject: [],
+    lowestfee: any,
+    locations: [],
+    subjects: [],
   ): Promise<any> {
-    const lowestFee = this.DataService.LowestFeeQuery(preference.lowestfee);
-    const locationQuery = this.DataService.QueryBuilder(location, 'location');
-    const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
-    const result = await this.prisma.$queryRaw`
-    SELECT 
-    t.*,
+    const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
+    const locationQuery = await this.DataService.QueryBuilder(
+      locations,
+      'locations',
+      'student',
+    );
+    const subjectQuery = await this.DataService.QueryBuilder(
+      subjects,
+      'subjects',
+      'student',
+    );
+    console.log(`
+    SELECT
+    s.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-    GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
-    FROM 
+    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects
+    FROM
       tutorperry.student s
-    LEFT JOIN 
+    LEFT JOIN
       tutorperry.studentLocation sl ON s.studentid = sl.studentid
-    LEFT JOIN 
+    LEFT JOIN
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN
       tutorperry.studentSubject ss ON s.studentid = ss.studentid
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
-    WHERE 
-      s.status = 'open' AND
+      WHERE
       ${lowestFee}
       s.studentid IN (
         SELECT DISTINCT s.studentid
@@ -114,11 +121,46 @@ export class StudentsService {
         ${locationQuery} AND
         ${subjectQuery}
       )
-    GROUP BY 
+    GROUP BY
       s.studentid
-    ORDER BY 
+    ORDER BY
       s.lastOnline DESC;
-  `;
+  `);
+    const result = await this.prisma.$queryRaw`
+    SELECT
+    s.*,
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects
+    FROM
+      tutorperry.student s
+    LEFT JOIN
+      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+    LEFT JOIN
+      tutorperry.location l ON sl.locationId = l.locationId
+    LEFT JOIN
+      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+    LEFT JOIN
+      tutorperry.subject su ON ss.subjectId = su.subjectId
+      WHERE
+      s.highestfee >= 60 AND
+      s.studentid IN (
+        SELECT DISTINCT s.studentid
+        FROM tutorperry.student s
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+        WHERE
+        (l.location = '中半山' OR l.location = '北角') AND
+        (su.name = '全科' OR su.name = '數學(M2)')
+      )
+    GROUP BY
+      s.studentid
+    ORDER BY
+      s.lastOnline DESC;
+    `;
+
+    console.log(result);
     return result;
   }
 
