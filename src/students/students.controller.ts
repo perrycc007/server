@@ -32,10 +32,10 @@ export class StudentsController {
     return this.studentsService.findUniqueUserFavouriteCases(userId);
   }
 
-  @Get(':casesid')
-  async findOne(@Param('casesid') casesid: string) {
+  @Get(':studentid')
+  async findOne(@Param('studentid') studentid: string) {
     // Implement logic to fetch a student by ID
-    return this.studentsService.findOne(casesid);
+    return this.studentsService.getStudentbyStudentid(studentid);
   }
 
   @UseGuards(JwtAuthGuard)

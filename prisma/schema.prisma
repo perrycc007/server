@@ -42,8 +42,8 @@ model user {
 model favourite {
   idfavourite Int     @id @default(autoincrement())
   userid      Int
-  studentid   Int
-  tutorid     Int
+  studentid   Int?
+  tutorid     Int?
   student     student @relation(fields: [studentid], references: [studentid])
   tutor       tutor   @relation(fields: [tutorid], references: [tutorid])
   user        user    @relation(fields: [userid], references: [userid])

@@ -221,6 +221,40 @@ export class DataService {
       return outputString;
     }
   }
+  ResolveIds(locations, subjects, availtimes, prisma) {
+    async function resolveIds(locations, subjects, availtimes, prisma) {
+      // Query each table once
+      const allLocations = await prisma.location.findMany({
+        select: { locationId: true, location: true },
+      });
+      const allSubjects = await prisma.subject.findMany({
+        select: { subjectId: true, name: true },
+      });
+      const allAvailTimes = await prisma.availtime.findMany({
+        select: { id: true, day: true, time: true },
+      });
+
+      // Map names to IDs
+      const locationIds = locations
+        .map((loc) => allLocations.find((l) => l.location === loc)?.locationId)
+        .filter(Boolean);
+      const subjectIds = subjects
+        .map((sub) => allSubjects.find((s) => s.name === sub)?.subjectId)
+        .filter(Boolean);
+      const availTimeIds = availtimes
+        .map((at) => {
+          const [day, time] = at.split('-');
+
+          return allAvailTimes.find(
+            (avt) => avt.day === day && avt.time === time,
+          )?.id;
+        })
+        .filter(Boolean);
+
+      return { locationIds, subjectIds, availTimeIds };
+    }
+    return resolveIds(locations, subjects, availtimes, prisma);
+  }
 }
 
 //   Example input

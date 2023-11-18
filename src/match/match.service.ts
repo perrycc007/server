@@ -170,112 +170,81 @@ export class MatchService {
 }
 
 async function findMatchingStudents(location, subject, preference) {
-  const info = this.DataService.PrefereceToDBFormat(location, subject);
-  const locationQuery = this.DataService.RemoveFalse(info.location[0]);
-  const subjectQuery = this.DataService.RemoveFalse(info.subject[0]);
-  const matchId = await this.prisma.student.findMany({
-    where: {
-      AND: [preference],
-    },
-    select: {
-      studentid: true,
-    },
-  });
-  const ids = matchId.map((item) => item.studentid);
-  const filter1 = await this.prisma.location.findMany({
-    where: {
-      AND: [
-        {
-          studentid: {
-            in: ids,
-          },
-        },
-        {
-          OR: locationQuery,
-        },
-      ],
-    },
-    select: {
-      studentid: true,
-    },
-  });
-  const filter1s = filter1.map((item) => item.studentid);
-  const filter2 = await this.prisma.subject.findMany({
-    where: {
-      AND: [
-        {
-          studentid: {
-            in: filter1s,
-          },
-        },
-        {
-          OR: subjectQuery,
-        },
-      ],
-    },
-    select: {
-      studentid: true,
-    },
-  });
-
-  const filter2s = filter2.map((item) => item.studentid);
-
-  return filter2s;
+  const lowestFee = this.DataService.LowestFeeQuery(preference.lowestfee);
+  const locationQuery = this.DataService.QueryBuilder(location, 'location');
+  const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
+  const result = await this.prisma.$queryRaw`
+  SELECT 
+    s.studentid
+  FROM 
+    tutorperry.student s
+  LEFT JOIN 
+    tutorperry.studentLocation sl ON s.studentid = sl.studentid
+  LEFT JOIN 
+    tutorperry.location l ON sl.locationId = l.locationId
+  LEFT JOIN
+    tutorperry.studentSubject ss ON s.studentid = ss.studentid
+  LEFT JOIN
+    tutorperry.subject su ON ss.subjectId = su.subjectId
+  WHERE 
+    s.status = 'open' AND
+    ${lowestFee}
+    s.studentid IN (
+      SELECT DISTINCT s.studentid
+      FROM tutorperry.student s
+      LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
+      LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+      LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+      WHERE
+      ${locationQuery} AND
+      ${subjectQuery}
+    )
+  GROUP BY 
+    s.studentid
+  ORDER BY 
+    s.lastOnline DESC;
+`;
+  return result;
 }
 
 // Helper function to find matching tutors
 async function findMatchingTutors(location, subject, preference) {
-  const info = this.DataService.PrefereceToDBFormat(location, subject);
-  const locationQuery = this.DataService.RemoveFalse(info.location[0]);
-  const subjectQuery = this.DataService.RemoveFalse(info.subject[0]);
-  const tutorsid = await this.prisma.tutor.findMany({
-    where: {
-      AND: [preference],
-    },
-    select: {
-      tutorid: true,
-    },
-  });
-  const tutorIds = tutorsid.map((tutor) => tutor.tutorid);
-  const filter1 = await this.prisma.location.findMany({
-    where: {
-      AND: [
-        {
-          tutorid: {
-            in: tutorIds, // Assuming tutorsid is an array of tutor IDs
-          },
-        },
-        {
-          OR: locationQuery, // Your first locationQuery condition
-          // Your second locationQuery condition
-        },
-      ],
-    },
-    select: {
-      tutorid: true,
-    },
-  });
-  const filter1s = filter1.map((tutor) => tutor.tutorid);
-  const filter2 = await this.prisma.subject.findMany({
-    where: {
-      AND: [
-        {
-          tutorid: {
-            in: filter1s, // Assuming tutorsid is an array of tutor IDs
-          },
-        },
-        {
-          OR: subjectQuery, // Your first locationQuery condition
-          // Your second locationQuery condition
-        },
-      ],
-    },
-    select: {
-      tutorid: true,
-    },
-  });
+  const lowestFee = this.DataService.LowestFeeQuery(preference.lowestfee);
+  const locationQuery = this.DataService.QueryBuilder(location, 'location');
+  const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
+  const result = await this.prisma.$queryRaw`
+  SELECT 
+    t.tutorid
+  FROM 
+      tutorperry.tutor t
+  LEFT JOIN 
+      tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+  LEFT JOIN 
+      tutorperry.location l ON tl.locationId = l.locationId
+  LEFT JOIN
+      tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+  LEFT JOIN
+      tutorperry.subject s ON ts.subjectId = s.subjectId
+  WHERE 
+      t.status = 'open' AND
+      ${lowestFee}
+      t.tutorid IN (
+          SELECT DISTINCT t.tutorid
+          FROM tutorperry.tutor t
+          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+          LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+          LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+          WHERE
+          ${locationQuery} AND
+          ${subjectQuery}
+      )
+  GROUP BY 
+      t.tutorid
+  ORDER BY 
+      t.lastOnline DESC;
+`;
 
-  const filter2s = filter2.map((tutor) => tutor.tutorid);
-
-  return filter2s;
+  return result;
 }
