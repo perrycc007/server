@@ -41,8 +41,9 @@ export class ResultService {
       GROUP BY s.studentid, t.tutorid
       ORDER BY 
     s.lastOnline DESC
-
-    LIMIT 5 OFFSET ${(page - 1) * 5};
+    LIMIT 5 OFFSET ${(page - 1) * 5}
+ 
+    ;
     `;
     console.log(result);
     return result;
@@ -52,37 +53,95 @@ export class ResultService {
     // You can reuse your existing logic from the Express router
     const result = await this.prisma.$queryRaw`
     SELECT 
-    s.*, 
-    t.*, 
-    pTutor.*, 
+    s.*,
     pStudent.*, 
-    GROUP_CONCAT(DISTINCT lTutor.location SEPARATOR ',') AS tutorLocations,
-    GROUP_CONCAT(DISTINCT subTutor.name SEPARATOR ',') AS tutorSubjects,
-    GROUP_CONCAT(DISTINCT CONCAT(atTutor.day, '-', atTutor.time) SEPARATOR ',') AS tutorAvailTimes,
     GROUP_CONCAT(DISTINCT lStudent.location SEPARATOR ',') AS studentLocations,
     GROUP_CONCAT(DISTINCT subStudent.name SEPARATOR ',') AS studentSubjects,
-    GROUP_CONCAT(DISTINCT CONCAT(atStudent.day, '-', atStudent.time) SEPARATOR ',') AS studentAvailTimes
-      FROM tutorperry. student s
-      JOIN tutorperry. matchTable m ON s.studentid = m.studentid
-      JOIN tutorperry. tutor t ON m.tutorid = t.tutorid
-      JOIN tutorperry. profile pTutor ON t.userid = pTutor.userid
-      JOIN tutorperry. profile pStudent ON s.userid = pStudent.userid
-      LEFT JOIN tutorperry. tutorlocation tl ON t.tutorid = tl.tutorId
-      LEFT JOIN tutorperry. location lTutor ON tl.locationId = lTutor.locationId
-      LEFT JOIN tutorperry. tutorsubject ts ON t.tutorid = ts.tutorId
-      LEFT JOIN tutorperry. subject subTutor ON ts.subjectId = subTutor.subjectId
-      LEFT JOIN tutorperry. tutoravailtime ta ON t.tutorid = ta.tutorId
-      LEFT JOIN tutorperry. availtime atTutor ON ta.availTimeId = atTutor.id
+    GROUP_CONCAT(DISTINCT CONCAT(atStudent.day, '-', atStudent.time) SEPARATOR ',') AS studentAvailTimes,
+    JSON_OBJECT(
+        'tutorId', t.tutorid,
+        'userId', t.userid,
+        'intro', t.intro,
+        'language', t.language,
+        'occupation', t.occupation,
+        'secondarySchool', t.secondaryschool,
+        'primarySchool', t.primaryschool,
+        'yearOfExperience', t.yearofexperience,
+        'experience', t.experience,
+        'highestTeachingLevel', t.highestteachinglevel,
+        'educationalLevel', t.educationallevel,
+        'notes', t.notes,
+        'schoolCat', t.schoolcat,
+        'year', t.year,
+        'publicExamGrade', t.publicexamgrade,
+        'university', t.university,
+        'otherCert', t.othercert,
+        'caseId', t.caseid,
+        'major', t.major,
+        'subgrade', t.subgrade,
+        'strength', t.strength,
+        'highestFee', t.highestfee,
+        'lowestFee', t.lowestfee,
+        'matchedBefore', t.matchedbefore,
+        'status', t.status,
+        'lastOnline', t.lastOnline,
+        'verify', t.verify,
+        'completeFormStatus', t.completeFormStatus,
+        'profile', JSON_OBJECT(
+            'profileId', pTutor.idprofile,
+            'availTime', pTutor.availtime,
+            'address', pTutor.address,
+            'agreeWith', pTutor.agreewith,
+            'country', pTutor.country,
+            'emergencyContact', pTutor.emergencycontact,
+            'emergencyPhone', pTutor.emergencyphone,
+            'emergencyRelationship', pTutor.emergencyrelationship,
+            'findUs', pTutor.findus,
+            'language', pTutor.language,
+            'name', pTutor.name,
+            'nationality', pTutor.nationality,
+            'phoneNo', pTutor.phoneno,
+            'lastOnline', pTutor.lastOnline
+            -- Add other profile fields here if necessary
+        ),
+        'locations', GROUP_CONCAT(DISTINCT lTutor.location SEPARATOR ','),
+        'subjects', GROUP_CONCAT(DISTINCT subTutor.name SEPARATOR ','),
+        'availTimes', GROUP_CONCAT(DISTINCT CONCAT(atTutor.day, '-', atTutor.time) SEPARATOR ',')
+    ) AS tutor
+FROM 
+    tutorperry.student s
+    
+JOIN 
+    tutorperry.matchTable m ON s.studentid = m.studentid
+JOIN 
+    tutorperry.tutor t ON m.tutorid = t.tutorid
+JOIN 
+    tutorperry.profile pTutor ON t.userid = pTutor.userid
+    JOIN tutorperry. profile pStudent ON s.userid = pStudent.userid
+LEFT JOIN 
+    tutorperry.tutorlocation tl ON t.tutorid = tl.tutorId
+LEFT JOIN 
+    tutorperry.location lTutor ON tl.locationId = lTutor.locationId
+LEFT JOIN 
+    tutorperry.tutorsubject ts ON t.tutorid = ts.tutorId
+LEFT JOIN 
+    tutorperry.subject subTutor ON ts.subjectId = subTutor.subjectId
+LEFT JOIN 
+    tutorperry.tutoravailtime ta ON t.tutorid = ta.tutorId
+LEFT JOIN 
+    tutorperry.availtime atTutor ON ta.availTimeId = atTutor.id
+
       LEFT JOIN tutorperry. studentlocation sl ON s.studentid = sl.studentId
       LEFT JOIN tutorperry. location lStudent ON sl.locationId = lStudent.locationId
       LEFT JOIN tutorperry. studentsubject ss ON s.studentid = ss.studentId
       LEFT JOIN tutorperry. subject subStudent ON ss.subjectId = subStudent.subjectId
       LEFT JOIN tutorperry. studentavailtime sa ON s.studentid = sa.studentId
       LEFT JOIN tutorperry. availtime atStudent ON sa.availTimeId = atStudent.id
-      GROUP BY s.studentid, t.tutorid
       WHERE s.studentid = ${studentId}
+      GROUP BY s.studentid, t.tutorid
+      
       ORDER BY 
-      t.lastOnline DESC;
+      t.lastOnline DESC
       LIMIT 5 OFFSET ${(page - 1) * 5};
       `;
 
@@ -126,7 +185,7 @@ export class ResultService {
       GROUP BY t.tutorid, s.studentid      
       ORDER BY 
       s.lastOnline DESC
-      LIMIT 5 OFFSET ${(page - 1) * 5};
+      LIMIT 5 OFFSET ${(page - 1) * 5}
       `;
 
     console.log(result);
@@ -135,13 +194,14 @@ export class ResultService {
 
   async getSortedStudentid() {
     const result = await this.prisma.$queryRaw`  SELECT 
-      studentid 
-      COUNT(*) OVER() AS total_count
+    JSON_ARRAYAGG(s.studentid) AS studentIds
+    
     FROM 
-      tutorperry.student 
+      tutorperry.student s
+    WHERE
+      status = 'OPEN'
     ORDER BY 
       lastOnline DESC;`;
-    console.log(result);
     return result;
   }
 
@@ -151,6 +211,8 @@ export class ResultService {
       COUNT(*) OVER() AS total_count
     FROM 
       tutorperry.tutor 
+    WHERE
+      status = 'OPEN'
     ORDER BY 
       lastOnline DESC;`;
     console.log(result);

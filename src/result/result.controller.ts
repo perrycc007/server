@@ -1,16 +1,18 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ResultService } from './result.service';
+import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
 
+// @UseGuards(JwtAuthGuard)
 @Controller('result')
 export class ResultController {
   constructor(private readonly resultService: ResultService) {}
 
-  @Get(':page')
-  async getResultByPage(@Param('page') page: string) {
-    console.log(page);
-    const parsedPage = JSON.parse(page);
-    return this.resultService.getResultByPage(parsedPage);
-  }
+  // @Get(':page')
+  // async getResultByPage(@Param('page') page: string) {
+  //   console.log(page);
+  //   const parsedPage = JSON.parse(page);
+  //   return this.resultService.getResultByPage(parsedPage);
+  // }
 
   @Get('studentid/:studentid')
   async getResultByStudentId(
@@ -21,12 +23,20 @@ export class ResultController {
     const parsedPage = JSON.parse(page);
     return this.resultService.getResultByStudentId(parsedStudentId, parsedPage);
   }
-
-  @Get(`studentidSorted`)
+  @Get('tutorid/:tutorid')
+  async getResultByTutorId(
+    @Param('tutorid') tutorid: string,
+    @Query('page') page: string,
+  ) {
+    const parsedTutorId = JSON.parse(tutorid);
+    const parsedPage = JSON.parse(page);
+    return this.resultService.getResultByStudentId(parsedTutorId, parsedPage);
+  }
+  @Get('studentidSorted')
   async getSortedStudentid() {
     return this.resultService.getSortedStudentid();
   }
-  @Get(`tutoridSorted`)
+  @Get('tutoridSorted')
   async getSortedTutortid() {
     return this.resultService.getSortedTutortid();
   }
