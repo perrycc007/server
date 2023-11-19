@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ResultService } from './result.service';
 
 @Controller('result')
@@ -13,8 +13,21 @@ export class ResultController {
   }
 
   @Get('studentid/:studentid')
-  async getResultByStudentId(@Param('studentid') studentid: string) {
+  async getResultByStudentId(
+    @Param('studentid') studentid: string,
+    @Query('page') page: string,
+  ) {
     const parsedStudentId = JSON.parse(studentid);
-    return this.resultService.getResultByStudentId(parsedStudentId);
+    const parsedPage = JSON.parse(page);
+    return this.resultService.getResultByStudentId(parsedStudentId, parsedPage);
+  }
+
+  @Get(`studentidSorted`)
+  async getSortedStudentid() {
+    return this.resultService.getSortedStudentid();
+  }
+  @Get(`tutoridSorted`)
+  async getSortedTutortid() {
+    return this.resultService.getSortedTutortid();
   }
 }

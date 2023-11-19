@@ -127,6 +127,7 @@ model matchTable {
   checkStatus  CheckStatus
   tutorid      Int
   matchstatus  MatchStatus
+  lastOnline   DateTime?          @db.DateTime(0)
   student      student     @relation(fields: [studentid], references: [studentid])
   tutor        tutor       @relation(fields: [tutorid], references: [tutorid])
 

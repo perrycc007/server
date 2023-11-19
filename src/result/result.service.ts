@@ -41,11 +41,13 @@ export class ResultService {
       GROUP BY s.studentid, t.tutorid
       ORDER BY 
     s.lastOnline DESC
-    LIMIT 1 OFFSET ${page};`;
+
+    LIMIT 5 OFFSET ${(page - 1) * 5};
+    `;
     console.log(result);
     return result;
   }
-  async getResultByStudentId(studentId: number) {
+  async getResultByStudentId(studentId: number, page: number) {
     // Implement the logic for getting results by student ID
     // You can reuse your existing logic from the Express router
     const result = await this.prisma.$queryRaw`
@@ -80,13 +82,15 @@ export class ResultService {
       GROUP BY s.studentid, t.tutorid
       WHERE s.studentid = ${studentId}
       ORDER BY 
-      s.lastOnline DESC;`;
+      t.lastOnline DESC;
+      LIMIT 5 OFFSET ${(page - 1) * 5};
+      `;
 
     console.log(result);
     return result;
   }
 
-  async getResultByTutorId(tutorid: number) {
+  async getResultByTutorId(tutorid: number, page: number) {
     // Implement the logic for getting results by student ID
     // You can reuse your existing logic from the Express router
     const result = await this.prisma.$queryRaw`
@@ -121,8 +125,34 @@ export class ResultService {
       WHERE t.tutorid = ${tutorid}
       GROUP BY t.tutorid, s.studentid      
       ORDER BY 
-      s.lastOnline DESC;`;
+      s.lastOnline DESC
+      LIMIT 5 OFFSET ${(page - 1) * 5};
+      `;
 
+    console.log(result);
+    return result;
+  }
+
+  async getSortedStudentid() {
+    const result = await this.prisma.$queryRaw`  SELECT 
+      studentid 
+      COUNT(*) OVER() AS total_count
+    FROM 
+      tutorperry.student 
+    ORDER BY 
+      lastOnline DESC;`;
+    console.log(result);
+    return result;
+  }
+
+  async getSortedTutortid() {
+    const result = await this.prisma.$queryRaw`  SELECT 
+      tutorid 
+      COUNT(*) OVER() AS total_count
+    FROM 
+      tutorperry.tutor 
+    ORDER BY 
+      lastOnline DESC;`;
     console.log(result);
     return result;
   }
