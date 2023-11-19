@@ -44,8 +44,8 @@ model favourite {
   userid      Int
   studentid   Int?
   tutorid     Int?
-  student     student @relation(fields: [studentid], references: [studentid])
-  tutor       tutor   @relation(fields: [tutorid], references: [tutorid])
+  student     student? @relation(fields: [studentid], references: [studentid])
+  tutor       tutor?   @relation(fields: [tutorid], references: [tutorid])
   user        user    @relation(fields: [userid], references: [userid])
 
   @@index([studentid], map: "favourite_studentid_fkey")
@@ -71,7 +71,7 @@ model student {
   userid             Int
   completeFormStatus Boolean            @default(false)
   favourites         favourite[]
-  matches            match[]
+  matches            matchTable[]
   user               user               @relation(fields: [userid], references: [userid])
   studentavailtime   studentavailtime[]
   studentlocation    studentlocation[]
@@ -110,7 +110,7 @@ model tutor {
   verify               String?          @default("未驗證") @db.VarChar(45)
   completeFormStatus   Boolean          @default(false)
   favourites           favourite[]
-  matches              match[]
+  matches              matchTable[]
   user                 user?            @relation(fields: [userid], references: [userid])
   tutoravailtime       tutoravailtime[]
   tutorgrade           tutorgrade[]
@@ -120,7 +120,7 @@ model tutor {
   @@index([userid], map: "tutor_userid_key_idx")
 }
 
-model match {
+model matchTable {
   idmatch      Int         @id @default(autoincrement())
   studentid    Int
   availability Boolean
@@ -130,8 +130,8 @@ model match {
   student      student     @relation(fields: [studentid], references: [studentid])
   tutor        tutor       @relation(fields: [tutorid], references: [tutorid])
 
-  @@index([studentid], map: "match_studentid_fkey")
-  @@index([tutorid], map: "match_tutorid_fkey")
+  @@index([studentid], map: "matchTable_studentid_fkey")
+  @@index([tutorid], map: "matchTable_tutorid_fkey")
 }
 
 model location {

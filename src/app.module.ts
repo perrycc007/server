@@ -17,12 +17,12 @@ import { HistoryController } from './history/history.controller';
 import { ProfileController } from './profile/profile.controller';
 import { MatchController } from './match/match.controller';
 import { AdminController } from './admin/admin.controller';
-// import { ResultController } from './result/result.controller';
+import { ResultController } from './result/result.controller';
 import { HistoryService } from './history/history.service';
 import { ProfileService } from './profile/profile.service';
 import { MatchService } from './match/match.service';
 import { AdminService } from './admin/admin.service';
-// import { ResultService } from './result/result.service';
+import { ResultService } from './result/result.service';
 import { PasswordForgetService } from './password-forget/password-forget.service';
 import { PasswordResetService } from './password-reset/password-reset.service';
 import { PrismaService } from './prisma/prisma.service';
@@ -45,7 +45,7 @@ import { PrismaService } from './prisma/prisma.service';
     ProfileController,
     MatchController,
     AdminController,
-    // ResultController
+    ResultController,
   ],
   providers: [
     PrismaService,
@@ -61,7 +61,7 @@ import { PrismaService } from './prisma/prisma.service';
     PasswordForgetService,
     PasswordResetService,
     DataService,
-    // ResultService
+    ResultService,
   ],
 })
 export class AppModule {}
