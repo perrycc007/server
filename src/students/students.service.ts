@@ -29,7 +29,8 @@ export class StudentsService {
       tutorperry.StudentAvailTime sat ON s.studentid = sat.studentId
     LEFT JOIN 
       tutorperry.AvailTime at ON sat.availTimeId = at.id
-
+    WHERE 
+      s.status = 'OPEN'
     GROUP BY 
       s.studentid
     ORDER BY 
@@ -38,6 +39,39 @@ export class StudentsService {
     console.log(result);
     return result;
   }
+
+  async findManyWithStatusOpenWithFavourite(userid: number): Promise<any> {
+    const result = await this.prisma.$queryRaw` 
+    SELECT 
+      s.*,
+      GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+      GROUP_CONCAT(DISTINCT subj.name SEPARATOR ',') AS subjects,
+      f.idfavourite AS favouriteId
+    FROM 
+      tutorperry.student s
+    LEFT JOIN 
+      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+    LEFT JOIN 
+      tutorperry.location l ON sl.locationId = l.locationId
+    LEFT JOIN 
+      tutorperry.StudentSubject ss ON s.studentid = ss.studentId
+    LEFT JOIN 
+      tutorperry.Subject subj ON ss.subjectId = subj.subjectId
+    LEFT JOIN 
+      tutorperry.StudentAvailTime sat ON s.studentid = sat.studentId
+    LEFT JOIN 
+      tutorperry.AvailTime at ON sat.availTimeId = at.id
+    LEFT JOIN
+      tutorperry.favourite f ON s.studentid = f.studentid AND f.userid = ${userid}
+    GROUP BY 
+      s.studentid, f.idfavourite
+    ORDER BY 
+      s.lastOnline DESC;
+  `;
+    console.log(result);
+    return result;
+  }
+
   async getStudentbyStudentid(studentid: string) {
     const result = await this.prisma.$queryRaw`
     SELECT 
@@ -156,6 +190,100 @@ export class StudentsService {
       )
     GROUP BY
       s.studentid
+    ORDER BY
+      s.lastOnline DESC;
+    `;
+
+    console.log(result);
+    return result;
+  }
+
+  async findStudentByPreferenceWithFavourite(
+    userid: number,
+    lowestfee: any,
+    locations: [],
+    subjects: [],
+  ): Promise<any> {
+    const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
+    const locationQuery = await this.DataService.QueryBuilder(
+      locations,
+      'locations',
+      'student',
+    );
+    const subjectQuery = await this.DataService.QueryBuilder(
+      subjects,
+      'subjects',
+      'student',
+    );
+    console.log(`
+    SELECT
+    s.*,
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects,
+    f.idfavourite AS favouriteId
+    FROM
+      tutorperry.student s
+    LEFT JOIN
+      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+    LEFT JOIN
+      tutorperry.location l ON sl.locationId = l.locationId
+    LEFT JOIN
+      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+    LEFT JOIN
+      tutorperry.subject su ON ss.subjectId = su.subjectId
+    LEFT JOIN
+      tutorperry.favourite f ON s.studentid = f.studentid AND f.userid = ${userid}
+      WHERE
+      ${lowestFee}
+      s.studentid IN (
+        SELECT DISTINCT s.studentid
+        FROM tutorperry.student s
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+        WHERE
+        ${locationQuery} AND
+        ${subjectQuery}
+      )
+    GROUP BY
+      s.studentid, idfavourite
+    ORDER BY
+      s.lastOnline DESC;
+  `);
+    const result = await this.prisma.$queryRaw`
+    SELECT
+    s.*,
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects,
+    f.idfavourite AS favouriteId
+    FROM
+      tutorperry.student s
+    LEFT JOIN
+      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+    LEFT JOIN
+      tutorperry.location l ON sl.locationId = l.locationId
+    LEFT JOIN
+      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+    LEFT JOIN
+      tutorperry.subject su ON ss.subjectId = su.subjectId
+    LEFT JOIN
+      tutorperry.favourite f ON s.studentid = f.studentid AND f.userid = ${userid}
+      WHERE
+      s.highestfee >= 60 AND
+      s.studentid IN (
+        SELECT DISTINCT s.studentid
+        FROM tutorperry.student s
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+        WHERE
+        (l.location = '中半山' OR l.location = '北角') AND
+        (su.name = '全科' OR su.name = '數學(M2)')
+      )
+    GROUP BY
+      s.studentid, f.idfavourite
     ORDER BY
       s.lastOnline DESC;
     `;

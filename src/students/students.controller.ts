@@ -27,6 +27,14 @@ export class StudentsController {
     return this.studentsService.findManyWithStatusOpen();
   }
 
+  @Get('withFavourite')
+  async findAllWithFavourite(@Body() requestBody) {
+    // Implement logic to fetch students based on query parameters
+    return this.studentsService.findManyWithStatusOpenWithFavourite(
+      requestBody.userid,
+    );
+  }
+
   @Post('getFavouriteCase/:userid')
   async getFavouriteCases(@Param('userid', ParseIntPipe) userId: number) {
     return this.studentsService.findUniqueUserFavouriteCases(userId);
@@ -62,6 +70,20 @@ export class StudentsController {
       lowestfee,
       locations,
       subjects,
+    );
+  }
+  @Post('filterWithFavourite')
+  async findTutorsByPreferencesWithFavourite(@Body() requestBody: any) {
+    const { lowestfee, locations, highestfee, subjects } =
+      requestBody.preference;
+    // if (highestteachinglevel[0] == null) {
+    //   delete pref.highestteachinglevel;
+    // }
+    return this.studentsService.findStudentByPreferenceWithFavourite(
+      lowestfee,
+      locations,
+      subjects,
+      requestBody.userid,
     );
   }
 }

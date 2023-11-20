@@ -19,8 +19,15 @@ export class TutorsController {
   constructor(private readonly tutorsService: TutorsService) {}
 
   @Get()
-  async findAll() {
-    return this.tutorsService.findAllTutors();
+  async findManyWithStatusOpen() {
+    return this.tutorsService.findManyWithStatusOpen();
+  }
+  @Get('withFavourite')
+  async findAllWithFavourite(@Body() requestBody) {
+    // Implement logic to fetch students based on query parameters
+    return this.tutorsService.findManyWithStatusOpenWithFavourite(
+      requestBody.userid,
+    );
   }
 
   @Post('getFavouriteCase/:userid')
@@ -48,6 +55,21 @@ export class TutorsController {
       subjects,
     );
   }
+  @Post('filterWithFavourite')
+  async findTutorsByPreferencesWithFavourite(@Body() requestBody: any) {
+    const { lowestfee, locations, highestfee, subjects } =
+      requestBody.preference;
+    // if (highestteachinglevel[0] == null) {
+    //   delete pref.highestteachinglevel;
+    // }
+    return this.tutorsService.findTutorsByPreferenceWithFavourite(
+      highestfee,
+      locations,
+      subjects,
+      requestBody.userid,
+    );
+  }
+
   @UseGuards(JwtAuthGuard)
   @Patch()
   async updateTutor(@Body() updateInfo: any) {

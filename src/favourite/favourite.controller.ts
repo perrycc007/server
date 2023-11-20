@@ -1,7 +1,8 @@
 import {
   Controller,
   Get,
-  Patch,
+  Post,
+  Delete,
   Param,
   Body,
   UseGuards,
@@ -33,14 +34,38 @@ export class FavouriteController {
     );
   }
 
-  @Patch('case')
-  async updateUserCase(@Body() body, @Request() req) {
-    // Use authenticatedUserId as needed
-    return this.favouriteService.updateFavouriteCase(body);
+  @Post('addStudent')
+  async addFavouriteStudent(
+    @Body() body: { userid: number; studentid: number },
+  ) {
+    return this.favouriteService.addFavouriteStudent(
+      body.userid,
+      body.studentid,
+    );
   }
 
-  @Patch('tutor')
-  async updateUserTutor(@Body() body, @Request() req) {
-    return this.favouriteService.updateFavouriteTutor(body);
+  @Delete('removeStudent')
+  async removeFavouriteStudent(
+    @Body() body: { userid: number; studentid: number },
+  ) {
+    return this.favouriteService.removeFavouriteStudent(
+      body.userid,
+      body.studentid,
+    );
+  }
+
+  @Post('addTutor')
+  async addFavouriteTutor(@Body() body: { userid: number; tutorid: number }) {
+    return this.favouriteService.addFavouriteTutor(body.userid, body.tutorid);
+  }
+
+  @Delete('removeTutor')
+  async removeFavouriteTutor(
+    @Body() body: { userid: number; tutorid: number },
+  ) {
+    return this.favouriteService.removeFavouriteTutor(
+      body.userid,
+      body.tutorid,
+    );
   }
 }

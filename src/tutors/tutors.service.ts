@@ -8,7 +8,7 @@ export class TutorsService {
   constructor(private readonly DataService: DataService) {}
   private prisma = new PrismaClient();
 
-  async findAllTutors(): Promise<any> {
+  async findManyWithStatusOpen(): Promise<any> {
     const result = await this.prisma.$queryRaw` 
     SELECT 
     t.*,
@@ -30,9 +30,51 @@ LEFT JOIN
 LEFT JOIN 
     tutorperry.AvailTime at ON tat.availTimeId = at.id
 WHERE 
-    t.status = 'open'
+    t.status = 'OPEN'
 GROUP BY 
     t.tutorid
+ORDER BY 
+    t.lastOnline DESC;
+
+`;
+
+    console.log(result);
+    return result;
+    // result.then((data) => {
+    //   const object = this.DataService.formatObject(data, 'tutor');
+    //   console.log(object);
+    //   return object;
+    // });
+  }
+
+  async findManyWithStatusOpenWithFavourite(userid: number): Promise<any> {
+    const result = await this.prisma.$queryRaw` 
+    SELECT 
+    t.*,
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+    GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
+    GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes,
+    f.idfavourite AS favouriteId
+FROM 
+    tutorperry.tutor t
+LEFT JOIN 
+    tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+LEFT JOIN 
+    tutorperry.location l ON tl.locationId = l.locationId
+LEFT JOIN 
+    tutorperry.TutorSubject ts ON t.tutorid = ts.tutorId
+LEFT JOIN 
+    tutorperry.Subject s ON ts.subjectId = s.subjectId
+LEFT JOIN 
+    tutorperry.TutorAvailTime tat ON t.tutorid = tat.tutorId
+LEFT JOIN 
+    tutorperry.AvailTime at ON tat.availTimeId = at.id
+LEFT JOIN
+    tutorperry.favourite f ON t.tutorid = f.tutorid AND f.userid = ${userid}
+WHERE 
+    t.status = 'open'
+GROUP BY 
+    t.tutorid,f.idfavourite
 ORDER BY 
     t.lastOnline DESC;
 
@@ -118,6 +160,116 @@ ORDER BY
     } else {
       return { userid: userId, ...dummyTutor };
     }
+  }
+
+  async findTutorsByPreference(
+    highestfee: any,
+    locations: [],
+    subjects: [],
+  ): Promise<any> {
+    console.log(locations);
+    const highestFee = this.DataService.HighestFeeQuery(highestfee);
+    const locationQuery = this.DataService.QueryBuilder(
+      locations,
+      'locations',
+      'tutor',
+    );
+    const subjectQuery = this.DataService.QueryBuilder(
+      subjects,
+      'subjects',
+      'tutor',
+    );
+
+    const result = await this.prisma.$queryRaw`  SELECT 
+        t.*,
+        GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
+        FROM 
+            tutorperry.tutor t
+        LEFT JOIN 
+            tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+        LEFT JOIN 
+            tutorperry.location l ON tl.locationId = l.locationId
+        LEFT JOIN
+            tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+        LEFT JOIN
+            tutorperry.subject s ON ts.subjectId = s.subjectId
+        WHERE 
+        ${highestFee}
+        t.tutorid IN (
+          SELECT DISTINCT t.tutorid
+          FROM tutorperry.tutor t
+          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+          LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+          LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+          WHERE
+          ${locationQuery} AND
+          ${subjectQuery}
+      )
+        GROUP BY 
+            t.tutorid
+        ORDER BY 
+            t.lastOnline DESC;
+    `;
+    return result;
+  }
+
+  async findTutorsByPreferenceWithFavourite(
+    highestfee: any,
+    locations: [],
+    subjects: [],
+    userid: number,
+  ): Promise<any> {
+    console.log(locations);
+    const highestFee = this.DataService.HighestFeeQuery(highestfee);
+    const locationQuery = this.DataService.QueryBuilder(
+      locations,
+      'locations',
+      'tutor',
+    );
+    const subjectQuery = this.DataService.QueryBuilder(
+      subjects,
+      'subjects',
+      'tutor',
+    );
+
+    const result = await this.prisma.$queryRaw`  SELECT 
+        t.*,
+        GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
+        f.idfavourite AS favouriteId
+        FROM 
+            tutorperry.tutor t
+        LEFT JOIN 
+            tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+        LEFT JOIN 
+            tutorperry.location l ON tl.locationId = l.locationId
+        LEFT JOIN
+            tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+        LEFT JOIN
+            tutorperry.subject s ON ts.subjectId = s.subjectId
+        LEFT JOIN
+            tutorperry.favourite f ON t.tutorid = f.tutorid AND f.userid = ${userid}
+        WHERE 
+        ${highestFee}
+        t.tutorid IN (
+          SELECT DISTINCT t.tutorid
+          FROM tutorperry.tutor t
+          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+          LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+          LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+          WHERE
+          ${locationQuery} AND
+          ${subjectQuery}
+      )
+        GROUP BY 
+            t.tutorid,f.idfavourite
+        ORDER BY 
+            t.lastOnline DESC;
+    `;
+    return result;
   }
 
   async createOrUpdateTutor(information: any): Promise<any> {
@@ -240,56 +392,4 @@ ORDER BY
     );
   }
   // t.status = 'open' AND
-  async findTutorsByPreference(
-    highestfee: any,
-    locations: [],
-    subjects: [],
-  ): Promise<any> {
-    console.log(locations);
-    const highestFee = this.DataService.HighestFeeQuery(highestfee);
-    const locationQuery = this.DataService.QueryBuilder(
-      locations,
-      'locations',
-      'tutor',
-    );
-    const subjectQuery = this.DataService.QueryBuilder(
-      subjects,
-      'subjects',
-      'tutor',
-    );
-
-    const result = await this.prisma.$queryRaw`  SELECT 
-        t.*,
-        GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
-        FROM 
-            tutorperry.tutor t
-        LEFT JOIN 
-            tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
-        LEFT JOIN 
-            tutorperry.location l ON tl.locationId = l.locationId
-        LEFT JOIN
-            tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
-        LEFT JOIN
-            tutorperry.subject s ON ts.subjectId = s.subjectId
-        WHERE 
-        ${highestFee}
-        t.tutorid IN (
-          SELECT DISTINCT t.tutorid
-          FROM tutorperry.tutor t
-          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
-          LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
-          LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
-          WHERE
-          ${locationQuery} AND
-          ${subjectQuery}
-      )
-        GROUP BY 
-            t.tutorid
-        ORDER BY 
-            t.lastOnline DESC;
-    `;
-    return result;
-  }
 }
