@@ -54,7 +54,7 @@ ORDER BY
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
     GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes,
-    f.idfavourite AS favouriteId
+    f.idfavourite AS idfavourite
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
@@ -238,7 +238,7 @@ ORDER BY
         t.*,
         GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
         GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
-        f.idfavourite AS favouriteId
+        f.idfavourite AS idfavourite
         FROM 
             tutorperry.tutor t
         LEFT JOIN 

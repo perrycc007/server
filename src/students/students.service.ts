@@ -46,7 +46,7 @@ export class StudentsService {
       s.*,
       GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
       GROUP_CONCAT(DISTINCT subj.name SEPARATOR ',') AS subjects,
-      f.idfavourite AS favouriteId
+      f.idfavourite AS idfavourite
     FROM 
       tutorperry.student s
     LEFT JOIN 
@@ -220,7 +220,7 @@ export class StudentsService {
     s.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects,
-    f.idfavourite AS favouriteId
+    f.idfavourite AS idfavourite
     FROM
       tutorperry.student s
     LEFT JOIN
@@ -256,7 +256,7 @@ export class StudentsService {
     s.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects,
-    f.idfavourite AS favouriteId
+    f.idfavourite AS idfavourite
     FROM
       tutorperry.student s
     LEFT JOIN
