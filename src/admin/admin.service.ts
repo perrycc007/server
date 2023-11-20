@@ -8,34 +8,29 @@ export class AdminService {
   async toggleCheck(req: any) {
     // Implement the logic for toggling check here
     // You can reuse your existing logic from the Express router
-    return this.prisma.match.update({
-      where: {
-        idmatch: req.body.idmatch,
-      },
-      data: {
-        checkStatus: req.body.checking,
-      },
-    });
+
+    return this.prisma.$queryRaw`
+    UPDATE matchTable
+    SET checkStatus = ${req.checkStatus}
+    WHERE idmatch = ${req.idmatch};
+`;
   }
 
   async toggleAvail(req: any) {
     // Implement the logic for toggling availability here
     // You can reuse your existing logic from the Express router
-    return this.prisma.match.update({
-      where: {
-        idmatch: req.body.idmatch,
-      },
-      data: {
-        availability: req.body.notavailtutor,
-      },
-    });
+    return this.prisma.$queryRaw`
+    UPDATE matchTable
+    SET availability = ${req.availability}
+    WHERE idmatch = ${req.idmatch};
+`;
   }
 
   async updateTutorVerify(req: any) {
     // Implement the logic for updating tutor verification here
     // You can reuse your existing logic from the Express router
-    const tutorid = req.body.tutorid;
-    const verify = req.body.verify;
+    const tutorid = req.tutorid;
+    const verify = req.verify;
     return this.prisma.tutor.update({
       where: {
         tutorid: parseInt(tutorid),

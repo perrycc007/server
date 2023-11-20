@@ -1,7 +1,13 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { ResultService } from './result.service';
 import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
-
 // @UseGuards(JwtAuthGuard)
 @Controller('result')
 export class ResultController {

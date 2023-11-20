@@ -38,7 +38,7 @@ export class HistoryService {
     return result;
   }
 
-  async updateCaseStatus(studentId: string, status: string) {
+  async updateCaseStatus(studentId: string, status: any) {
     // Implement the logic for updating case status
     // You can reuse your existing logic from the Express router
 
@@ -52,7 +52,7 @@ export class HistoryService {
     });
   }
 
-  async updateTutorStatus(tutorId: string, status: string) {
+  async updateTutorStatus(tutorId: string, status: any) {
     // Implement the logic for updating tutor status
     // You can reuse your existing logic from the Express router
     return this.prisma.tutor.update({

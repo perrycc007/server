@@ -107,7 +107,7 @@ model tutor {
   matchedbefore        Json?
   status               open_status      @default(OPEN) 
   lastOnline           DateTime?        @db.DateTime(0)
-  verify               String?          @default("未驗證") @db.VarChar(45)
+  verify               verify_status    @default(NOT_VERIFIED) 
   completeFormStatus   Boolean          @default(false)
   favourites           favourite[]
   matches              matchTable[]
@@ -292,4 +292,9 @@ enum open_status {
   OPEN
   CLOSE
   BLOCKED
+}
+
+enum verify_status{
+  NOT_VERIFIED
+  VERIFIED
 }

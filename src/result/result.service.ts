@@ -108,7 +108,13 @@ export class ResultService {
         'locations', GROUP_CONCAT(DISTINCT lTutor.location SEPARATOR ','),
         'subjects', GROUP_CONCAT(DISTINCT subTutor.name SEPARATOR ','),
         'availTimes', GROUP_CONCAT(DISTINCT CONCAT(atTutor.day, '-', atTutor.time) SEPARATOR ',')
-    ) AS tutor
+    ) AS tutor,
+    CAST(
+        (SELECT COUNT(DISTINCT m2.idmatch) 
+         FROM tutorperry.matchTable m2 
+         WHERE m2.studentid = s.studentid) 
+    AS SIGNED) AS total_counts
+
 FROM 
     tutorperry.student s
     
@@ -145,7 +151,9 @@ LEFT JOIN
       t.lastOnline DESC
       LIMIT 5 OFFSET ${(page - 1) * 5};
       `;
-
+    (result as Array<any>).forEach((item) => {
+      item.total_counts = Number(item.total_counts);
+    });
     console.log(result);
     return result;
   }
@@ -238,6 +246,9 @@ LEFT JOIN
       `;
 
     console.log(result);
+    (result as Array<any>).forEach((item) => {
+      item.total_tutorials = Number(item.total_tutorials);
+    });
     return result;
   }
 
@@ -274,10 +285,10 @@ LEFT JOIN
         lastOnline: {
           lt: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
         },
-        status: 'open',
+        status: 'OPEN',
       },
       data: {
-        status: 'closed',
+        status: 'CLOSE',
       },
     });
     await this.prisma.tutor.updateMany({
@@ -285,10 +296,10 @@ LEFT JOIN
         lastOnline: {
           lt: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
         },
-        status: 'open',
+        status: 'OPEN',
       },
       data: {
-        status: 'closed',
+        status: 'CLOSE',
       },
     });
   }
