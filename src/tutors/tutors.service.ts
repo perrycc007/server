@@ -287,7 +287,7 @@ GROUP BY
       ...tutorinfo
     } = information;
     let date_ob = new Date();
-    await this.prisma.tutor.upsert({
+    const upsertTutor = await this.prisma.tutor.upsert({
       where: { userid: userid },
       update: { ...tutorinfo, lastOnline: date_ob, completeFormStatus: false },
       create: {
@@ -297,7 +297,6 @@ GROUP BY
         completeFormStatus: false,
       },
     });
-
     async function upsertTutorDetailsRaw(
       prisma,
       tutorid,
@@ -326,14 +325,17 @@ GROUP BY
         const allGrades = await prisma.grade.findMany({
           select: { id: true, subjectkey: true },
         });
+
         const gradeMapping = allGrades.reduce((acc, grade) => {
           acc[grade.subjectkey] = grade.id;
           return acc;
         }, {});
+        const tutorId = upsertTutor.tutorid;
         const tutorGradeData = Object.entries(subjectGrade).map(
           ([subjectKey, examGrade]) => {
             const gradeId = gradeMapping[subjectKey];
-            return { gradeId, examGrade };
+
+            return { tutorId, gradeId, examGrade };
           },
         );
         // Map names to IDs
@@ -348,7 +350,6 @@ GROUP BY
         const availTimeIds = availtimes
           .map((at) => {
             const [day, time] = at.split('-');
-            console.log(at);
             return allAvailTimes.find(
               (avt) => avt.day === day && avt.time === time,
             )?.id;
@@ -376,35 +377,34 @@ GROUP BY
         filteredAvailtime,
         filteredSubjectGrade,
       ).then(async (resolvedIds) => {
-        console.log(resolvedIds);
         const tutorLocationsData = resolvedIds.locationIds.map((locId) => ({
-          tutorId: tutorid ? tutorid : userid,
+          tutorId: upsertTutor.tutorid,
           locationId: locId,
         }));
         const tutorSubjectsData = resolvedIds.subjectIds.map((subId) => ({
-          tutorId: tutorid ? tutorid : userid,
+          tutorId: upsertTutor.tutorid,
           subjectId: subId,
         }));
         const tutorAvailTimesData = resolvedIds.availTimeIds.map((availId) => ({
-          tutorId: tutorid ? tutorid : userid,
+          tutorId: upsertTutor.tutorid,
           availTimeId: availId,
         }));
-        const tutorGradeData = resolvedIds.tutorGradeData; // Corrected line
-        console.log(resolvedIds);
+        const tutorGradeData = resolvedIds.tutorGradeData;
+        console.log(tutorGradeData);
 
         prisma.$transaction([
           // Delete existing relations
           prisma.tutorlocation.deleteMany({
-            where: { tutorId: tutorid ? tutorid : userid },
+            where: { tutorId: upsertTutor.tutorid },
           }),
           prisma.tutorsubject.deleteMany({
-            where: { tutorId: tutorid ? tutorid : userid },
+            where: { tutorId: upsertTutor.tutorid },
           }),
           prisma.tutoravailtime.deleteMany({
-            where: { tutorId: tutorid ? tutorid : userid },
+            where: { tutorId: upsertTutor.tutorid },
           }),
           prisma.tutorgrade.deleteMany({
-            where: { tutorId: tutorid },
+            where: { tutorId: upsertTutor.tutorid },
           }),
           //   // Prepare batch insert data
 
