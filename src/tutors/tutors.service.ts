@@ -122,7 +122,13 @@ ORDER BY
     t.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
-    GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes
+    GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes,
+    (
+      SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
+      FROM tutorperry.tutorgrade tg
+      JOIN tutorperry.grade g ON tg.gradeId = g.id
+      WHERE tg.tutorId = t.tutorid
+  ) AS subjectGrade
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
@@ -138,11 +144,9 @@ LEFT JOIN
 LEFT JOIN 
     tutorperry.AvailTime at ON tat.availTimeId = at.id
 WHERE 
-    t.status = 'open' AND t.userid = ${userId}
+    t.userid = ${userId}
 GROUP BY 
     t.tutorid
-ORDER BY 
-    t.lastOnline DESC;
 
 `;
     if (result !== null) {
@@ -273,8 +277,15 @@ ORDER BY
   }
 
   async createOrUpdateTutor(information: any): Promise<any> {
-    const { userid, tutorid, availtimes, locations, subjects, ...tutorinfo } =
-      information;
+    const {
+      userid,
+      tutorid,
+      availtimes,
+      locations,
+      subjects,
+      subjectGrade,
+      ...tutorinfo
+    } = information;
     let date_ob = new Date();
     await this.prisma.tutor.upsert({
       where: { userid: userid },
@@ -288,13 +299,20 @@ ORDER BY
     });
 
     async function upsertTutorDetailsRaw(
+      prisma,
       tutorid,
       availtime,
       location,
       subject,
-      prisma,
+      subjectGrade,
     ) {
-      async function resolveIds(locations, subjects, availtimes, prisma) {
+      async function resolveIds(
+        prisma,
+        locations,
+        subjects,
+        availtimes,
+        subjectGrade,
+      ) {
         // Query each table once
         const allLocations = await prisma.location.findMany({
           select: { locationId: true, location: true },
@@ -305,7 +323,19 @@ ORDER BY
         const allAvailTimes = await prisma.availtime.findMany({
           select: { id: true, day: true, time: true },
         });
-
+        const allGrades = await prisma.grade.findMany({
+          select: { id: true, subjectkey: true },
+        });
+        const gradeMapping = allGrades.reduce((acc, grade) => {
+          acc[grade.subjectkey] = grade.id;
+          return acc;
+        }, {});
+        const tutorGradeData = Object.entries(subjectGrade).map(
+          ([subjectKey, examGrade]) => {
+            const gradeId = gradeMapping[subjectKey];
+            return { gradeId, examGrade };
+          },
+        );
         // Map names to IDs
         const locationIds = locations
           .map(
@@ -325,7 +355,7 @@ ORDER BY
           })
           .filter(Boolean);
 
-        return { locationIds, subjectIds, availTimeIds };
+        return { locationIds, subjectIds, availTimeIds, tutorGradeData };
       }
 
       // Example usage
@@ -338,11 +368,13 @@ ORDER BY
       const filteredAvailtime = availtime
         ? availtime.filter((item) => item !== null)
         : [];
+      const filteredSubjectGrade = subjectGrade ? subjectGrade : {};
       resolveIds(
+        prisma,
         filteredLocation,
         filteredSubject,
         filteredAvailtime,
-        prisma,
+        filteredSubjectGrade,
       ).then(async (resolvedIds) => {
         console.log(resolvedIds);
         const tutorLocationsData = resolvedIds.locationIds.map((locId) => ({
@@ -357,6 +389,7 @@ ORDER BY
           tutorId: tutorid ? tutorid : userid,
           availTimeId: availId,
         }));
+        const tutorGradeData = resolvedIds.tutorGradeData; // Corrected line
         console.log(resolvedIds);
 
         prisma.$transaction([
@@ -370,7 +403,9 @@ ORDER BY
           prisma.tutoravailtime.deleteMany({
             where: { tutorId: tutorid ? tutorid : userid },
           }),
-
+          prisma.tutorgrade.deleteMany({
+            where: { tutorId: tutorid },
+          }),
           //   // Prepare batch insert data
 
           // Batch insert new records
@@ -379,16 +414,20 @@ ORDER BY
           prisma.tutoravailtime.createMany({
             data: tutorAvailTimesData,
           }),
+          prisma.tutorgrade.createMany({
+            data: tutorGradeData,
+          }),
         ]);
       });
     }
 
     upsertTutorDetailsRaw(
+      this.prisma,
       tutorid,
       availtimes,
       locations,
       subjects,
-      this.prisma,
+      subjectGrade,
     );
   }
   // t.status = 'open' AND

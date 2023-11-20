@@ -155,7 +155,8 @@ model grade {
   id         Int            @id @default(autoincrement())
   area       grade_area
   examtype   grade_examtype
-  subject    String?
+  subject    String
+  subjectkey String
   tutorgrade tutorgrade[]
 }
 

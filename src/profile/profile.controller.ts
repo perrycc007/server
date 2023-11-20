@@ -9,6 +9,7 @@ export class ProfileController {
 
   @Get(':userid')
   async getProfile(@Param('userid') userid: string) {
+    console.log(userid);
     return this.profileService.getProfile(parseInt(userid));
   }
 
