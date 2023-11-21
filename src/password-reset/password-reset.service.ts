@@ -6,7 +6,7 @@ import * as bcrypt from 'bcrypt';
 export class PasswordResetService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async resetPassword(userid: string, newPassword: string) {
+  async resetPassword(userId: string, newPassword: string) {
     const saltRounds = 8;
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
@@ -14,7 +14,7 @@ export class PasswordResetService {
     try {
       const result = await this.prismaService.user.update({
         where: {
-          userid: parseInt(userid),
+          userId: parseInt(userId),
         },
         data: {
           password: hashedPassword,

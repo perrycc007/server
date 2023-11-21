@@ -18,21 +18,21 @@ export class StudentsService {
     FROM 
       tutorperry.student s
     LEFT JOIN 
-      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
     LEFT JOIN 
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN 
-      tutorperry.StudentSubject ss ON s.studentid = ss.studentId
+      tutorperry.StudentSubject ss ON s.studentId = ss.studentId
     LEFT JOIN 
       tutorperry.Subject subj ON ss.subjectId = subj.subjectId
     LEFT JOIN 
-      tutorperry.StudentAvailTime sat ON s.studentid = sat.studentId
+      tutorperry.StudentAvailTime sat ON s.studentId = sat.studentId
     LEFT JOIN 
       tutorperry.AvailTime at ON sat.availTimeId = at.id
     WHERE 
       s.status = 'OPEN'
     GROUP BY 
-      s.studentid
+      s.studentId
     ORDER BY 
       s.lastOnline DESC;
   `;
@@ -40,7 +40,7 @@ export class StudentsService {
     return result;
   }
 
-  async findManyWithStatusOpenWithFavourite(userid: number): Promise<any> {
+  async findManyWithStatusOpenWithFavourite(userId: number): Promise<any> {
     const result = await this.prisma.$queryRaw` 
     SELECT 
       s.*,
@@ -50,21 +50,21 @@ export class StudentsService {
     FROM 
       tutorperry.student s
     LEFT JOIN 
-      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
     LEFT JOIN 
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN 
-      tutorperry.StudentSubject ss ON s.studentid = ss.studentId
+      tutorperry.StudentSubject ss ON s.studentId = ss.studentId
     LEFT JOIN 
       tutorperry.Subject subj ON ss.subjectId = subj.subjectId
     LEFT JOIN 
-      tutorperry.StudentAvailTime sat ON s.studentid = sat.studentId
+      tutorperry.StudentAvailTime sat ON s.studentId = sat.studentId
     LEFT JOIN 
       tutorperry.AvailTime at ON sat.availTimeId = at.id
     LEFT JOIN
-      tutorperry.favourite f ON s.studentid = f.studentid AND f.userid = ${userid}
+      tutorperry.favourite f ON s.studentId = f.studentId AND f.userId = ${userId}
     GROUP BY 
-      s.studentid, f.idfavourite
+      s.studentId, f.idfavourite
     ORDER BY 
       s.lastOnline DESC;
   `;
@@ -72,7 +72,7 @@ export class StudentsService {
     return result;
   }
 
-  async getStudentbyStudentid(studentid: string) {
+  async getStudentbyStudentId(studentId: string) {
     const result = await this.prisma.$queryRaw`
     SELECT 
     t.*,
@@ -81,18 +81,18 @@ export class StudentsService {
     FROM 
       tutorperry.student s
     LEFT JOIN 
-      tutorperry.studentlocation sl ON s.studentid = sl.studentid
+      tutorperry.studentlocation sl ON s.studentId = sl.studentId
     LEFT JOIN 
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN
-      tutorperry.studentsubject ss ON s.studentid = ss.studentid
+      tutorperry.studentsubject ss ON s.studentId = ss.studentId
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
     WHERE 
       s.status = 'open' AND
-      s.studentid = ${studentid}
+      s.studentId = ${studentId}
     GROUP BY 
-      s.studentid
+      s.studentId
     ORDER BY 
       s.lastOnline DESC;
   `;
@@ -135,28 +135,28 @@ export class StudentsService {
     FROM
       tutorperry.student s
     LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
     LEFT JOIN
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+      tutorperry.studentSubject ss ON s.studentId = ss.studentId
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
       WHERE
       ${lowestFee}
-      s.studentid IN (
-        SELECT DISTINCT s.studentid
+      s.studentId IN (
+        SELECT DISTINCT s.studentId
         FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
         LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
         LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
         WHERE
         ${locationQuery} AND
         ${subjectQuery}
       )
     GROUP BY
-      s.studentid
+      s.studentId
     ORDER BY
       s.lastOnline DESC;
   `);
@@ -168,28 +168,28 @@ export class StudentsService {
     FROM
       tutorperry.student s
     LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
     LEFT JOIN
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+      tutorperry.studentSubject ss ON s.studentId = ss.studentId
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
       WHERE
       s.highestfee >= 60 AND
-      s.studentid IN (
-        SELECT DISTINCT s.studentid
+      s.studentId IN (
+        SELECT DISTINCT s.studentId
         FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
         LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
         LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
         WHERE
         (l.location = '中半山' OR l.location = '北角') AND
         (su.name = '全科' OR su.name = '數學(M2)')
       )
     GROUP BY
-      s.studentid
+      s.studentId
     ORDER BY
       s.lastOnline DESC;
     `;
@@ -199,7 +199,7 @@ export class StudentsService {
   }
 
   async findStudentByPreferenceWithFavourite(
-    userid: number,
+    userId: number,
     lowestfee: any,
     locations: [],
     subjects: [],
@@ -224,30 +224,30 @@ export class StudentsService {
     FROM
       tutorperry.student s
     LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
     LEFT JOIN
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+      tutorperry.studentSubject ss ON s.studentId = ss.studentId
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
     LEFT JOIN
-      tutorperry.favourite f ON s.studentid = f.studentid AND f.userid = ${userid}
+      tutorperry.favourite f ON s.studentId = f.studentId AND f.userId = ${userId}
       WHERE
       ${lowestFee}
-      s.studentid IN (
-        SELECT DISTINCT s.studentid
+      s.studentId IN (
+        SELECT DISTINCT s.studentId
         FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
         LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
         LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
         WHERE
         ${locationQuery} AND
         ${subjectQuery}
       )
     GROUP BY
-      s.studentid, idfavourite
+      s.studentId, idfavourite
     ORDER BY
       s.lastOnline DESC;
   `);
@@ -260,30 +260,30 @@ export class StudentsService {
     FROM
       tutorperry.student s
     LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
     LEFT JOIN
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+      tutorperry.studentSubject ss ON s.studentId = ss.studentId
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
     LEFT JOIN
-      tutorperry.favourite f ON s.studentid = f.studentid AND f.userid = ${userid}
+      tutorperry.favourite f ON s.studentId = f.studentId AND f.userId = ${userId}
       WHERE
       s.highestfee >= 60 AND
-      s.studentid IN (
-        SELECT DISTINCT s.studentid
+      s.studentId IN (
+        SELECT DISTINCT s.studentId
         FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
         LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
         LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
         WHERE
         (l.location = '中半山' OR l.location = '北角') AND
         (su.name = '全科' OR su.name = '數學(M2)')
       )
     GROUP BY
-      s.studentid, f.idfavourite
+      s.studentId, f.idfavourite
     ORDER BY
       s.lastOnline DESC;
     `;
@@ -294,11 +294,11 @@ export class StudentsService {
 
   async findUniqueUserFavouriteCases(userId: number): Promise<any> {
     // const favourite = await this.prismaService.user.findUnique({
-    //   where: { userid: userId },
+    //   where: { userId: userId },
     // });
     // const caseIdList = favourite ? (favourite.favouritecaseid as number[]) : [];
     // const result = await this.prismaService.student.findMany({
-    //   where: { studentid: { in: caseIdList } },
+    //   where: { studentId: { in: caseIdList } },
     //   orderBy: { lastOnline: 'desc' },
     //   include: {
     //     location: true,
@@ -312,8 +312,8 @@ export class StudentsService {
   }
   async updateStudent(information: any): Promise<any> {
     const {
-      userid,
-      studentid,
+      userId,
+      studentId,
       availtimes,
       locations,
       subjects,
@@ -321,7 +321,7 @@ export class StudentsService {
     } = information;
     let date_ob = new Date();
     await this.prisma.student.update({
-      where: { studentid: studentid },
+      where: { studentId: studentId },
       data: {
         ...studentinfo,
         lastOnline: date_ob,
@@ -330,7 +330,7 @@ export class StudentsService {
     });
 
     async function upsertStudentDetailsRaw(
-      studentid,
+      studentId,
       availtime,
       location,
       subject,
@@ -354,16 +354,16 @@ export class StudentsService {
         prisma,
       ).then(async (resolvedIds) => {
         const studentLocationsData = resolvedIds.locationIds.map((locId) => ({
-          studentId: studentid,
+          studentId: studentId,
           locationId: locId,
         }));
         const studentSubjectsData = resolvedIds.subjectIds.map((subId) => ({
-          studentId: studentid,
+          studentId: studentId,
           subjectId: subId,
         }));
         const studentAvailTimesData = resolvedIds.availTimeIds.map(
           (availId) => ({
-            studentId: studentid,
+            studentId: studentId,
             availTimeId: availId,
           }),
         );
@@ -371,13 +371,13 @@ export class StudentsService {
         prisma.$transaction([
           // Delete existing relations
           prisma.studentlocation.deleteMany({
-            where: { studentId: studentid },
+            where: { studentId: studentId },
           }),
           prisma.studentsubject.deleteMany({
-            where: { studentId: studentid },
+            where: { studentId: studentId },
           }),
           prisma.studentavailtime.deleteMany({
-            where: { studentId: studentid },
+            where: { studentId: studentId },
           }),
 
           //   // Prepare batch insert data
@@ -393,7 +393,7 @@ export class StudentsService {
     }
 
     upsertStudentDetailsRaw(
-      studentid,
+      studentId,
       availtimes,
       locations,
       subjects,
@@ -403,21 +403,21 @@ export class StudentsService {
   }
 
   async createStudent(information: any): Promise<any> {
-    const { userid, availtimes, locations, subjects, ...studentinfo } =
+    const { userId, availtimes, locations, subjects, ...studentinfo } =
       information;
     let date_ob = new Date();
-    let studentid = null;
+    let studentId = null;
     await this.prisma.student
       .create({
         data: {
-          userid: userid,
+          userId: userId,
           ...studentinfo,
           lastOnline: date_ob,
           completeFormStatus: false,
         },
       })
       .then((result) => {
-        studentid = result.studentid;
+        studentId = result.studentId;
       });
 
     async function upsertStudentDetailsRaw(
@@ -444,16 +444,16 @@ export class StudentsService {
         prisma,
       ).then(async (resolvedIds) => {
         const studentLocationsData = resolvedIds.locationIds.map((locId) => ({
-          studentId: studentid,
+          studentId: studentId,
           locationId: locId,
         }));
         const studentSubjectsData = resolvedIds.subjectIds.map((subId) => ({
-          studentId: studentid,
+          studentId: studentId,
           subjectId: subId,
         }));
         const studentAvailTimesData = resolvedIds.availTimeIds.map(
           (availId) => ({
-            studentId: studentid,
+            studentId: studentId,
             availTimeId: availId,
           }),
         );
@@ -475,7 +475,7 @@ export class StudentsService {
         this.prisma,
         this.DataService,
       ),
-      studentid: studentid,
+      studentId: studentId,
     };
   }
 

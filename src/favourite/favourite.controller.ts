@@ -16,56 +16,56 @@ import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGu
 export class FavouriteController {
   constructor(private readonly favouriteService: FavouriteService) {}
 
-  @Get('tutor/:userid')
+  @Get('tutors/:userId')
   async getUserTutor(@Request() req) {
-    const authenticatedUserId = req.userid; // Access the userId from the request object
-    // Use authenticatedUserId as needed
+    const authenticateduserId = req.userId; // Access the userId from the request object
+    // Use authenticateduserId as needed
     return this.favouriteService.getFavouriteTutor(
-      parseInt(authenticatedUserId),
+      parseInt(authenticateduserId),
     );
   }
 
-  @Get('cases/:userid')
+  @Get('students/:userId')
   async getUserCases(@Request() req) {
-    const authenticatedUserId = req.userid; // Access the userId from the request object
-    // Use authenticatedUserId as needed
+    const authenticateduserId = req.userId; // Access the userId from the request object
+    // Use authenticateduserId as needed
     return this.favouriteService.getFavouriterCase(
-      parseInt(authenticatedUserId),
+      parseInt(authenticateduserId),
     );
   }
 
   @Post('addStudent')
   async addFavouriteStudent(
-    @Body() body: { userid: number; studentid: number },
+    @Body() body: { userId: number; studentId: number },
   ) {
     return this.favouriteService.addFavouriteStudent(
-      body.userid,
-      body.studentid,
+      body.userId,
+      body.studentId,
     );
   }
 
   @Delete('removeStudent')
   async removeFavouriteStudent(
-    @Body() body: { userid: number; studentid: number },
+    @Body() body: { userId: number; studentId: number },
   ) {
     return this.favouriteService.removeFavouriteStudent(
-      body.userid,
-      body.studentid,
+      body.userId,
+      body.studentId,
     );
   }
 
   @Post('addTutor')
-  async addFavouriteTutor(@Body() body: { userid: number; tutorid: number }) {
-    return this.favouriteService.addFavouriteTutor(body.userid, body.tutorid);
+  async addFavouriteTutor(@Body() body: { userId: number; tutorId: number }) {
+    return this.favouriteService.addFavouriteTutor(body.userId, body.tutorId);
   }
 
   @Delete('removeTutor')
   async removeFavouriteTutor(
-    @Body() body: { userid: number; tutorid: number },
+    @Body() body: { userId: number; tutorId: number },
   ) {
     return this.favouriteService.removeFavouriteTutor(
-      body.userid,
-      body.tutorid,
+      body.userId,
+      body.tutorId,
     );
   }
 }

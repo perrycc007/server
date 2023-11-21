@@ -29,11 +29,11 @@ export class AdminService {
   async updateTutorVerify(req: any) {
     // Implement the logic for updating tutor verification here
     // You can reuse your existing logic from the Express router
-    const tutorid = req.tutorid;
+    const tutorId = req.tutorId;
     const verify = req.verify;
     return this.prisma.tutor.update({
       where: {
-        tutorid: parseInt(tutorid),
+        tutorId: parseInt(tutorId),
       },
       data: {
         verify: verify,

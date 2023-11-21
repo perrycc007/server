@@ -23,11 +23,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
     try {
       const decodedToken = this.jwtService.verify(token);
-      const userid = decodedToken.id; // Extract the user ID from the decoded token
+      const userId = decodedToken.id; // Extract the user ID from the decoded token
       // Pass the userId to the controller by setting it on the request object
-      request.userid = userid;
+      request.userId = userId;
       // Perform additional actions here, e.g., updating the profile
-      await this.updateProfile(parseInt(userid));
+      await this.updateProfile(parseInt(userId));
       return true;
       // Return true to indicate that the user is authenticated
     } catch (err) {
@@ -56,7 +56,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     try {
       await this.prisma.profile.updateMany({
         where: {
-          userid: userId, // Use the extracted user ID
+          userId: userId, // Use the extracted user ID
         },
         data: {
           lastOnline: date_ob,

@@ -26,7 +26,7 @@ export class DataService {
         // Construct the output object
         if (type == 'student') {
           const outputObject = {
-            studentid: inputEntry.studentid,
+            studentId: inputEntry.studentId,
             lowestfrequency: inputEntry.lowestfrequency,
             lowestfee: inputEntry.lowestfee,
             lowestduration: inputEntry.lowestduration,
@@ -46,8 +46,8 @@ export class DataService {
           return outputObject;
         } else {
           const outputObject = {
-            tutorid: inputEntry.tutorid,
-            userid: inputEntry.userid,
+            tutorId: inputEntry.tutorId,
+            userId: inputEntry.userId,
             intro: inputEntry.intro,
             language: inputEntry.language,
             occupation: inputEntry.occupation,
@@ -108,7 +108,7 @@ export class DataService {
       let outputObject;
       if (type == 'student') {
         outputObject = {
-          studentid: data.studentid,
+          studentId: data.studentId,
           lowestfrequency: data.lowestfrequency,
           lowestfee: data.lowestfee,
           lowestduration: data.lowestduration,
@@ -127,8 +127,8 @@ export class DataService {
         };
       } else {
         outputObject = {
-          tutorid: data.tutorid,
-          userid: data.userid,
+          tutorId: data.tutorId,
+          userId: data.userId,
           intro: data.intro,
           language: data.language,
           occupation: data.occupation,
@@ -271,16 +271,16 @@ export class DataService {
 //   const inputArray = [
 // {
 //   "id": 1,
-//   "studentid": null,
-//   "tutorid": 1,
+//   "studentId": null,
+//   "tutorId": 1,
 //   "location": ['中半山','薄扶林'],
 //   "availtime": ['SUN0900','MON1000'],
 //   "subject": ['文科','商科']
 // },
 //     {
 //       "id": 2,
-//       "studentid": null,
-//       "tutorid": 1,
+//       "studentId": null,
+//       "tutorId": 1,
 //       "location": ['PokFuLam'],
 //       "availtime": ['Mon1000']
 //     }
@@ -289,16 +289,16 @@ export class DataService {
 //   const outputArray = [
 //     {
 //       id: 1,
-//       studentid: null,
-//       tutorid: 1,
+//       studentId: null,
+//       tutorId: 1,
 //       location: [{ CentralMidLevels: true, PokFuLam: false }],
 //       availtime: [{ Sun0900: true, Mon1000: false }],
 //       subject: [{ English: false, Chinese: true }],
 //     },
 //     {
 //       id: 1,
-//       studentid: null,
-//       tutorid: 1,
+//       studentId: null,
+//       tutorId: 1,
 //       location: [{ CentralMidLevels: false, PokFuLam: true }],
 //       availtime: [{ Sun0900: false, Mon1000: true }],
 //       subject: [{ English: true, Chinese: false }],

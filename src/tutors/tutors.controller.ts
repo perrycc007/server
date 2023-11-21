@@ -26,19 +26,19 @@ export class TutorsController {
   async findAllWithFavourite(@Body() requestBody) {
     // Implement logic to fetch students based on query parameters
     return this.tutorsService.findManyWithStatusOpenWithFavourite(
-      requestBody.userid,
+      requestBody.userId,
     );
   }
 
-  @Post('getFavouriteCase/:userid')
-  async getFavouriteCase(@Param('userid', ParseIntPipe) userId: number) {
+  @Post('getFavouriteCase/:userId')
+  async getFavouriteCase(@Param('userId', ParseIntPipe) userId: number) {
     return this.tutorsService.getFavouriteTutors(userId);
   }
 
-  @Get(':userid')
-  async getTutor(@Param('userid', ParseIntPipe) userId: number) {
+  @Get(':userId')
+  async getTutor(@Param('userId', ParseIntPipe) userId: number) {
     // Assuming dummyTutor is imported or defined somewhere in the scope
-    return this.tutorsService.getTutorByUserId(userId, dummyTutor);
+    return this.tutorsService.getTutorByuserId(userId, dummyTutor);
   }
 
   @Post('filter')
@@ -66,7 +66,7 @@ export class TutorsController {
       highestfee,
       locations,
       subjects,
-      requestBody.userid,
+      requestBody.userId,
     );
   }
 

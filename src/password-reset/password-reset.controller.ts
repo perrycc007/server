@@ -5,8 +5,11 @@ import { PasswordResetService } from './password-reset.service';
 export class PasswordResetController {
   constructor(private readonly passwordResetService: PasswordResetService) {}
 
-  @Post(':userid')
-  async updatePassword(@Param('userid') userid: string, @Body() requestBody) {
-    return this.passwordResetService.resetPassword(userid, requestBody.password);
+  @Post(':userId')
+  async updatePassword(@Param('userId') userId: string, @Body() requestBody) {
+    return this.passwordResetService.resetPassword(
+      userId,
+      requestBody.password,
+    );
   }
 }

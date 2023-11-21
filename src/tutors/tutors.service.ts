@@ -19,26 +19,26 @@ export class TutorsService {
       SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
       FROM tutorperry.tutorgrade tg
       JOIN tutorperry.grade g ON tg.gradeId = g.id
-      WHERE tg.tutorId = t.tutorid
+      WHERE tg.tutorId = t.tutorId
   ) AS subjectGrade
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
-    tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+    tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
 LEFT JOIN 
     tutorperry.location l ON tl.locationId = l.locationId
 LEFT JOIN 
-    tutorperry.TutorSubject ts ON t.tutorid = ts.tutorId
+    tutorperry.TutorSubject ts ON t.tutorId = ts.tutorId
 LEFT JOIN 
     tutorperry.Subject s ON ts.subjectId = s.subjectId
 LEFT JOIN 
-    tutorperry.TutorAvailTime tat ON t.tutorid = tat.tutorId
+    tutorperry.TutorAvailTime tat ON t.tutorId = tat.tutorId
 LEFT JOIN 
     tutorperry.AvailTime at ON tat.availTimeId = at.id
 WHERE 
     t.status = 'OPEN'
 GROUP BY 
-    t.tutorid
+    t.tutorId
 ORDER BY 
     t.lastOnline DESC;
 
@@ -53,7 +53,7 @@ ORDER BY
     // });
   }
 
-  async findManyWithStatusOpenWithFavourite(userid: number): Promise<any> {
+  async findManyWithStatusOpenWithFavourite(userId: number): Promise<any> {
     const result = await this.prisma.$queryRaw` 
     SELECT 
     t.*,
@@ -65,28 +65,28 @@ ORDER BY
       SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
       FROM tutorperry.tutorgrade tg
       JOIN tutorperry.grade g ON tg.gradeId = g.id
-      WHERE tg.tutorId = t.tutorid
+      WHERE tg.tutorId = t.tutorId
   ) AS subjectGrade
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
-    tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+    tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
 LEFT JOIN 
     tutorperry.location l ON tl.locationId = l.locationId
 LEFT JOIN 
-    tutorperry.TutorSubject ts ON t.tutorid = ts.tutorId
+    tutorperry.TutorSubject ts ON t.tutorId = ts.tutorId
 LEFT JOIN 
     tutorperry.Subject s ON ts.subjectId = s.subjectId
 LEFT JOIN 
-    tutorperry.TutorAvailTime tat ON t.tutorid = tat.tutorId
+    tutorperry.TutorAvailTime tat ON t.tutorId = tat.tutorId
 LEFT JOIN 
     tutorperry.AvailTime at ON tat.availTimeId = at.id
 LEFT JOIN
-    tutorperry.favourite f ON t.tutorid = f.tutorid AND f.userid = ${userid}
+    tutorperry.favourite f ON t.tutorId = f.tutorId AND f.userId = ${userId}
 WHERE 
     t.status = 'open'
 GROUP BY 
-    t.tutorid,f.idfavourite
+    t.tutorId,f.idfavourite
 ORDER BY 
     t.lastOnline DESC;
 
@@ -104,16 +104,16 @@ ORDER BY
   async getFavouriteTutors(userId: number): Promise<any> {
     // const user = await this.prisma.user.findUnique({
     //   where: {
-    //     userid: userId,
+    //     userId: userId,
     //   },
     // });
-    // const tutorIdList = user ? (user.favouritetutorid as number[]) : [];
+    // const tutorIdList = user ? (user.favouritetutorId as number[]) : [];
     // const result = this.prisma.tutor.findMany({
     //   orderBy: {
     //     lastOnline: 'desc',
     //   },
     //   where: {
-    //     tutorid: { in: tutorIdList },
+    //     tutorId: { in: tutorIdList },
     //   },
     //   include: {
     //     location: true,
@@ -128,7 +128,7 @@ ORDER BY
     // });
   }
 
-  async getTutorByUserId(userId: number, dummyTutor: any): Promise<any> {
+  async getTutorByuserId(userId: number, dummyTutor: any): Promise<any> {
     const result = await this.prisma.$queryRaw` 
     SELECT 
     t.*,
@@ -139,26 +139,26 @@ ORDER BY
       SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
       FROM tutorperry.tutorgrade tg
       JOIN tutorperry.grade g ON tg.gradeId = g.id
-      WHERE tg.tutorId = t.tutorid
+      WHERE tg.tutorId = t.tutorId
   ) AS subjectGrade
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
-    tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+    tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
 LEFT JOIN 
     tutorperry.location l ON tl.locationId = l.locationId
 LEFT JOIN 
-    tutorperry.TutorSubject ts ON t.tutorid = ts.tutorId
+    tutorperry.TutorSubject ts ON t.tutorId = ts.tutorId
 LEFT JOIN 
     tutorperry.Subject s ON ts.subjectId = s.subjectId
 LEFT JOIN 
-    tutorperry.TutorAvailTime tat ON t.tutorid = tat.tutorId
+    tutorperry.TutorAvailTime tat ON t.tutorId = tat.tutorId
 LEFT JOIN 
     tutorperry.AvailTime at ON tat.availTimeId = at.id
 WHERE 
-    t.userid = ${userId}
+    t.userId = ${userId}
 GROUP BY 
-    t.tutorid
+    t.tutorId
 
 `;
     if (result !== null) {
@@ -174,7 +174,7 @@ GROUP BY
       console.log(result[0]);
       return result[0];
     } else {
-      return { userid: userId, ...dummyTutor };
+      return { userId: userId, ...dummyTutor };
     }
   }
 
@@ -204,33 +204,33 @@ GROUP BY
           SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
           FROM tutorperry.tutorgrade tg
           JOIN tutorperry.grade g ON tg.gradeId = g.id
-          WHERE tg.tutorId = t.tutorid
+          WHERE tg.tutorId = t.tutorId
       ) AS subjectGrade
         FROM 
             tutorperry.tutor t
         LEFT JOIN 
-            tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+            tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
         LEFT JOIN 
             tutorperry.location l ON tl.locationId = l.locationId
         LEFT JOIN
-            tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+            tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
         LEFT JOIN
             tutorperry.subject s ON ts.subjectId = s.subjectId
         WHERE 
         ${highestFee}
-        t.tutorid IN (
-          SELECT DISTINCT t.tutorid
+        t.tutorId IN (
+          SELECT DISTINCT t.tutorId
           FROM tutorperry.tutor t
-          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
           LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
           LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
           WHERE
           ${locationQuery} AND
           ${subjectQuery}
       )
         GROUP BY 
-            t.tutorid
+            t.tutorId
         ORDER BY 
             t.lastOnline DESC;
     `;
@@ -241,7 +241,7 @@ GROUP BY
     highestfee: any,
     locations: [],
     subjects: [],
-    userid: number,
+    userId: number,
   ): Promise<any> {
     console.log(locations);
     const highestFee = this.DataService.HighestFeeQuery(highestfee);
@@ -265,35 +265,35 @@ GROUP BY
           SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
           FROM tutorperry.tutorgrade tg
           JOIN tutorperry.grade g ON tg.gradeId = g.id
-          WHERE tg.tutorId = t.tutorid
+          WHERE tg.tutorId = t.tutorId
       ) AS subjectGrade
         FROM 
             tutorperry.tutor t
         LEFT JOIN 
-            tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+            tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
         LEFT JOIN 
             tutorperry.location l ON tl.locationId = l.locationId
         LEFT JOIN
-            tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+            tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
         LEFT JOIN
             tutorperry.subject s ON ts.subjectId = s.subjectId
         LEFT JOIN
-            tutorperry.favourite f ON t.tutorid = f.tutorid AND f.userid = ${userid}
+            tutorperry.favourite f ON t.tutorId = f.tutorId AND f.userId = ${userId}
         WHERE 
         ${highestFee}
-        t.tutorid IN (
-          SELECT DISTINCT t.tutorid
+        t.tutorId IN (
+          SELECT DISTINCT t.tutorId
           FROM tutorperry.tutor t
-          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
           LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
           LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
           WHERE
           ${locationQuery} AND
           ${subjectQuery}
       )
         GROUP BY 
-            t.tutorid,f.idfavourite
+            t.tutorId,f.idfavourite
         ORDER BY 
             t.lastOnline DESC;
     `;
@@ -302,8 +302,8 @@ GROUP BY
 
   async createOrUpdateTutor(information: any): Promise<any> {
     const {
-      userid,
-      tutorid,
+      userId,
+      tutorId,
       availtimes,
       locations,
       subjects,
@@ -312,10 +312,10 @@ GROUP BY
     } = information;
     let date_ob = new Date();
     const upsertTutor = await this.prisma.tutor.upsert({
-      where: { userid: userid },
+      where: { userId: userId },
       update: { ...tutorinfo, lastOnline: date_ob, completeFormStatus: false },
       create: {
-        // userid: userid,
+        // userId: userId,
         ...tutorinfo,
         lastOnline: date_ob,
         completeFormStatus: false,
@@ -323,7 +323,7 @@ GROUP BY
     });
     async function upsertTutorDetailsRaw(
       prisma,
-      tutorid,
+      tutorId,
       availtime,
       location,
       subject,
@@ -354,7 +354,7 @@ GROUP BY
           acc[grade.subjectkey] = grade.id;
           return acc;
         }, {});
-        const tutorId = upsertTutor.tutorid;
+        const tutorId = upsertTutor.tutorId;
         const tutorGradeData = Object.entries(subjectGrade).map(
           ([subjectKey, examGrade]) => {
             const gradeId = gradeMapping[subjectKey];
@@ -402,15 +402,15 @@ GROUP BY
         filteredSubjectGrade,
       ).then(async (resolvedIds) => {
         const tutorLocationsData = resolvedIds.locationIds.map((locId) => ({
-          tutorId: upsertTutor.tutorid,
+          tutorId: upsertTutor.tutorId,
           locationId: locId,
         }));
         const tutorSubjectsData = resolvedIds.subjectIds.map((subId) => ({
-          tutorId: upsertTutor.tutorid,
+          tutorId: upsertTutor.tutorId,
           subjectId: subId,
         }));
         const tutorAvailTimesData = resolvedIds.availTimeIds.map((availId) => ({
-          tutorId: upsertTutor.tutorid,
+          tutorId: upsertTutor.tutorId,
           availTimeId: availId,
         }));
         const tutorGradeData = resolvedIds.tutorGradeData;
@@ -419,16 +419,16 @@ GROUP BY
         prisma.$transaction([
           // Delete existing relations
           prisma.tutorlocation.deleteMany({
-            where: { tutorId: upsertTutor.tutorid },
+            where: { tutorId: upsertTutor.tutorId },
           }),
           prisma.tutorsubject.deleteMany({
-            where: { tutorId: upsertTutor.tutorid },
+            where: { tutorId: upsertTutor.tutorId },
           }),
           prisma.tutoravailtime.deleteMany({
-            where: { tutorId: upsertTutor.tutorid },
+            where: { tutorId: upsertTutor.tutorId },
           }),
           prisma.tutorgrade.deleteMany({
-            where: { tutorId: upsertTutor.tutorid },
+            where: { tutorId: upsertTutor.tutorId },
           }),
           //   // Prepare batch insert data
 
@@ -447,7 +447,7 @@ GROUP BY
 
     upsertTutorDetailsRaw(
       this.prisma,
-      tutorid,
+      tutorId,
       availtimes,
       locations,
       subjects,

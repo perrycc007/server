@@ -7,10 +7,10 @@ import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGu
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
-  @Get(':userid')
-  async getProfile(@Param('userid') userid: string) {
-    console.log(userid);
-    return this.profileService.getProfile(parseInt(userid));
+  @Get(':userId')
+  async getProfile(@Param('userId') userId: string) {
+    console.log(userId);
+    return this.profileService.getProfile(parseInt(userId));
   }
 
   @Patch()

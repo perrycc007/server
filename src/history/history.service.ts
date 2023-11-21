@@ -19,18 +19,18 @@ export class HistoryService {
     FROM 
       tutorperry.student s
     LEFT JOIN 
-      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
     LEFT JOIN 
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+      tutorperry.studentSubject ss ON s.studentId = ss.studentId
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
     WHERE 
 
-      s.userid = ${userId}
+      s.userId = ${userId}
     GROUP BY 
-      s.studentid
+      s.studentId
     ORDER BY 
       s.lastOnline DESC;
   `;
@@ -44,7 +44,7 @@ export class HistoryService {
 
     return this.prisma.student.update({
       where: {
-        studentid: parseInt(studentId),
+        studentId: parseInt(studentId),
       },
       data: {
         status: status,
@@ -57,7 +57,7 @@ export class HistoryService {
     // You can reuse your existing logic from the Express router
     return this.prisma.tutor.update({
       where: {
-        tutorid: parseInt(tutorId),
+        tutorId: parseInt(tutorId),
       },
       data: {
         status: status,

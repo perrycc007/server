@@ -21,78 +21,75 @@ export class PasswordForgetService {
     });
     console.log(result);
     if (result != null) {
-      console.log(result.userid);
+      console.log(result.userId);
       const secret = process.env.RESET_PASSWORD_SECRET + result.password;
       const payload = {
         email: email,
-        userid: result.userid,
+        userId: result.userId,
       };
-      const token = this.jwt.sign(payload,  { secret,expiresIn: "15m" });
-  
-      const link = `http://localhost:3000/resetPassword/${result.userid}/${token}`;
+      const token = this.jwt.sign(payload, { secret, expiresIn: '15m' });
+
+      const link = `http://localhost:3000/resetPassword/${result.userId}/${token}`;
       // sendResetPasswordEmail(email, link)
       console.log(link);
-      return("reset link is sent");
+      return 'reset link is sent';
     } else {
-      return ("user not found");
+      return 'user not found';
     }
-  
   }
 
-  async verifyToken(userid: string, token: string) {
+  async verifyToken(userId: string, token: string) {
     // Implement logic to verify the token and return the payload
-  const result = await this.prisma.user.findFirst({
-    where: {
-      userid: parseInt(userid),
-    },
-  });
-  if (result != null) {
-    const secret = process.env.RESET_PASSWORD_SECRET + result.password;
-    try {
-      const payload = this.jwt.verify(token, { secret });
-      return (payload);
-    } catch (error) {
-      return(error.message);
+    const result = await this.prisma.user.findFirst({
+      where: {
+        userId: parseInt(userId),
+      },
+    });
+    if (result != null) {
+      const secret = process.env.RESET_PASSWORD_SECRET + result.password;
+      try {
+        const payload = this.jwt.verify(token, { secret });
+        return payload;
+      } catch (error) {
+        return error.message;
+      }
     }
   }
-  }
-  
 
-  async resetPassword(userid: string, token: string, newPassword: string) {
+  async resetPassword(userId: string, token: string, newPassword: string) {
     // Implement logic to reset the user's password based on the provided token and new password
-
 
     const salt = await this.bcrypt.genSalt(8);
     try {
       const encrypedPassword = await this.bcrypt.hash(newPassword, salt);
       const result = await this.prisma.user.findFirst({
         where: {
-          userid: parseInt(userid),
+          userId: parseInt(userId),
         },
       });
       if (result != null) {
         const secret = process.env.RESET_PASSWORD_SECRET + result.password;
         try {
-          const payload = this.jwt.verify(token, {secret});
+          const payload = this.jwt.verify(token, { secret });
           console.log(payload);
-          if (userid == payload.userid) {
+          if (userId == payload.userId) {
             const result = await this.prisma.user.update({
               where: {
-                userid: parseInt(userid),
+                userId: parseInt(userId),
               },
               data: {
                 password: encrypedPassword,
               },
             });
-            return(result);
+            return result;
           }
         } catch (error) {
-          return(error.message);
+          return error.message;
         }
       }
     } catch (error) {
       console.log(error.message);
-      return(error.message);
+      return error.message;
     }
   }
-  }
+}

@@ -22,23 +22,23 @@ export class ResultService {
     GROUP_CONCAT(DISTINCT subStudent.name SEPARATOR ',') AS studentSubjects,
     GROUP_CONCAT(DISTINCT CONCAT(atStudent.day, '-', atStudent.time) SEPARATOR ',') AS studentAvailTimes
       FROM tutorperry. student s
-      JOIN tutorperry. matchTable m ON s.studentid = m.studentid
-      JOIN tutorperry. tutor t ON m.tutorid = t.tutorid
-      JOIN tutorperry. profile pTutor ON t.userid = pTutor.userid
-      JOIN tutorperry. profile pStudent ON s.userid = pStudent.userid
-      LEFT JOIN tutorperry. tutorlocation tl ON t.tutorid = tl.tutorId
+      JOIN tutorperry. matchTable m ON s.studentId = m.studentId
+      JOIN tutorperry. tutor t ON m.tutorId = t.tutorId
+      JOIN tutorperry. profile pTutor ON t.userId = pTutor.userId
+      JOIN tutorperry. profile pStudent ON s.userId = pStudent.userId
+      LEFT JOIN tutorperry. tutorlocation tl ON t.tutorId = tl.tutorId
       LEFT JOIN tutorperry. location lTutor ON tl.locationId = lTutor.locationId
-      LEFT JOIN tutorperry. tutorsubject ts ON t.tutorid = ts.tutorId
+      LEFT JOIN tutorperry. tutorsubject ts ON t.tutorId = ts.tutorId
       LEFT JOIN tutorperry. subject subTutor ON ts.subjectId = subTutor.subjectId
-      LEFT JOIN tutorperry. tutoravailtime ta ON t.tutorid = ta.tutorId
+      LEFT JOIN tutorperry. tutoravailtime ta ON t.tutorId = ta.tutorId
       LEFT JOIN tutorperry. availtime atTutor ON ta.availTimeId = atTutor.id
-      LEFT JOIN tutorperry. studentlocation sl ON s.studentid = sl.studentId
+      LEFT JOIN tutorperry. studentlocation sl ON s.studentId = sl.studentId
       LEFT JOIN tutorperry. location lStudent ON sl.locationId = lStudent.locationId
-      LEFT JOIN tutorperry. studentsubject ss ON s.studentid = ss.studentId
+      LEFT JOIN tutorperry. studentsubject ss ON s.studentId = ss.studentId
       LEFT JOIN tutorperry. subject subStudent ON ss.subjectId = subStudent.subjectId
-      LEFT JOIN tutorperry. studentavailtime sa ON s.studentid = sa.studentId
+      LEFT JOIN tutorperry. studentavailtime sa ON s.studentId = sa.studentId
       LEFT JOIN tutorperry. availtime atStudent ON sa.availTimeId = atStudent.id
-      GROUP BY s.studentid, t.tutorid
+      GROUP BY s.studentId, t.tutorId
       ORDER BY 
     s.lastOnline DESC
     LIMIT 5 OFFSET ${(page - 1) * 5}
@@ -60,8 +60,8 @@ export class ResultService {
     GROUP_CONCAT(DISTINCT subStudent.name SEPARATOR ',') AS studentSubjects,
     GROUP_CONCAT(DISTINCT CONCAT(atStudent.day, '-', atStudent.time) SEPARATOR ',') AS studentAvailTimes,
     JSON_OBJECT(
-        'tutorId', t.tutorid,
-        'userId', t.userid,
+        'tutorId', t.tutorId,
+        'userId', t.userId,
         'intro', t.intro,
         'language', t.language,
         'occupation', t.occupation,
@@ -83,7 +83,7 @@ export class ResultService {
           SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
           FROM tutorperry.tutorgrade tg
           JOIN tutorperry.grade g ON tg.gradeId = g.id
-          WHERE tg.tutorId = t.tutorid
+          WHERE tg.tutorId = t.tutorId
         ),
         'strength', t.strength,
         'highestFee', t.highestfee,
@@ -117,40 +117,40 @@ export class ResultService {
     CAST(
         (SELECT COUNT(DISTINCT m2.idmatch) 
          FROM tutorperry.matchTable m2 
-         WHERE m2.studentid = s.studentid) 
+         WHERE m2.studentId = s.studentId) 
     AS SIGNED) AS total_counts
 
 FROM 
     tutorperry.student s
     
 JOIN 
-    tutorperry.matchTable m ON s.studentid = m.studentid
+    tutorperry.matchTable m ON s.studentId = m.studentId
 JOIN 
-    tutorperry.tutor t ON m.tutorid = t.tutorid
+    tutorperry.tutor t ON m.tutorId = t.tutorId
 JOIN 
-    tutorperry.profile pTutor ON t.userid = pTutor.userid
-    JOIN tutorperry. profile pStudent ON s.userid = pStudent.userid
+    tutorperry.profile pTutor ON t.userId = pTutor.userId
+    JOIN tutorperry. profile pStudent ON s.userId = pStudent.userId
 LEFT JOIN 
-    tutorperry.tutorlocation tl ON t.tutorid = tl.tutorId
+    tutorperry.tutorlocation tl ON t.tutorId = tl.tutorId
 LEFT JOIN 
     tutorperry.location lTutor ON tl.locationId = lTutor.locationId
 LEFT JOIN 
-    tutorperry.tutorsubject ts ON t.tutorid = ts.tutorId
+    tutorperry.tutorsubject ts ON t.tutorId = ts.tutorId
 LEFT JOIN 
     tutorperry.subject subTutor ON ts.subjectId = subTutor.subjectId
 LEFT JOIN 
-    tutorperry.tutoravailtime ta ON t.tutorid = ta.tutorId
+    tutorperry.tutoravailtime ta ON t.tutorId = ta.tutorId
 LEFT JOIN 
     tutorperry.availtime atTutor ON ta.availTimeId = atTutor.id
 
-      LEFT JOIN tutorperry. studentlocation sl ON s.studentid = sl.studentId
+      LEFT JOIN tutorperry. studentlocation sl ON s.studentId = sl.studentId
       LEFT JOIN tutorperry. location lStudent ON sl.locationId = lStudent.locationId
-      LEFT JOIN tutorperry. studentsubject ss ON s.studentid = ss.studentId
+      LEFT JOIN tutorperry. studentsubject ss ON s.studentId = ss.studentId
       LEFT JOIN tutorperry. subject subStudent ON ss.subjectId = subStudent.subjectId
-      LEFT JOIN tutorperry. studentavailtime sa ON s.studentid = sa.studentId
+      LEFT JOIN tutorperry. studentavailtime sa ON s.studentId = sa.studentId
       LEFT JOIN tutorperry. availtime atStudent ON sa.availTimeId = atStudent.id
-      WHERE s.studentid = ${studentId}
-      GROUP BY s.studentid,m.idmatch
+      WHERE s.studentId = ${studentId}
+      GROUP BY s.studentId,m.idmatch
       
       ORDER BY 
       t.lastOnline DESC
@@ -163,7 +163,7 @@ LEFT JOIN
     return result;
   }
 
-  async getResultByTutorId(tutorid: number, page: number) {
+  async getResultBytutorId(tutorId: number, page: number) {
     // Implement the logic for getting results by student ID
     // You can reuse your existing logic from the Express router
     const result = await this.prisma.$queryRaw`
@@ -176,7 +176,7 @@ LEFT JOIN
     GROUP_CONCAT(DISTINCT CONCAT(atTutor.day, '-', atTutor.time) SEPARATOR ',') AS tutorAvailTimes,
 
     JSON_OBJECT(
-        'studentId', s.studentid,
+        'studentId', s.studentId,
         'language', s.language,
         'lowestFrequency', s.lowestfrequency,
         'lowestFee', s.lowestfee,
@@ -210,41 +210,41 @@ LEFT JOIN
           FROM 
               tutorperry.tutor t
           JOIN 
-              tutorperry.matchTable m ON t.tutorid = m.tutorid
+              tutorperry.matchTable m ON t.tutorId = m.tutorId
           JOIN 
-              tutorperry.student s ON m.studentid = s.studentid
+              tutorperry.student s ON m.studentId = s.studentId
           JOIN 
-              tutorperry.profile pTutor ON t.userid = pTutor.userid
+              tutorperry.profile pTutor ON t.userId = pTutor.userId
           JOIN 
-              tutorperry.profile pStudent ON s.userid = pStudent.userid
+              tutorperry.profile pStudent ON s.userId = pStudent.userId
           LEFT JOIN 
-              tutorperry.tutorlocation tl ON t.tutorid = tl.tutorId
+              tutorperry.tutorlocation tl ON t.tutorId = tl.tutorId
           LEFT JOIN 
               tutorperry.location lTutor ON tl.locationId = lTutor.locationId
           LEFT JOIN 
-              tutorperry.tutorsubject ts ON t.tutorid = ts.tutorId
+              tutorperry.tutorsubject ts ON t.tutorId = ts.tutorId
           LEFT JOIN 
               tutorperry.subject subTutor ON ts.subjectId = subTutor.subjectId
           LEFT JOIN 
-              tutorperry.tutoravailtime ta ON t.tutorid = ta.tutorId
+              tutorperry.tutoravailtime ta ON t.tutorId = ta.tutorId
           LEFT JOIN 
               tutorperry.availtime atTutor ON ta.availTimeId = atTutor.id
           LEFT JOIN 
-              tutorperry.studentlocation sl ON s.studentid = sl.studentId
+              tutorperry.studentlocation sl ON s.studentId = sl.studentId
           LEFT JOIN 
               tutorperry.location lStudent ON sl.locationId = lStudent.locationId
           LEFT JOIN 
-              tutorperry.studentsubject ss ON s.studentid = ss.studentId
+              tutorperry.studentsubject ss ON s.studentId = ss.studentId
           LEFT JOIN 
               tutorperry.subject subStudent ON ss.subjectId = subStudent.subjectId
           LEFT JOIN 
-              tutorperry.studentavailtime sa ON s.studentid = sa.studentId
+              tutorperry.studentavailtime sa ON s.studentId = sa.studentId
           LEFT JOIN 
               tutorperry.availtime atStudent ON sa.availTimeId = atStudent.id
           WHERE 
-              t.tutorid = ${tutorid} -- Ensure this value is safely injected
+              t.tutorId = ${tutorId} -- Ensure this value is safely injected
           GROUP BY 
-    t.tutorid, m.idmatch;  
+    t.tutorId, m.idmatch;  
       ORDER BY 
       s.lastOnline DESC
       LIMIT 5 OFFSET ${(page - 1) * 5}
@@ -257,9 +257,9 @@ LEFT JOIN
     return result;
   }
 
-  async getSortedStudentid() {
+  async getSortedStudentId() {
     const result = await this.prisma.$queryRaw`  SELECT 
-    JSON_ARRAYAGG(s.studentid) AS studentIds
+    JSON_ARRAYAGG(s.studentId) AS studentIds
     FROM 
       tutorperry.student s
     WHERE
@@ -271,7 +271,7 @@ LEFT JOIN
 
   async getSortedTutortid() {
     const result = await this.prisma.$queryRaw`  SELECT 
-      tutorid 
+      tutorId 
       COUNT(*) OVER() AS total_count
     FROM 
       tutorperry.tutor 

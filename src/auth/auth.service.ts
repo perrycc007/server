@@ -30,10 +30,10 @@ export class AuthService {
     }
 
     const accessToken = this.generateAccessToken({
-      id: user.userid,
+      id: user.userId,
       email: user.email,
     });
-    return { accessToken: accessToken, userid: user.userid };
+    return { accessToken: accessToken, userId: user.userId };
   }
 
   async authenticateUser(email: string, password: string): Promise<any> {
@@ -56,10 +56,10 @@ export class AuthService {
 
       // Generate an access token
       const accessToken = this.generateAccessToken({
-        id: user.userid,
+        id: user.userId,
         email: user.email,
       });
-      return { accessToken: accessToken, userid: user.userid };
+      return { accessToken: accessToken, userId: user.userId };
     } catch (error) {
       throw error;
     }

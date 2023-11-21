@@ -1,6 +1,6 @@
 export const dummyTutor = {
-  location: [],
-  availtime: [],
+  locations: [],
+  availTime: [],
   intro: null,
   language: null,
   occupation: null,
@@ -20,5 +20,6 @@ export const dummyTutor = {
   major: null,
   strength: null,
   fee: null,
-  subject: [],
+  subjects: [],
+  subjectGrade: {},
 };

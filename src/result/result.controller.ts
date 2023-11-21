@@ -29,20 +29,20 @@ export class ResultController {
     const parsedPage = JSON.parse(page);
     return this.resultService.getResultByStudentId(parsedStudentId, parsedPage);
   }
-  @Get('tutorid/:tutorid')
-  async getResultByTutorId(
-    @Param('tutorid') tutorid: string,
+  @Get('tutorId/:tutorId')
+  async getResultBytutorId(
+    @Param('tutorId') tutorId: string,
     @Query('page') page: string,
   ) {
-    const parsedTutorId = JSON.parse(tutorid);
+    const parsedtutorId = JSON.parse(tutorId);
     const parsedPage = JSON.parse(page);
-    return this.resultService.getResultByStudentId(parsedTutorId, parsedPage);
+    return this.resultService.getResultByStudentId(parsedtutorId, parsedPage);
   }
   @Get('studentidSorted')
   async getSortedStudentid() {
-    return this.resultService.getSortedStudentid();
+    return this.resultService.getSortedStudentId();
   }
-  @Get('tutoridSorted')
+  @Get('tutorIdSorted')
   async getSortedTutortid() {
     return this.resultService.getSortedTutortid();
   }

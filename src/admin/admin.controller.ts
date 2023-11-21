@@ -4,6 +4,7 @@ import { JwtAdminGuard } from '../auth/guard/admin.guard';
 import { StudentsService } from '../students/students.service';
 import { TutorsService } from '../tutors/tutors.service';
 import { HistoryService } from '../history/history.service';
+import { ProfileService } from '../profile/profile.service';
 @Controller('admin')
 // @UseGuards(JwtAdminGuard)
 export class AdminController {
@@ -12,6 +13,7 @@ export class AdminController {
     private readonly tutorsService: TutorsService,
     private readonly studentsService: StudentsService,
     private readonly historyService: HistoryService,
+    private readonly profileService: ProfileService,
   ) {}
 
   @Patch('toggleCheck')
@@ -29,6 +31,12 @@ export class AdminController {
     return this.adminService.updateTutorVerify(requestBody);
   }
 
+  // update profile
+  @Patch('profile')
+  async updateProfile(@Body() requestBody) {
+    return this.profileService.updateProfile(requestBody);
+  }
+
   // update tutor
   @Patch('updateTutor')
   async updateTutor(@Body() updateInfo: any) {
@@ -42,12 +50,12 @@ export class AdminController {
   }
   // toggle student status
   @Patch('updateCaseStatus')
-  async updateCaseStatus(@Body() body: { studentid: string; status: string }) {
-    return this.historyService.updateCaseStatus(body.studentid, body.status);
+  async updateCaseStatus(@Body() body: { studentId: string; status: string }) {
+    return this.historyService.updateCaseStatus(body.studentId, body.status);
   }
   // toggle check status
   @Patch('updateTutorStatus')
-  async updateTutorStatus(@Body() body: { tutorid: string; status: string }) {
-    return this.historyService.updateTutorStatus(body.tutorid, body.status);
+  async updateTutorStatus(@Body() body: { tutorId: string; status: string }) {
+    return this.historyService.updateTutorStatus(body.tutorId, body.status);
   }
 }

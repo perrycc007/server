@@ -23,11 +23,11 @@ export class JwtAdminGuard extends AuthGuard('jwt') {
 
     try {
       const decodedToken = this.jwtService.verify(token);
-      const userid = decodedToken.id; // Extract the user ID from the decoded token
+      const userId = decodedToken.id; // Extract the user ID from the decoded token
       // Pass the userId to the controller by setting it on the request object
-      request.userid = userid;
+      request.userId = userId;
       // Perform additional actions here, e.g., updating the profile
-      const role = await this.checkRole(parseInt(userid));
+      const role = await this.checkRole(parseInt(userId));
       if (role.data == 'admin') {
         return true;
       } else {
@@ -59,7 +59,7 @@ export class JwtAdminGuard extends AuthGuard('jwt') {
     try {
       const result = await this.prisma.user.findUnique({
         where: {
-          userid: userId, // Use the extracted user ID
+          userId: userId, // Use the extracted user ID
         },
         select: {
           role: true,

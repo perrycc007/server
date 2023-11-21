@@ -40,10 +40,10 @@ export class StudentsController {
     return this.studentsService.findUniqueUserFavouriteCases(userId);
   }
 
-  @Get(':studentid')
-  async findOne(@Param('studentid') studentid: string) {
+  @Get(':studentId')
+  async findOne(@Param('studentId') studentId: string) {
     // Implement logic to fetch a student by ID
-    return this.studentsService.getStudentbyStudentid(studentid);
+    return this.studentsService.getStudentbyStudentId(studentId);
   }
 
   @UseGuards(JwtAuthGuard)

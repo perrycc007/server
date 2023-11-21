@@ -1,60 +1,71 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { isEqual } from 'lodash';
-import { CheckStatus, MatchStatus } from '@prisma/client';
 @Injectable()
 export class MatchService {
   constructor(private readonly prisma: PrismaService) {}
 
   async matchTutor(req: any) {
+    enum matchtable_checkStatus {
+      NOT_YET_CHECKED,
+      CHECKING,
+      CHECKED,
+    }
+
+    enum matchtable_matchstatus {
+      REJECTED,
+      ASK_AGAIN,
+      NO_LONGER_MATCH,
+      OPEN,
+    }
     // Implement the matching system for tutors here
     // You can reuse your existing logic from the Express router
 
     try {
-      const { locations, subjects, lowestfee, tutorid } = req.body.information;
+      const { locations, subjects, lowestfee, tutorId } = req.body.information;
 
       const students = await findMatchingStudents(
         locations,
         subjects,
         lowestfee,
       );
-      const matchedStudentIds = students.map((student) => student.studentid);
-      const studentidOfExistingMatch = await this.prisma.matchTable.findMany({
+      const matchedstudentIds = students.map((student) => student.studentId);
+      const studentIdOfExistingMatch = await this.prisma.matchtable.findMany({
         where: {
-          tutorid: tutorid,
-          studentid: {
-            in: matchedStudentIds,
+          tutorId: tutorId,
+          studentId: {
+            in: matchedstudentIds,
           },
         },
         select: {
-          studentid: true, // Include only the 'studentId' field in the result
+          studentId: true, // Include only the 'studentId' field in the result
         },
       });
-      const difference = studentidOfExistingMatch.filter(
-        (studentId) => !matchedStudentIds.includes(studentId.studentid),
+      const difference = studentIdOfExistingMatch.filter(
+        (studentId) => !matchedstudentIds.includes(studentId),
       );
 
       await this.prisma.$transaction(async (prisma) => {
         if (difference.length !== 0) {
-          const newRows = difference.map((onestudentid) => {
+          const newRows = difference.map((onestudentId) => {
             return {
-              tutorid: tutorid,
-              studentid: onestudentid.studentid, // access the studentid property of the onestudentid object
+              tutorId: tutorId,
+              studentId: onestudentId, // access the studentId property of the onestudentId object
               availability: true, // replace with actual value
-              checkStatus: CheckStatus.NOT_YET_CHECKED, // replace with actual value
-              matchstatus: MatchStatus.OPEN,
+              checkStatus: matchtable_checkStatus.NOT_YET_CHECKED, // replace with actual value
+              matchstatus: matchtable_matchstatus.OPEN,
             };
           });
-          await prisma.matchTable.createMany({
-            data: newRows,
-          });
+          // await prisma.matchtable.createMany({
+          //   data: newRows,
+          // });
         }
-        await prisma.matchTable.updateMany({
+        await prisma.matchtable.updateMany({
           where: {
-            tutorid: tutorid,
+            tutorId: tutorId,
             NOT: {
-              studentid: {
-                in: matchedStudentIds,
+              studentId: {
+                in: matchedstudentIds,
               },
             },
           },
@@ -63,11 +74,11 @@ export class MatchService {
           },
         });
 
-        await prisma.matchTable.updateMany({
+        await prisma.matchtable.updateMany({
           where: {
-            tutorid: tutorid,
-            studentid: {
-              in: matchedStudentIds,
+            tutorId: tutorId,
+            studentId: {
+              in: matchedstudentIds,
             },
             OR: [
               { matchstatus: 'REJECTED' },
@@ -90,31 +101,42 @@ export class MatchService {
   async matchStudent(req: any) {
     // Implement the matching system for students here
     // You can reuse your existing logic from the Express router
+    enum matchtable_checkStatus {
+      NOT_YET_CHECKED,
+      CHECKING,
+      CHECKED,
+    }
 
+    enum matchtable_matchstatus {
+      REJECTED,
+      ASK_AGAIN,
+      NO_LONGER_MATCH,
+      OPEN,
+    }
     try {
-      const { locations, subjects, highestfee, studentid } =
+      const { locations, subjects, highestfee, studentId } =
         req.body.information;
 
       const tutors = await findMatchingTutors(locations, subjects, highestfee);
-      const matchedTutorIds = tutors.map((tutor) => tutor.tutorid);
-      const tutoridOfExistingMatch = await this.prisma.matchTable.findMany({
+      const matchedtutorIds = tutors.map((tutor) => tutor.tutorId);
+      const tutorIdOfExistingMatch = await this.prisma.matchtable.findMany({
         where: {
-          studentid: studentid,
-          tutorid: {
-            in: matchedTutorIds,
+          studentId: studentId,
+          tutorId: {
+            in: matchedtutorIds,
           },
         },
         select: {
-          tutorid: true, // Include only the 'studentId' field in the result
+          tutorId: true, // Include only the 'studentId' field in the result
         },
       });
       await this.prisma.$transaction(async (prisma) => {
-        await prisma.matchTable.updateMany({
+        await prisma.matchtable.updateMany({
           where: {
-            studentid: studentid,
+            studentId: studentId,
             NOT: {
-              tutorid: {
-                in: matchedTutorIds,
+              tutorId: {
+                in: matchedtutorIds,
               },
             },
           },
@@ -123,11 +145,11 @@ export class MatchService {
           },
         });
 
-        await prisma.matchTable.updateMany({
+        await prisma.matchtable.updateMany({
           where: {
-            studentid: studentid,
-            tutorid: {
-              in: matchedTutorIds,
+            studentId: studentId,
+            tutorId: {
+              in: matchedtutorIds,
             },
             OR: [
               { matchstatus: 'REJECTED' },
@@ -139,23 +161,23 @@ export class MatchService {
           },
         });
 
-        const difference = tutoridOfExistingMatch.filter(
-          (tutorId) => !matchedTutorIds.includes(tutorId.tutorid),
+        const difference = tutorIdOfExistingMatch.filter(
+          (tutorId) => !matchedtutorIds.includes(tutorId),
         );
         if (difference.length !== 0) {
-          const newRows = difference.map((oneTutorId) => {
+          const newRows = difference.map((onetutorId) => {
             return {
-              studentid: studentid,
-              tutorid: oneTutorId.tutorid, // access the studentid property of the onestudentid object
+              studentId: studentId,
+              tutorId: onetutorId, // access the studentId property of the onestudentId object
               availability: true, // replace with actual value
-              checkStatus: CheckStatus.NOT_YET_CHECKED, // replace with actual value
-              matchstatus: MatchStatus.OPEN,
+              checkStatus: matchtable_checkStatus.NOT_YET_CHECKED, // replace with actual value
+              matchstatus: matchtable_matchstatus.OPEN,
             };
           });
 
-          await this.prisma.matchTable.createMany({
-            data: newRows,
-          });
+          // await this.prisma.matchtable.createMany({
+          //   data: newRows,
+          // });
         }
       });
       return { message: 'Student request processed successfully.' };
@@ -174,33 +196,33 @@ async function findMatchingStudents(location, subject, lowestfee) {
   const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
   const result = await this.prisma.$queryRaw`
   SELECT 
-    s.studentid
+    s.studentId
     s.lastOnline
     FROM
       tutorperry.student s
     LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentid = sl.studentid
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
     LEFT JOIN
       tutorperry.location l ON sl.locationId = l.locationId
     LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentid = ss.studentid
+      tutorperry.studentSubject ss ON s.studentId = ss.studentId
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
       WHERE
       ${lowestFee}
-      s.studentid IN (
-        SELECT DISTINCT s.studentid
+      s.studentId IN (
+        SELECT DISTINCT s.studentId
         FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentid = sl.studentid
+        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
         LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentid = ss.studentid
+        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
         LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
         WHERE
         ${locationQuery} AND
         ${subjectQuery}
       )
     GROUP BY
-      s.studentid
+      s.studentId
     ORDER BY
       s.lastOnline DESC;
 `;
@@ -214,33 +236,33 @@ async function findMatchingTutors(location, subject, highestFee) {
   const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
   const result = await this.prisma.$queryRaw`
   SELECT 
-    t.tutorid
+    t.tutorId
     t.lastOnline
     FROM 
     tutorperry.tutor t
 LEFT JOIN 
-    tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+    tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
 LEFT JOIN 
     tutorperry.location l ON tl.locationId = l.locationId
 LEFT JOIN
-    tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+    tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
 LEFT JOIN
     tutorperry.subject s ON ts.subjectId = s.subjectId
 WHERE 
 ${highestFeeQuery}
-t.tutorid IN (
-  SELECT DISTINCT t.tutorid
+t.tutorId IN (
+  SELECT DISTINCT t.tutorId
   FROM tutorperry.tutor t
-  LEFT JOIN tutorperry.tutorLocation tl ON t.tutorid = tl.tutorId
+  LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
   LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-  LEFT JOIN tutorperry.tutorSubject ts ON t.tutorid = ts.tutorId
+  LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
   LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
   WHERE
   ${locationQuery} AND
   ${subjectQuery}
 )
 GROUP BY 
-    t.tutorid
+    t.tutorId
 ORDER BY                                                                                                                                                                                                                                                                                                                                                                                                                                                                
     t.lastOnline DESC;
 `;

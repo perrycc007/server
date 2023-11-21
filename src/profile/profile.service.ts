@@ -6,24 +6,23 @@ import { dummyProfile } from '../DUMMY/dummyProfile';
 export class ProfileService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getProfile(userid: number) {
+  async getProfile(userId: number) {
     const result = await this.prismaService.profile.findUnique({
       where: {
-        userid: userid,
+        userId: userId,
       },
     });
     console.log(result);
     if (result !== null) {
       return result;
     } else {
-      return { userid: userid, ...dummyProfile };
+      return { userId: userId, ...dummyProfile };
     }
   }
 
   async updateProfile(requestBody: any) {
-    console.log(requestBody);
-    const reqUserid = requestBody.userid;
-    let { userid, ...information } = requestBody;
+    const requserId = requestBody.userId;
+    let { userId, ...information } = requestBody;
     let { availtime, country, lastOnline, ...requiredInfo } = information;
     const isEmpty = Object.values(requiredInfo).some(
       (x) => x == null || x == '',
@@ -36,20 +35,19 @@ export class ProfileService {
 
     const result = await this.prismaService.profile.upsert({
       where: {
-        userid: reqUserid,
+        userId: requserId,
       },
       update: {
         ...information,
         lastOnline: date_ob,
       },
       create: {
-        userid: reqUserid,
+        userId: requserId,
         ...information,
         lastOnline: date_ob,
         agreewith: `${agreewith}`,
       },
     });
-
     return result;
   }
 }
