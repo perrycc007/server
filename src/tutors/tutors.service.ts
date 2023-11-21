@@ -14,7 +14,13 @@ export class TutorsService {
     t.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
-    GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes
+    GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes,
+    (
+      SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
+      FROM tutorperry.tutorgrade tg
+      JOIN tutorperry.grade g ON tg.gradeId = g.id
+      WHERE tg.tutorId = t.tutorid
+  ) AS subjectGrade
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
@@ -54,7 +60,13 @@ ORDER BY
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
     GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes,
-    f.idfavourite AS idfavourite
+    f.idfavourite AS idfavourite,
+    (
+      SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
+      FROM tutorperry.tutorgrade tg
+      JOIN tutorperry.grade g ON tg.gradeId = g.id
+      WHERE tg.tutorId = t.tutorid
+  ) AS subjectGrade
 FROM 
     tutorperry.tutor t
 LEFT JOIN 
@@ -187,7 +199,13 @@ GROUP BY
     const result = await this.prisma.$queryRaw`  SELECT 
         t.*,
         GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects
+        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
+        (
+          SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
+          FROM tutorperry.tutorgrade tg
+          JOIN tutorperry.grade g ON tg.gradeId = g.id
+          WHERE tg.tutorId = t.tutorid
+      ) AS subjectGrade
         FROM 
             tutorperry.tutor t
         LEFT JOIN 
@@ -242,7 +260,13 @@ GROUP BY
         t.*,
         GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
         GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
-        f.idfavourite AS idfavourite
+        f.idfavourite AS idfavourite,
+        (
+          SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
+          FROM tutorperry.tutorgrade tg
+          JOIN tutorperry.grade g ON tg.gradeId = g.id
+          WHERE tg.tutorId = t.tutorid
+      ) AS subjectGrade
         FROM 
             tutorperry.tutor t
         LEFT JOIN 

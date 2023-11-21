@@ -79,7 +79,12 @@ export class ResultService {
         'otherCert', t.othercert,
         'caseId', t.caseid,
         'major', t.major,
-        'subgrade', t.subgrade,
+        'subjectGrade', (
+          SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
+          FROM tutorperry.tutorgrade tg
+          JOIN tutorperry.grade g ON tg.gradeId = g.id
+          WHERE tg.tutorId = t.tutorid
+        ),
         'strength', t.strength,
         'highestFee', t.highestfee,
         'lowestFee', t.lowestfee,
@@ -255,7 +260,6 @@ LEFT JOIN
   async getSortedStudentid() {
     const result = await this.prisma.$queryRaw`  SELECT 
     JSON_ARRAYAGG(s.studentid) AS studentIds
-    
     FROM 
       tutorperry.student s
     WHERE
