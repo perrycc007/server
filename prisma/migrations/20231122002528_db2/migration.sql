@@ -14,8 +14,9 @@ CREATE TABLE `profile` (
     `nationality` VARCHAR(45) NULL,
     `phoneno` VARCHAR(45) NULL,
     `lastOnline` DATETIME(0) NULL,
+    `availtime` VARCHAR(600) NULL,
 
-    UNIQUE INDEX `profile_userId_key`(`userId`),
+    UNIQUE INDEX `profile_userid_key`(`userId`),
     PRIMARY KEY (`idprofile`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -24,9 +25,8 @@ CREATE TABLE `user` (
     `userId` INTEGER NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(45) NOT NULL,
     `password` TINYTEXT NOT NULL,
-    `favouritecaseid` JSON NULL,
-    `favouritetutorId` JSON NULL,
     `role` ENUM('USER', 'ADMIN') NOT NULL DEFAULT 'USER',
+    `favouritetutorid` JSON NULL,
 
     UNIQUE INDEX `user_email_key`(`email`),
     PRIMARY KEY (`userId`)
@@ -55,7 +55,7 @@ CREATE TABLE `student` (
     `others` VARCHAR(45) NULL,
     `expectation` VARCHAR(45) NULL,
     `genderrequirement` VARCHAR(45) NULL,
-    `status` ENUM('OPEN', 'CLOSE', 'BLOCKED') NOT NULL DEFAULT 'OPEN',
+    `status` VARCHAR(45) NULL DEFAULT 'open',
     `highestfee` INTEGER NULL,
     `highestfrequency` INTEGER NULL,
     `highestduration` INTEGER NULL,
@@ -87,36 +87,20 @@ CREATE TABLE `tutor` (
     `publicexamgrade` VARCHAR(45) NULL,
     `university` VARCHAR(45) NULL,
     `othercert` VARCHAR(45) NULL,
-    `caseid` VARCHAR(45) NULL,
     `major` VARCHAR(45) NULL,
     `subgrade` JSON NULL,
     `strength` VARCHAR(45) NULL,
     `highestfee` INTEGER NULL,
     `lowestfee` INTEGER NULL,
     `matchedbefore` JSON NULL,
-    `status` ENUM('OPEN', 'CLOSE', 'BLOCKED') NOT NULL DEFAULT 'OPEN',
+    `status` VARCHAR(45) NULL DEFAULT 'open',
     `lastOnline` DATETIME(0) NULL,
-    `verify` ENUM('NOT_VERIFIED', 'VERIFIED') NOT NULL DEFAULT 'NOT_VERIFIED',
+    `verify` VARCHAR(45) NULL DEFAULT '未驗證',
     `completeFormStatus` BOOLEAN NOT NULL DEFAULT false,
 
-    UNIQUE INDEX `tutor_userId_key`(`userId`),
+    UNIQUE INDEX `tutor_userid_key`(`userId`),
     INDEX `tutor_userId_key_idx`(`userId`),
     PRIMARY KEY (`tutorId`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `matchTable` (
-    `idmatch` INTEGER NOT NULL AUTO_INCREMENT,
-    `studentId` INTEGER NOT NULL,
-    `availability` BOOLEAN NOT NULL,
-    `checkStatus` ENUM('NOT_YET_CHECKED', 'CHECKING', 'CHECKED') NOT NULL,
-    `tutorId` INTEGER NOT NULL,
-    `matchstatus` ENUM('REJECTED', 'ASK_AGAIN', 'NO_LONGER_MATCH', 'OPEN') NOT NULL,
-    `lastOnline` DATETIME(0) NULL,
-
-    INDEX `matchTable_studentId_fkey`(`studentId`),
-    INDEX `matchTable_tutorId_fkey`(`tutorId`),
-    PRIMARY KEY (`idmatch`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -143,7 +127,7 @@ CREATE TABLE `grade` (
     `area` ENUM('LIBERAL_ARTS', 'SCIENCE', 'BUSINESS', 'CORE_SUBJECTS', 'ELECTIVE_SUBJECTS', 'OTHER_LANGUAGE_SUBJECTS', 'LANGUAGES', 'MATHEMATICS', 'HUMANITIES_AND_SOCIAL_SCIENCES', 'CREATIVE_TECHNICAL_AND_VOCATIONAL') NOT NULL,
     `examtype` ENUM('HKDSE', 'HKCEE', 'IB', 'HKALE', 'GCEALevel', 'IGCSE') NOT NULL,
     `subject` VARCHAR(191) NOT NULL,
-    `subjectkey` VARCHAR(191) NOT NULL,
+    `subjectKey` VARCHAR(45) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -221,29 +205,25 @@ CREATE TABLE `tutorsubject` (
     PRIMARY KEY (`tutorId`, `subjectId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- AddForeignKey
-ALTER TABLE `profile` ADD CONSTRAINT `profile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`userId`) ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateTable
+CREATE TABLE `matchtable` (
+    `idmatch` INTEGER NOT NULL AUTO_INCREMENT,
+    `availability` BOOLEAN NOT NULL DEFAULT true,
+    `checkStatus` ENUM('NOT_YET_CHECKED', 'CHECKING', 'CHECKED') NOT NULL DEFAULT 'NOT_YET_CHECKED',
+    `matchstatus` ENUM('REJECTED', 'ASK_AGAIN', 'NO_LONGER_MATCH', 'OPEN') NOT NULL DEFAULT 'OPEN',
+    `studentId` INTEGER NOT NULL,
+    `tutorId` INTEGER NOT NULL,
+
+    INDEX `matchtable_studentId_fkey`(`studentId`),
+    INDEX `matchtable_tutorId_fkey`(`tutorId`),
+    PRIMARY KEY (`idmatch`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `favourite` ADD CONSTRAINT `favourite_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `student`(`studentId`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `favourite` ADD CONSTRAINT `favourite_userid_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`userId`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `favourite` ADD CONSTRAINT `favourite_tutorId_fkey` FOREIGN KEY (`tutorId`) REFERENCES `tutor`(`tutorId`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `favourite` ADD CONSTRAINT `favourite_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`userId`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `student` ADD CONSTRAINT `student_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`userId`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `tutor` ADD CONSTRAINT `tutor_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`userId`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `matchTable` ADD CONSTRAINT `matchTable_studentId_fkey` FOREIGN KEY (`studentId`) REFERENCES `student`(`studentId`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `matchTable` ADD CONSTRAINT `matchTable_tutorId_fkey` FOREIGN KEY (`tutorId`) REFERENCES `tutor`(`tutorId`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `tutor` ADD CONSTRAINT `tutor_userid_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`userId`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `studentavailtime` ADD CONSTRAINT `StudentAvailTime_availTimeId_fkey` FOREIGN KEY (`availTimeId`) REFERENCES `availtime`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

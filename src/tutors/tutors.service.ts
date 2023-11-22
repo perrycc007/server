@@ -347,7 +347,7 @@ GROUP BY
           select: { id: true, day: true, time: true },
         });
         const allGrades = await prisma.grade.findMany({
-          select: { id: true, subjectkey: true },
+          select: { id: true, subjectKey: true },
         });
 
         const gradeMapping = allGrades.reduce((acc, grade) => {
@@ -379,7 +379,6 @@ GROUP BY
             )?.id;
           })
           .filter(Boolean);
-
         return { locationIds, subjectIds, availTimeIds, tutorGradeData };
       }
 
@@ -414,7 +413,12 @@ GROUP BY
           availTimeId: availId,
         }));
         const tutorGradeData = resolvedIds.tutorGradeData;
-        console.log(tutorGradeData);
+        // Assuming 'subjectGrade' is the array you are referring to
+        if (subjectGrade && subjectGrade.length > 0) {
+          prisma.tutorgrade.createMany({
+            data: tutorGradeData,
+          });
+        }
 
         prisma.$transaction([
           // Delete existing relations
@@ -437,9 +441,6 @@ GROUP BY
           prisma.tutorsubject.createMany({ data: tutorSubjectsData }),
           prisma.tutoravailtime.createMany({
             data: tutorAvailTimesData,
-          }),
-          prisma.tutorgrade.createMany({
-            data: tutorGradeData,
           }),
         ]);
       });

@@ -10,7 +10,6 @@ datasource db {
 model profile {
   idprofile             Int       @id @default(autoincrement())
   userId                Int       @unique(map: "profile_userid_key")
-  availtime             String?   @db.VarChar(600)
   address               String?   @db.VarChar(45)
   agreewith             String?   @db.VarChar(45)
   country               String?   @db.VarChar(45)
@@ -23,34 +22,28 @@ model profile {
   nationality           String?   @db.VarChar(45)
   phoneno               String?   @db.VarChar(45)
   lastOnline            DateTime? @db.DateTime(0)
-  user                  user      @relation(fields: [userId], references: [userId], map: "profile_userid_fkey")
 }
 
 model user {
   userId           Int         @id @default(autoincrement())
   email            String      @unique @db.VarChar(45)
   password         String      @db.TinyText
-  favouritecaseid  Json?
-  favouritetutorid Json?
   role             Role        @default(USER)
-  favourite        favourite[]
-  profile          profile?
-  students         student[]
+  favouritetutorid Json?
   tutor            tutor?
+  favourite        favourite[]
 }
 
 model favourite {
-  idfavourite Int      @id @default(autoincrement())
+  idfavourite Int  @id @default(autoincrement())
   userId      Int
-  studentid   Int?
-  tutorid     Int?
-  student     student? @relation(fields: [studentid], references: [studentId], onDelete: Restrict)
-  tutor       tutor?   @relation(fields: [tutorid], references: [tutorId], onDelete: Restrict)
-  user        user     @relation(fields: [userId], references: [userId], map: "favourite_userid_fkey")
+  studentId   Int?
+  tutorId     Int?
+  user        user @relation(fields: [userId], references: [userId], map: "favourite_userid_fkey")
 
-  @@index([studentid], map: "favourite_studentid_fkey")
-  @@index([tutorid], map: "favourite_tutorid_fkey")
-  @@index([userId], map: "favourite_userid_fkey")
+  @@index([studentId], map: "favourite_studentId_fkey")
+  @@index([tutorId], map: "favourite_tutorId_fkey")
+  @@index([userId], map: "favourite_userId_fkey")
 }
 
 model student {
@@ -70,14 +63,11 @@ model student {
   lastOnline         DateTime?          @db.DateTime(0)
   userId             Int
   completeFormStatus Boolean            @default(false)
-  favourite          favourite[]
-  matchtable         matchtable[]
-  user               user               @relation(fields: [userId], references: [userId], map: "student_userid_fkey")
   studentavailtime   studentavailtime[]
   studentlocation    studentlocation[]
   studentsubject     studentsubject[]
 
-  @@index([userId], map: "student_userid_fkey")
+  @@index([userId], map: "student_userId_fkey")
 }
 
 model tutor {
@@ -98,7 +88,6 @@ model tutor {
   publicexamgrade      String?          @db.VarChar(45)
   university           String?          @db.VarChar(45)
   othercert            String?          @db.VarChar(45)
-  caseid               String?          @db.VarChar(45)
   major                String?          @db.VarChar(45)
   subgrade             Json?
   strength             String?          @db.VarChar(45)
@@ -109,15 +98,13 @@ model tutor {
   lastOnline           DateTime?        @db.DateTime(0)
   verify               String?          @default("未驗證") @db.VarChar(45)
   completeFormStatus   Boolean          @default(false)
-  favourite            favourite[]
-  matchtable           matchtable[]
   user                 user?            @relation(fields: [userId], references: [userId], map: "tutor_userid_fkey")
   tutoravailtime       tutoravailtime[]
   tutorgrade           tutorgrade[]
   tutorlocation        tutorlocation[]
   tutorsubject         tutorsubject[]
 
-  @@index([userId], map: "tutor_userid_key_idx")
+  @@index([userId], map: "tutor_userId_key_idx")
 }
 
 model location {
@@ -226,16 +213,14 @@ model tutorsubject {
 
 model matchtable {
   idmatch      Int                    @id @default(autoincrement())
-  studentid    Int
   availability Boolean                @default(true)
   checkStatus  matchtable_checkStatus @default(NOT_YET_CHECKED)
-  tutorid      Int
   matchstatus  matchtable_matchstatus @default(OPEN)
-  student      student                @relation(fields: [studentid], references: [studentId], map: "match_studentid_fkey")
-  tutor        tutor                  @relation(fields: [tutorid], references: [tutorId], map: "match_tutorid_fkey")
+  studentId    Int
+  tutorId      Int
 
-  @@index([studentid], map: "match_studentid_fkey")
-  @@index([tutorid], map: "match_tutorid_fkey")
+  @@index([studentId], map: "matchtable_studentId_fkey")
+  @@index([tutorId], map: "matchtable_tutorId_fkey")
 }
 
 enum Role {

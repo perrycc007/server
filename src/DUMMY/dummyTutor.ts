@@ -16,7 +16,6 @@ export const dummyTutor = {
   publicexamgrade: null,
   university: null,
   othercert: null,
-  caseid: null,
   major: null,
   strength: null,
   fee: null,

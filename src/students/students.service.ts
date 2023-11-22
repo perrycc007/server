@@ -317,6 +317,7 @@ export class StudentsService {
       availtimes,
       locations,
       subjects,
+      availtime,
       ...studentinfo
     } = information;
     let date_ob = new Date();
