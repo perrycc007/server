@@ -28,15 +28,15 @@ export class StudentsController {
   }
 
   @Get('withFavourite')
-  async findAllWithFavourite(@Body() requestBody) {
+  async findAllWithFavourite(@Body() requestBody: any) {
     // Implement logic to fetch students based on query parameters
     return this.studentsService.findManyWithStatusOpenWithFavourite(
-      requestBody.userid,
+      requestBody.userId,
     );
   }
 
   @Post('getFavouriteCase/:userid')
-  async getFavouriteCases(@Param('userid', ParseIntPipe) userId: number) {
+  async getFavouriteCases(@Param('userId', ParseIntPipe) userId: number) {
     return this.studentsService.findUniqueUserFavouriteCases(userId);
   }
 
@@ -83,7 +83,7 @@ export class StudentsController {
       lowestfee,
       locations,
       subjects,
-      requestBody.userid,
+      requestBody.userId,
     );
   }
 }

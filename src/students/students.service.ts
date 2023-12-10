@@ -36,7 +36,6 @@ export class StudentsService {
     ORDER BY 
       s.lastOnline DESC;
   `;
-    console.log(result);
     return result;
   }
 
