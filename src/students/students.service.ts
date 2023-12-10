@@ -68,7 +68,6 @@ export class StudentsService {
     ORDER BY 
       s.lastOnline DESC;
   `;
-    console.log(result);
     return result;
   }
 
@@ -127,74 +126,77 @@ export class StudentsService {
       'subjects',
       'student',
     );
-    console.log(`
-    SELECT
-    s.*,
-    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects
-    FROM
-      tutorperry.student s
-    LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentId = sl.studentId
-    LEFT JOIN
-      tutorperry.location l ON sl.locationId = l.locationId
-    LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentId = ss.studentId
-    LEFT JOIN
-      tutorperry.subject su ON ss.subjectId = su.subjectId
-      WHERE
-      ${lowestFee}
-      s.studentId IN (
-        SELECT DISTINCT s.studentId
-        FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
-        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
-        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
-        WHERE
-        ${locationQuery} AND
-        ${subjectQuery}
-      )
-    GROUP BY
-      s.studentId
-    ORDER BY
-      s.lastOnline DESC;
-  `);
-    const result = await this.prisma.$queryRaw`
-    SELECT
-    s.*,
-    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects
-    FROM
-      tutorperry.student s
-    LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentId = sl.studentId
-    LEFT JOIN
-      tutorperry.location l ON sl.locationId = l.locationId
-    LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentId = ss.studentId
-    LEFT JOIN
-      tutorperry.subject su ON ss.subjectId = su.subjectId
-      WHERE
-      s.highestfee >= 60 AND
-      s.studentId IN (
-        SELECT DISTINCT s.studentId
-        FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
-        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
-        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
-        WHERE
-        (l.location = '中半山' OR l.location = '北角') AND
-        (su.name = '全科' OR su.name = '數學(M2)')
-      )
-    GROUP BY
-      s.studentId
-    ORDER BY
-      s.lastOnline DESC;
-    `;
 
-    console.log(result);
+    // Start with the static part of the query
+    let query = `
+    SELECT
+      s.*,
+      GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+      GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects
+    FROM
+      tutorperry.student s
+    LEFT JOIN
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
+    LEFT JOIN
+      tutorperry.location l ON sl.locationId = l.locationId
+    LEFT JOIN
+      tutorperry.studentSubject ss ON s.studentId = ss.studentId
+    LEFT JOIN
+      tutorperry.subject su ON ss.subjectId = su.subjectId
+  `;
+
+    // Add dynamic WHERE conditions for the main query
+    let whereConditions = [];
+    if (lowestFee !== undefined) {
+      whereConditions.push(lowestFee);
+    }
+
+    // Add the WHERE clause if there are conditions to include
+    if (whereConditions.length > 0) {
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
+    }
+
+    // Add the subquery with its own dynamic WHERE conditions
+    let subquery = `
+     s.studentId IN (
+      SELECT DISTINCT s.studentId
+      FROM tutorperry.student s
+      LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
+      LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
+      LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
+      LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+  `;
+
+    // Add dynamic WHERE conditions for the subquery
+    let subWhereConditions = [];
+    if (locationQuery) {
+      subWhereConditions.push(locationQuery);
+    }
+    if (subjectQuery) {
+      subWhereConditions.push(subjectQuery);
+    }
+
+    // Add the WHERE clause if there are subquery conditions to include
+    if (subWhereConditions.length > 0) {
+      subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+    }
+
+    // Close the subquery
+    subquery += `)`;
+
+    // Add the subquery to the main query
+    query += subquery;
+
+    // Add GROUP BY and ORDER BY clauses
+    query += `
+    GROUP BY
+      s.studentId
+    ORDER BY
+      s.lastOnline DESC
+  `;
+
+    // Execute the raw query safely with Prisma
+    const result = await this.prisma.$queryRawUnsafe(query);
     return result;
   }
 
@@ -215,80 +217,79 @@ export class StudentsService {
       'subjects',
       'student',
     );
-    console.log(`
-    SELECT
-    s.*,
-    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects,
-    f.idfavourite AS idfavourite
-    FROM
-      tutorperry.student s
-    LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentId = sl.studentId
-    LEFT JOIN
-      tutorperry.location l ON sl.locationId = l.locationId
-    LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentId = ss.studentId
-    LEFT JOIN
-      tutorperry.subject su ON ss.subjectId = su.subjectId
-    LEFT JOIN
-      tutorperry.favourite f ON s.studentId = f.studentId AND f.userId = ${userId}
-      WHERE
-      ${lowestFee}
-      s.studentId IN (
-        SELECT DISTINCT s.studentId
-        FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
-        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
-        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
-        WHERE
-        ${locationQuery} AND
-        ${subjectQuery}
-      )
-    GROUP BY
-      s.studentId, idfavourite
-    ORDER BY
-      s.lastOnline DESC;
-  `);
-    const result = await this.prisma.$queryRaw`
-    SELECT
-    s.*,
-    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-    GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects,
-    f.idfavourite AS idfavourite
-    FROM
-      tutorperry.student s
-    LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentId = sl.studentId
-    LEFT JOIN
-      tutorperry.location l ON sl.locationId = l.locationId
-    LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentId = ss.studentId
-    LEFT JOIN
-      tutorperry.subject su ON ss.subjectId = su.subjectId
-    LEFT JOIN
-      tutorperry.favourite f ON s.studentId = f.studentId AND f.userId = ${userId}
-      WHERE
-      s.highestfee >= 60 AND
-      s.studentId IN (
-        SELECT DISTINCT s.studentId
-        FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
-        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
-        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
-        WHERE
-        (l.location = '中半山' OR l.location = '北角') AND
-        (su.name = '全科' OR su.name = '數學(M2)')
-      )
-    GROUP BY
-      s.studentId, f.idfavourite
-    ORDER BY
-      s.lastOnline DESC;
-    `;
 
-    console.log(result);
+    let query = `
+    SELECT
+      s.*,
+      GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+      GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects
+      f.idfavourite AS idfavourite
+    FROM
+      tutorperry.student s
+    LEFT JOIN
+      tutorperry.studentLocation sl ON s.studentId = sl.studentId
+    LEFT JOIN
+      tutorperry.location l ON sl.locationId = l.locationId
+    LEFT JOIN
+      tutorperry.studentSubject ss ON s.studentId = ss.studentId
+    LEFT JOIN
+      tutorperry.subject su ON ss.subjectId = su.subjectId
+    LEFT JOIN
+      tutorperry.favourite f ON s.studentId = f.studentId AND f.userId = ${userId}
+  `;
+
+    // Add dynamic WHERE conditions for the main query
+    let whereConditions = [];
+    if (lowestFee !== undefined) {
+      whereConditions.push(lowestFee);
+    }
+
+    // Add the WHERE clause if there are conditions to include
+    if (whereConditions.length > 0) {
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
+    }
+
+    // Add the subquery with its own dynamic WHERE conditions
+    let subquery = `
+     s.studentId IN (
+      SELECT DISTINCT s.studentId
+      FROM tutorperry.student s
+      LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
+      LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
+      LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
+      LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+  `;
+
+    // Add dynamic WHERE conditions for the subquery
+    let subWhereConditions = [];
+    if (locationQuery) {
+      subWhereConditions.push(locationQuery);
+    }
+    if (subjectQuery) {
+      subWhereConditions.push(subjectQuery);
+    }
+
+    // Add the WHERE clause if there are subquery conditions to include
+    if (subWhereConditions.length > 0) {
+      subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+    }
+
+    // Close the subquery
+    subquery += `)`;
+
+    // Add the subquery to the main query
+    query += subquery;
+
+    // Add GROUP BY and ORDER BY clauses
+    query += `
+    GROUP BY
+      s.studentId,  f.idfavourite
+    ORDER BY
+      s.lastOnline DESC
+  `;
+
+    // Execute the raw query safely with Prisma
+    const result = await this.prisma.$queryRawUnsafe(query);
     return result;
   }
 

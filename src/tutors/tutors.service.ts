@@ -54,8 +54,7 @@ ORDER BY
   }
 
   async findManyWithStatusOpenWithFavourite(userId: number): Promise<any> {
-    const result = await this.prisma.$queryRaw` 
-    SELECT 
+    const result = await this.prisma.$queryRaw`SELECT 
     t.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
     GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
@@ -82,14 +81,13 @@ LEFT JOIN
 LEFT JOIN 
     tutorperry.AvailTime at ON tat.availTimeId = at.id
 LEFT JOIN
-    tutorperry.favourite f ON t.tutorId = f.tutorId AND f.userId = ${userId}
+      tutorperry.favourite f ON t.tutorId = f.tutorId AND f.userId = ${userId}
 WHERE 
     t.status = 'open'
 GROUP BY 
     t.tutorId,f.idfavourite
 ORDER BY 
     t.lastOnline DESC;
-
 `;
 
     console.log(result);
@@ -195,45 +193,82 @@ GROUP BY
       'subjects',
       'tutor',
     );
+    let mainQuery = `
+  SELECT
+    t.*,
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+    GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
+    (
+      SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade)
+      FROM tutorperry.tutorgrade tg
+      JOIN tutorperry.grade g ON tg.gradeId = g.id
+      WHERE tg.tutorId = t.tutorId
+    ) AS subjectGrade
+  FROM
+    tutorperry.tutor t
+  LEFT JOIN
+    tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
+  LEFT JOIN
+    tutorperry.location l ON tl.locationId = l.locationId
+  LEFT JOIN
+    tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
+  LEFT JOIN
+    tutorperry.subject s ON ts.subjectId = s.subjectId
+`;
 
-    const result = await this.prisma.$queryRaw`  SELECT 
-        t.*,
-        GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
-        (
-          SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
-          FROM tutorperry.tutorgrade tg
-          JOIN tutorperry.grade g ON tg.gradeId = g.id
-          WHERE tg.tutorId = t.tutorId
-      ) AS subjectGrade
-        FROM 
-            tutorperry.tutor t
-        LEFT JOIN 
-            tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
-        LEFT JOIN 
-            tutorperry.location l ON tl.locationId = l.locationId
-        LEFT JOIN
-            tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
-        LEFT JOIN
-            tutorperry.subject s ON ts.subjectId = s.subjectId
-        WHERE 
-        ${highestFee}
-        t.tutorId IN (
-          SELECT DISTINCT t.tutorId
-          FROM tutorperry.tutor t
-          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
-          LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
-          LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
-          WHERE
-          ${locationQuery} AND
-          ${subjectQuery}
-      )
-        GROUP BY 
-            t.tutorId
-        ORDER BY 
-            t.lastOnline DESC;
-    `;
+    // Dynamic WHERE conditions for the main query
+    let whereConditions = [];
+    if (highestFee !== undefined) {
+      whereConditions.push(highestFee);
+    }
+
+    // Add the WHERE clause if there are conditions to include
+    if (whereConditions.length > 0) {
+      mainQuery += ` WHERE ${whereConditions.join(' AND ')}`;
+    }
+
+    // Subquery with its own dynamic WHERE conditions
+    let subQuery = `
+  t.tutorId IN (
+    SELECT DISTINCT t.tutorId
+    FROM tutorperry.tutor t
+    LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
+    LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+    LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
+    LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+`;
+
+    // Dynamic WHERE conditions for the subquery
+    let subWhereConditions = [];
+    if (locationQuery) {
+      subWhereConditions.push(locationQuery);
+    }
+    if (subjectQuery) {
+      subWhereConditions.push(subjectQuery);
+    }
+
+    // Add the WHERE clause if there are subquery conditions to include
+    if (subWhereConditions.length > 0) {
+      subQuery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+    }
+
+    // Close the subquery
+    subQuery += `)`;
+
+    // Add the subquery to the main query
+    mainQuery += subQuery;
+
+    // Add GROUP BY and ORDER BY clauses
+    mainQuery += `
+  GROUP BY
+    t.tutorId
+  ORDER BY
+    t.lastOnline DESC
+`;
+
+    // Execute the raw query safely with Prisma
+    const result = await this.prisma.$queryRawUnsafe(mainQuery);
+
     return result;
   }
 
@@ -256,47 +291,71 @@ GROUP BY
       'tutor',
     );
 
-    const result = await this.prisma.$queryRaw`  SELECT 
-        t.*,
-        GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-        GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
-        f.idfavourite AS idfavourite,
-        (
-          SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
-          FROM tutorperry.tutorgrade tg
-          JOIN tutorperry.grade g ON tg.gradeId = g.id
-          WHERE tg.tutorId = t.tutorId
-      ) AS subjectGrade
-        FROM 
-            tutorperry.tutor t
-        LEFT JOIN 
-            tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
-        LEFT JOIN 
-            tutorperry.location l ON tl.locationId = l.locationId
-        LEFT JOIN
-            tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
-        LEFT JOIN
-            tutorperry.subject s ON ts.subjectId = s.subjectId
-        LEFT JOIN
-            tutorperry.favourite f ON t.tutorId = f.tutorId AND f.userId = ${userId}
-        WHERE 
-        ${highestFee}
-        t.tutorId IN (
-          SELECT DISTINCT t.tutorId
-          FROM tutorperry.tutor t
-          LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
-          LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-          LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
-          LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
-          WHERE
-          ${locationQuery} AND
-          ${subjectQuery}
-      )
-        GROUP BY 
-            t.tutorId,f.idfavourite
-        ORDER BY 
-            t.lastOnline DESC;
-    `;
+    let mainQuery = `
+  SELECT 
+    t.*,
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
+    GROUP_CONCAT(DISTINCT s.name SEPARATOR ',') AS subjects,
+    f.idfavourite AS idfavourite,
+    (
+      SELECT JSON_OBJECTAGG(g.subjectkey, tg.examGrade) 
+      FROM tutorperry.tutorgrade tg
+      JOIN tutorperry.grade g ON tg.gradeId = g.id
+      WHERE tg.tutorId = t.tutorId
+    ) AS subjectGrade
+  FROM 
+    tutorperry.tutor t
+  LEFT JOIN 
+    tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
+  LEFT JOIN 
+    tutorperry.location l ON tl.locationId = l.locationId
+  LEFT JOIN
+    tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
+  LEFT JOIN
+    tutorperry.subject s ON ts.subjectId = s.subjectId
+  LEFT JOIN
+    tutorperry.favourite f ON t.tutorId = f.tutorId AND f.userId = ${userId}
+`;
+
+    // Dynamic WHERE conditions for the main query
+    let whereConditions = [];
+    if (highestFee !== undefined) {
+      whereConditions.push(highestFee);
+    }
+
+    // Subquery for tutorId filtering based on location and subject
+    let subQuery = `
+  t.tutorId IN (
+    SELECT DISTINCT t.tutorId
+    FROM tutorperry.tutor t
+    LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
+    LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+    LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
+    LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+    WHERE
+    ${locationQuery} AND
+    ${subjectQuery}
+  )
+`;
+
+    // Combine the WHERE conditions with the subquery
+    if (whereConditions.length > 0) {
+      mainQuery += ` WHERE ${whereConditions.join(' AND ')} AND ` + subQuery;
+    } else {
+      mainQuery += ` WHERE ` + subQuery;
+    }
+
+    // Add GROUP BY and ORDER BY clauses
+    mainQuery += `
+  GROUP BY 
+    t.tutorId, f.idfavourite
+  ORDER BY 
+    t.lastOnline DESC
+`;
+
+    // Execute the raw query safely with Prisma
+    const result = await this.prisma.$queryRawUnsafe(mainQuery);
+
     return result;
   }
 

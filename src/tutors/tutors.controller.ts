@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { TutorsService } from './tutors.service';
 import { dummyTutor } from '../DUMMY/dummyTutor';
-
 import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
 
 @Controller('tutors')
@@ -23,7 +22,8 @@ export class TutorsController {
     return this.tutorsService.findManyWithStatusOpen();
   }
   @Get('withFavourite')
-  async findAllWithFavourite(@Body() requestBody) {
+  @UseGuards(JwtAuthGuard)
+  async findAllWithFavourite(@Body() requestBody: any) {
     // Implement logic to fetch students based on query parameters
     return this.tutorsService.findManyWithStatusOpenWithFavourite(
       requestBody.userId,

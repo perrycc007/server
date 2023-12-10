@@ -12,7 +12,7 @@ export class ExtractUserIdMiddleware implements NestMiddleware {
     if (token) {
       try {
         const decoded = this.jwtService.verify(token);
-        req['userid'] = decoded.userid; // Attach the userid to the request object
+        req.body.userId = decoded.id; // Attach the userid to the request object
       } catch (error) {
         // Handle token verification error
         // You may want to log or handle this error differently

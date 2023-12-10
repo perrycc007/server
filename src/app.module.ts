@@ -1,4 +1,10 @@
-import { Module } from '@nestjs/common';
+import {
+  Module,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+} from '@nestjs/common';
+import { ExtractUserIdMiddleware } from './getuserid/extractUserId.middleware';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthController } from './auth/auth.controller';
@@ -26,6 +32,7 @@ import { ResultService } from './result/result.service';
 import { PasswordForgetService } from './password-forget/password-forget.service';
 import { PasswordResetService } from './password-reset/password-reset.service';
 import { PrismaService } from './prisma/prisma.service';
+
 @Module({
   imports: [
     JwtModule.register({
@@ -64,4 +71,10 @@ import { PrismaService } from './prisma/prisma.service';
     ResultService,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(ExtractUserIdMiddleware).forRoutes(
+      { path: '*', method: RequestMethod.ALL }, // Apply to all routes under 'tutors'
+    );
+  }
+}
