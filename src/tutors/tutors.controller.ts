@@ -22,7 +22,6 @@ export class TutorsController {
     return this.tutorsService.findManyWithStatusOpen();
   }
   @Get('withFavourite')
-  @UseGuards(JwtAuthGuard)
   async findAllWithFavourite(@Body() requestBody: any) {
     // Implement logic to fetch students based on query parameters
     return this.tutorsService.findManyWithStatusOpenWithFavourite(

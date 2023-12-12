@@ -55,7 +55,7 @@ model student {
   others             String?            @db.VarChar(45)
   expectation        String?            @db.VarChar(45)
   genderrequirement  String?            @db.VarChar(45)
-  status             String?            @default("open") @db.VarChar(45)
+  status             String?            @default("OPEN") @db.VarChar(45)
   highestfee         Int?
   highestfrequency   Int?
   highestduration    Int?
@@ -94,7 +94,7 @@ model tutor {
   highestfee           Int?
   lowestfee            Int?
   matchedbefore        Json?
-  status               String?          @default("open") @db.VarChar(45)
+  status               String?          @default("OPEN") @db.VarChar(45)
   lastOnline           DateTime?        @db.DateTime(0)
   verify               String?          @default("未驗證") @db.VarChar(45)
   completeFormStatus   Boolean          @default(false)

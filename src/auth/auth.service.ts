@@ -7,33 +7,40 @@ import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
 
   async signUp(signUpDto: SignUpDto): Promise<any> {
-    const { email, password } = signUpDto;
-    const saltRounds = 8;
-    const salt = await bcrypt.genSalt(saltRounds);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    try {
+      const { email, password } = signUpDto;
+      const saltRounds = 8;
+      const salt = await bcrypt.genSalt(saltRounds);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-      },
-    });
+      const user = await this.prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+        },
+      });
 
-    if (!user) {
-      throw new Error('User registration failed');
+      if (!user) {
+        throw new Error('User registration failed');
+      }
+
+      const accessToken = this.generateAccessToken({
+        id: user.userId,
+        email: user.email,
+      });
+      return { accessToken: accessToken, userId: user.userId };
+    } catch (error) {
+      this.logger.error(`Error during sign-up: ${error.message}`);
+      throw error;
     }
-
-    const accessToken = this.generateAccessToken({
-      id: user.userId,
-      email: user.email,
-    });
-    return { accessToken: accessToken, userId: user.userId };
   }
 
   async authenticateUser(email: string, password: string): Promise<any> {
@@ -47,7 +54,7 @@ export class AuthService {
       if (!user) {
         throw new Error('Invalid email or password');
       }
-      console.log(password);
+
       const validPassword = await bcrypt.compare(password, user.password);
 
       if (!validPassword) {
@@ -61,6 +68,7 @@ export class AuthService {
       });
       return { accessToken: accessToken, userId: user.userId };
     } catch (error) {
+      this.logger.error(`Error during authentication: ${error.message}`);
       throw error;
     }
   }

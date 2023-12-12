@@ -5,6 +5,7 @@ import { StudentsService } from '../students/students.service';
 import { TutorsService } from '../tutors/tutors.service';
 import { HistoryService } from '../history/history.service';
 import { ProfileService } from '../profile/profile.service';
+
 @Controller('admin')
 // @UseGuards(JwtAdminGuard)
 export class AdminController {
@@ -18,44 +19,93 @@ export class AdminController {
 
   @Patch('toggleCheck')
   async toggleCheck(@Body() requestBody) {
-    return this.adminService.toggleCheck(requestBody);
+    try {
+      return await this.adminService.toggleCheck(requestBody);
+    } catch (error) {
+      // Handle the error and send an appropriate response or rethrow if needed.
+      throw error;
+    }
   }
 
   @Patch('toggleAvail')
   async toggleAvail(@Body() requestBody) {
-    return this.adminService.toggleAvail(requestBody);
+    try {
+      return await this.adminService.toggleAvail(requestBody);
+    } catch (error) {
+      // Handle the error and send an appropriate response or rethrow if needed.
+      throw error;
+    }
   }
 
   @Patch('updateTutorVerify')
   async updateTutorVerify(@Body() requestBody) {
-    return this.adminService.updateTutorVerify(requestBody);
+    try {
+      return await this.adminService.updateTutorVerify(requestBody);
+    } catch (error) {
+      // Handle the error and send an appropriate response or rethrow if needed.
+      throw error;
+    }
   }
-
-  // update profile
   @Patch('profile')
   async updateProfile(@Body() requestBody) {
-    return this.profileService.updateProfile(requestBody);
+    try {
+      return await this.profileService.updateProfile(requestBody);
+    } catch (error) {
+      // Handle the error and send an appropriate response or rethrow if needed.
+      throw error;
+    }
   }
 
   // update tutor
   @Patch('updateTutor')
   async updateTutor(@Body() updateInfo: any) {
-    return this.tutorsService.createOrUpdateTutor(updateInfo.information);
+    try {
+      return await this.tutorsService.createOrUpdateTutor(
+        updateInfo.information,
+      );
+    } catch (error) {
+      // Handle the error and send an appropriate response or rethrow if needed.
+      throw error;
+    }
   }
+
   // update student
   @Patch('updateStudent')
   async updateStudent(@Body() requestBody) {
-    const result = await this.studentsService.updateStudent(requestBody);
-    return { result };
+    try {
+      const result = await this.studentsService.updateStudent(requestBody);
+      return { result };
+    } catch (error) {
+      // Handle the error and send an appropriate response or rethrow if needed.
+      throw error;
+    }
   }
+
   // toggle student status
   @Patch('updateCaseStatus')
   async updateCaseStatus(@Body() body: { studentId: string; status: string }) {
-    return this.historyService.updateCaseStatus(body.studentId, body.status);
+    try {
+      return await this.historyService.updateCaseStatus(
+        body.studentId,
+        body.status,
+      );
+    } catch (error) {
+      // Handle the error and send an appropriate response or rethrow if needed.
+      throw error;
+    }
   }
+
   // toggle check status
   @Patch('updateTutorStatus')
   async updateTutorStatus(@Body() body: { tutorId: string; status: string }) {
-    return this.historyService.updateTutorStatus(body.tutorId, body.status);
+    try {
+      return await this.historyService.updateTutorStatus(
+        body.tutorId,
+        body.status,
+      );
+    } catch (error) {
+      // Handle the error and send an appropriate response or rethrow if needed.
+      throw error;
+    }
   }
 }

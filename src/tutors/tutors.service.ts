@@ -83,7 +83,7 @@ LEFT JOIN
 LEFT JOIN
       tutorperry.favourite f ON t.tutorId = f.tutorId AND f.userId = ${userId}
 WHERE 
-    t.status = 'open'
+    t.status = 'OPEN'
 GROUP BY 
     t.tutorId,f.idfavourite
 ORDER BY 
@@ -183,16 +183,23 @@ GROUP BY
   ): Promise<any> {
     console.log(locations);
     const highestFee = this.DataService.HighestFeeQuery(highestfee);
-    const locationQuery = this.DataService.QueryBuilder(
-      locations,
-      'locations',
-      'tutor',
-    );
-    const subjectQuery = this.DataService.QueryBuilder(
-      subjects,
-      'subjects',
-      'tutor',
-    );
+    let locationQuery = null;
+    let subjectQuery = null;
+
+    if (locations.length !== 0) {
+      locationQuery = this.DataService.QueryBuilder(
+        locations,
+        'locations',
+        'tutor',
+      );
+    }
+    if (subjects.length !== 0) {
+      subjectQuery = this.DataService.QueryBuilder(
+        subjects,
+        'subjects',
+        'tutor',
+      );
+    }
     let mainQuery = `
   SELECT
     t.*,
@@ -280,17 +287,23 @@ GROUP BY
   ): Promise<any> {
     console.log(locations);
     const highestFee = this.DataService.HighestFeeQuery(highestfee);
-    const locationQuery = this.DataService.QueryBuilder(
-      locations,
-      'locations',
-      'tutor',
-    );
-    const subjectQuery = this.DataService.QueryBuilder(
-      subjects,
-      'subjects',
-      'tutor',
-    );
+    let locationQuery = null;
+    let subjectQuery = null;
 
+    if (locations.length !== 0) {
+      locationQuery = this.DataService.QueryBuilder(
+        locations,
+        'locations',
+        'tutor',
+      );
+    }
+    if (subjects.length !== 0) {
+      subjectQuery = this.DataService.QueryBuilder(
+        subjects,
+        'subjects',
+        'tutor',
+      );
+    }
     let mainQuery = `
   SELECT 
     t.*,

@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { location } from '../helper/location';
-import { subject } from '../helper/subject';
-import { timeslot } from '../helper/timeslot';
+import { Logger } from '@nestjs/common';
 @Injectable()
 export class DataService {
   // Assuming timeslot, subject, and location arrays are imported or defined earlier in the code
-
+  private readonly logger = new Logger(DataService.name); // Create a logger instance
   QueryBuilder(data: any, type: string, category: string) {
     function generateLocationFilter(itemArray) {
       if (type == 'locations') {

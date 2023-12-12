@@ -1,6 +1,9 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { UnauthorizedException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -31,7 +34,16 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return true;
       // Return true to indicate that the user is authenticated
     } catch (err) {
-      throw new UnauthorizedException('Invalid token.');
+      // Handle JWT verification errors
+      if (err.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token has expired.');
+      } else if (err.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Invalid token.');
+      } else {
+        throw new InternalServerErrorException(
+          'An error occurred while authenticating.',
+        );
+      }
     }
   }
 
@@ -64,7 +76,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       });
     } catch (error) {
       console.error('Error updating profile:', error);
-      throw new UnauthorizedException('Profile update failed.');
+      throw new InternalServerErrorException('Profile update failed.');
     }
   }
 }

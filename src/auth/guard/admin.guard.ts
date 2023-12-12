@@ -1,11 +1,17 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class JwtAdminGuard extends AuthGuard('jwt') {
+  private readonly logger = new Logger(JwtAdminGuard.name);
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
@@ -13,30 +19,32 @@ export class JwtAdminGuard extends AuthGuard('jwt') {
     super();
   }
 
-  async canActivate(context: ExecutionContext): Promise<any> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractToken(request);
 
     if (!token) {
-      throw new UnauthorizedException('You must be authenticated.');
+      this.logger.warn('No token found in request headers');
+      throw new UnauthorizedException('Authentication token is missing.');
     }
 
     try {
       const decodedToken = this.jwtService.verify(token);
-      const userId = decodedToken.id; // Extract the user ID from the decoded token
-      // Pass the userId to the controller by setting it on the request object
+      const userId = decodedToken.id;
       request.userId = userId;
-      // Perform additional actions here, e.g., updating the profile
-      const role = await this.checkRole(parseInt(userId));
-      if (role.data == 'admin') {
-        return true;
-      } else {
-        throw new UnauthorizedException('You must be admin.');
-      }
 
-      // Return true to indicate that the user is authenticated
-    } catch (err) {
-      throw new UnauthorizedException('Invalid token.');
+      const userRole = await this.checkRole(parseInt(userId));
+      if (userRole?.role !== 'admin') {
+        this.logger.warn(`Access denied for non-admin user with ID: ${userId}`);
+        throw new UnauthorizedException('Only admin users are authorized.');
+      }
+      return true;
+    } catch (error) {
+      this.logger.error(
+        'Error validating token or checking user role',
+        error.stack,
+      );
+      throw new UnauthorizedException('Invalid or expired token.');
     }
   }
 
@@ -44,31 +52,25 @@ export class JwtAdminGuard extends AuthGuard('jwt') {
     const authHeader = request.headers.authorization;
     if (authHeader) {
       const parts = authHeader.split(' ');
-      if (parts.length === 2) {
-        const scheme = parts[0];
-        const token = parts[1];
-        if (/^Bearer$/i.test(scheme)) {
-          return token;
-        }
+      if (parts.length === 2 && /^Bearer$/i.test(parts[0])) {
+        return parts[1];
       }
     }
     return null;
   }
 
-  private async checkRole(userId: number): Promise<any> {
+  private async checkRole(userId: number): Promise<{ role: string } | null> {
     try {
-      const result = await this.prisma.user.findUnique({
-        where: {
-          userId: userId, // Use the extracted user ID
-        },
-        select: {
-          role: true,
-        },
+      return await this.prisma.user.findUnique({
+        where: { userId },
+        select: { role: true },
       });
-      return result;
     } catch (error) {
-      console.error('Error updating profile:', error);
-      throw new UnauthorizedException('Profile update failed.');
+      this.logger.error(
+        `Error fetching role for user with ID: ${userId}`,
+        error.stack,
+      );
+      throw error; // Rethrow the error or handle it as needed
     }
   }
 }

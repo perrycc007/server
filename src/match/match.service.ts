@@ -190,82 +190,182 @@ export class MatchService {
   }
 }
 
-async function findMatchingStudents(location, subject, lowestfee) {
-  const lowestFee = this.DataService.LowestFeeQuery(lowestfee);
-  const locationQuery = this.DataService.QueryBuilder(location, 'location');
-  const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
-  const result = await this.prisma.$queryRaw`
-  SELECT 
-    s.studentId
-    s.lastOnline
-    FROM
-      tutorperry.student s
-    LEFT JOIN
-      tutorperry.studentLocation sl ON s.studentId = sl.studentId
-    LEFT JOIN
-      tutorperry.location l ON sl.locationId = l.locationId
-    LEFT JOIN
-      tutorperry.studentSubject ss ON s.studentId = ss.studentId
-    LEFT JOIN
-      tutorperry.subject su ON ss.subjectId = su.subjectId
-      WHERE
-      ${lowestFee}
-      s.studentId IN (
-        SELECT DISTINCT s.studentId
-        FROM tutorperry.student s
-        LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
-        LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
-        LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
-        LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
-        WHERE
-        ${locationQuery} AND
-        ${subjectQuery}
-      )
-    GROUP BY
-      s.studentId
-    ORDER BY
-      s.lastOnline DESC;
+async function findMatchingStudents(locations, subjects, lowestfee) {
+  const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
+  let locationQuery = null;
+  let subjectQuery = null;
+
+  if (locations.length !== 0) {
+    locationQuery = await this.DataService.QueryBuilder(
+      locations,
+      'locations',
+      'student',
+    );
+  }
+
+  if (subjects.length !== 0) {
+    subjectQuery = await this.DataService.QueryBuilder(
+      subjects,
+      'subjects',
+      'student',
+    );
+  }
+  // Start with the static part of the query
+  let query = `
+  SELECT
+  s.studentId
+  s.lastOnline
+  FROM
+    tutorperry.student s
+  LEFT JOIN
+    tutorperry.studentLocation sl ON s.studentId = sl.studentId
+  LEFT JOIN
+    tutorperry.location l ON sl.locationId = l.locationId
+  LEFT JOIN
+    tutorperry.studentSubject ss ON s.studentId = ss.studentId
+  LEFT JOIN
+    tutorperry.subject su ON ss.subjectId = su.subjectId
 `;
+
+  // Add dynamic WHERE conditions for the main query
+  let whereConditions = [];
+  if (lowestFee !== undefined) {
+    whereConditions.push(lowestFee);
+  }
+
+  // Add the WHERE clause if there are conditions to include
+  if (whereConditions.length > 0) {
+    query += ` WHERE ${whereConditions.join(' AND ')}`;
+  }
+
+  // Add the subquery with its own dynamic WHERE conditions
+  let subquery = `
+   s.studentId IN (
+    SELECT DISTINCT s.studentId
+    FROM tutorperry.student s
+    LEFT JOIN tutorperry.studentLocation sl ON s.studentId = sl.studentId
+    LEFT JOIN tutorperry.location l ON sl.locationId = l.locationId
+    LEFT JOIN tutorperry.studentSubject ss ON s.studentId = ss.studentId
+    LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
+`;
+
+  // Add dynamic WHERE conditions for the subquery
+  let subWhereConditions = [];
+  if (locationQuery) {
+    subWhereConditions.push(locationQuery);
+  }
+  if (subjectQuery) {
+    subWhereConditions.push(subjectQuery);
+  }
+
+  // Add the WHERE clause if there are subquery conditions to include
+  if (subWhereConditions.length > 0) {
+    subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+  }
+
+  // Close the subquery
+  subquery += `)`;
+
+  // Add the subquery to the main query
+  query += subquery;
+
+  // Add GROUP BY and ORDER BY clauses
+  query += `
+  GROUP BY
+    s.studentId
+  ORDER BY
+    s.lastOnline DESC
+`;
+
+  // Execute the raw query safely with Prisma
+  const result = await this.prisma.$queryRawUnsafe(query);
+
   return result;
 }
 
 // Helper function to find matching tutors
-async function findMatchingTutors(location, subject, highestFee) {
-  const highestFeeQuery = this.DataService.LowestFeeQuery(highestFee);
-  const locationQuery = this.DataService.QueryBuilder(location, 'location');
-  const subjectQuery = this.DataService.QueryBuilder(subject, 'subject');
-  const result = await this.prisma.$queryRaw`
-  SELECT 
-    t.tutorId
-    t.lastOnline
-    FROM 
-    tutorperry.tutor t
-LEFT JOIN 
-    tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
-LEFT JOIN 
-    tutorperry.location l ON tl.locationId = l.locationId
+async function findMatchingTutors(locations, subjects, highestfee) {
+  const highestFee = this.DataService.HighestFeeQuery(highestfee);
+  let locationQuery = null;
+  let subjectQuery = null;
+
+  if (locations.length !== 0) {
+    locationQuery = this.DataService.QueryBuilder(
+      locations,
+      'locations',
+      'tutor',
+    );
+  }
+  if (subjects.length !== 0) {
+    subjectQuery = this.DataService.QueryBuilder(subjects, 'subjects', 'tutor');
+  }
+  let mainQuery = `
+SELECT
+t.tutorId
+t.lastOnline
+FROM
+tutorperry.tutor t
 LEFT JOIN
-    tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
+tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
 LEFT JOIN
-    tutorperry.subject s ON ts.subjectId = s.subjectId
-WHERE 
-${highestFeeQuery}
-t.tutorId IN (
-  SELECT DISTINCT t.tutorId
-  FROM tutorperry.tutor t
-  LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
-  LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
-  LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
-  LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
-  WHERE
-  ${locationQuery} AND
-  ${subjectQuery}
-)
-GROUP BY 
-    t.tutorId
-ORDER BY                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-    t.lastOnline DESC;
+tutorperry.location l ON tl.locationId = l.locationId
+LEFT JOIN
+tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
+LEFT JOIN
+tutorperry.subject s ON ts.subjectId = s.subjectId
 `;
 
+  // Dynamic WHERE conditions for the main query
+  let whereConditions = [];
+  if (highestFee !== undefined) {
+    whereConditions.push(highestFee);
+  }
+
+  // Add the WHERE clause if there are conditions to include
+  if (whereConditions.length > 0) {
+    mainQuery += ` WHERE ${whereConditions.join(' AND ')}`;
+  }
+
+  // Subquery with its own dynamic WHERE conditions
+  let subQuery = `
+t.tutorId IN (
+SELECT DISTINCT t.tutorId
+FROM tutorperry.tutor t
+LEFT JOIN tutorperry.tutorLocation tl ON t.tutorId = tl.tutorId
+LEFT JOIN tutorperry.location l ON tl.locationId = l.locationId
+LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
+LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
+`;
+
+  // Dynamic WHERE conditions for the subquery
+  let subWhereConditions = [];
+  if (locationQuery) {
+    subWhereConditions.push(locationQuery);
+  }
+  if (subjectQuery) {
+    subWhereConditions.push(subjectQuery);
+  }
+
+  // Add the WHERE clause if there are subquery conditions to include
+  if (subWhereConditions.length > 0) {
+    subQuery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+  }
+
+  // Close the subquery
+  subQuery += `)`;
+
+  // Add the subquery to the main query
+  mainQuery += subQuery;
+
+  // Add GROUP BY and ORDER BY clauses
+  mainQuery += `
+GROUP BY
+t.tutorId
+ORDER BY
+t.lastOnline DESC
+`;
+
+  // Execute the raw query safely with Prisma
+  const result = await this.prisma.$queryRawUnsafe(mainQuery);
   return result;
 }

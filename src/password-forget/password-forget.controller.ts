@@ -1,9 +1,8 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
-import { PasswordForgetService } from './password-forget.service'; // Update the service import
+import { PasswordForgetService } from './password-forget.service';
 
-@Controller('password-forget') // Update the controller path
+@Controller('password-forget')
 export class PasswordForgetController {
-  // Rename the class to PasswordForgetController
   constructor(private readonly passwordForgetService: PasswordForgetService) {}
 
   @Post()

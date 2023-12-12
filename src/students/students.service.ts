@@ -87,7 +87,7 @@ export class StudentsService {
     LEFT JOIN
       tutorperry.subject su ON ss.subjectId = su.subjectId
     WHERE 
-      s.status = 'open' AND
+      s.status = 'OPEN' AND
       s.studentId = ${studentId}
     GROUP BY 
       s.studentId
@@ -115,16 +115,24 @@ export class StudentsService {
     subjects: [],
   ): Promise<any> {
     const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
-    const locationQuery = await this.DataService.QueryBuilder(
-      locations,
-      'locations',
-      'student',
-    );
-    const subjectQuery = await this.DataService.QueryBuilder(
-      subjects,
-      'subjects',
-      'student',
-    );
+    let locationQuery = null;
+    let subjectQuery = null;
+
+    if (locations.length !== 0) {
+      locationQuery = await this.DataService.QueryBuilder(
+        locations,
+        'locations',
+        'student',
+      );
+    }
+
+    if (subjects.length !== 0) {
+      subjectQuery = await this.DataService.QueryBuilder(
+        subjects,
+        'subjects',
+        'student',
+      );
+    }
 
     // Start with the static part of the query
     let query = `
@@ -195,7 +203,9 @@ export class StudentsService {
   `;
 
     // Execute the raw query safely with Prisma
+    // console.log(query);
     const result = await this.prisma.$queryRawUnsafe(query);
+
     return result;
   }
 
@@ -206,17 +216,24 @@ export class StudentsService {
     subjects: [],
   ): Promise<any> {
     const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
-    const locationQuery = await this.DataService.QueryBuilder(
-      locations,
-      'locations',
-      'student',
-    );
-    const subjectQuery = await this.DataService.QueryBuilder(
-      subjects,
-      'subjects',
-      'student',
-    );
+    let locationQuery = null;
+    let subjectQuery = null;
 
+    if (locations.length !== 0) {
+      locationQuery = await this.DataService.QueryBuilder(
+        locations,
+        'locations',
+        'student',
+      );
+    }
+
+    if (subjects.length !== 0) {
+      subjectQuery = await this.DataService.QueryBuilder(
+        subjects,
+        'subjects',
+        'student',
+      );
+    }
     let query = `
     SELECT
       s.*,
