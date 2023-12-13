@@ -22,9 +22,9 @@ export class ExtractUserIdMiddleware implements NestMiddleware {
         req.body.userId = decoded.id; // Attach the user ID to the request object
         next();
       } catch (error) {
-        this.logger.error(`Error in ExtractUserIdMiddleware: ${error.message}`);
-        // Respond with an unauthorized status code
-        throw new UnauthorizedException('Invalid token');
+        // this.logger.error(`Error in ExtractUserIdMiddleware: ${error.message}`);
+        // // Respond with an unauthorized status code
+        // throw new UnauthorizedException('Invalid token');
       }
     } else {
       next();

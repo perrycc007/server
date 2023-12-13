@@ -112,7 +112,7 @@ export class ResultService {
             'language', pTutor.language,
             'name', pTutor.name,
             'nationality', pTutor.nationality,
-            'phoneNo', pTutor.phoneno,
+            'phoneno', pTutor.phoneno,
             'lastOnline', pTutor.lastOnline
             -- Add other profile fields here if necessary
         ),
@@ -213,7 +213,7 @@ LEFT JOIN
             'findus', pStudent.findus,
             'name', pStudent.name,
             'nationality', pStudent.nationality,
-            'phoneNo', pStudent.phoneno
+            'phoneno', pStudent.phoneno
             -- Add other profile fields here if necessary
         ),
         'locations', GROUP_CONCAT(DISTINCT lStudent.location SEPARATOR ','),

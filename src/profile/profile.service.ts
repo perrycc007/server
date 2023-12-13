@@ -26,7 +26,7 @@ export class ProfileService {
     try {
       const { userId, ...information } = requestBody;
       let { availtime, country, lastOnline, ...requiredInfo } = information;
-
+      console.log(requiredInfo);
       const isEmpty = Object.values(requiredInfo).some(
         (x) => x == null || x == '',
       );
