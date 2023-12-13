@@ -6,8 +6,9 @@ import {
   Param,
   Body,
   ParseIntPipe,
-  Query,
   UseGuards,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
@@ -24,66 +25,116 @@ export class StudentsController {
   @Get()
   async findAll() {
     // Implement logic to fetch students based on query parameters
-    return this.studentsService.findManyWithStatusOpen();
+    try {
+      return this.studentsService.findManyWithStatusOpen();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to find all students',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get('withFavourite')
   async findAllWithFavourite(@Body() requestBody: any) {
-    // Implement logic to fetch students based on query parameters
-    return this.studentsService.findManyWithStatusOpenWithFavourite(
-      requestBody.userId,
-    );
+    try {
+      // Implement logic to fetch students based on query parameters
+      return this.studentsService.findManyWithStatusOpenWithFavourite(
+        requestBody.userId,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Failed to find all students with favourite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Post('getFavouriteCase/:userid')
   async getFavouriteCases(@Param('userId', ParseIntPipe) userId: number) {
-    return this.studentsService.findUniqueUserFavouriteCases(userId);
+    try {
+      return this.studentsService.findUniqueUserFavouriteCases(userId);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get favourite cases',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get(':studentId')
   async findOne(@Param('studentId') studentId: string) {
-    // Implement logic to fetch a student by ID
-    return this.studentsService.getStudentbyStudentId(studentId);
+    try {
+      // Implement logic to fetch a student by ID
+      return this.studentsService.getStudentbyStudentId(studentId);
+    } catch (error) {
+      throw new HttpException(
+        `Failed to find student with ID ${studentId}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch()
   async updateStudent(@Body() requestBody) {
-    const result = await this.studentsService.updateStudent(requestBody);
-    return { result };
+    try {
+      const result = await this.studentsService.updateStudent(requestBody);
+      return { result };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to update student',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() requestBody) {
-    // Implement logic to create a student
-    return this.studentsService.createStudent(requestBody);
+    try {
+      return await this.studentsService.createStudent(requestBody);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to create student',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Post('filter')
   async findTutorsByPreferences(@Body() requestBody: any) {
-    const { lowestfee, locations, highestfee, subjects } =
-      requestBody.preference;
-    // if (highestteachinglevel[0] == null) {
-    //   delete pref.highestteachinglevel;
-    // }
-    return this.studentsService.findStudentByPreference(
-      lowestfee,
-      locations,
-      subjects,
-    );
+    try {
+      const { lowestfee, locations, highestfee, subjects } =
+        requestBody.preference;
+      return await this.studentsService.findStudentByPreference(
+        lowestfee,
+        locations,
+        subjects,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Failed to find students by preferences',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
+
   @Post('filterWithFavourite')
   async findTutorsByPreferencesWithFavourite(@Body() requestBody: any) {
-    const { lowestfee, locations, highestfee, subjects } =
-      requestBody.preference;
-    // if (highestteachinglevel[0] == null) {
-    //   delete pref.highestteachinglevel;
-    // }
-    return this.studentsService.findStudentByPreferenceWithFavourite(
-      lowestfee,
-      locations,
-      subjects,
-      requestBody.userId,
-    );
+    try {
+      const { lowestfee, locations, highestfee, subjects } =
+        requestBody.preference;
+      return await this.studentsService.findStudentByPreferenceWithFavourite(
+        lowestfee,
+        locations,
+        subjects,
+        requestBody.userId,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Failed to find students by preferences with favourite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

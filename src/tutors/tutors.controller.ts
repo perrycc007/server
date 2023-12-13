@@ -1,4 +1,3 @@
-// tutors.controller.ts
 import {
   Controller,
   Get,
@@ -8,70 +7,117 @@ import {
   Body,
   ParseIntPipe,
   UseGuards,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { TutorsService } from './tutors.service';
 import { dummyTutor } from '../DUMMY/dummyTutor';
 import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
-
 @Controller('tutors')
 export class TutorsController {
   constructor(private readonly tutorsService: TutorsService) {}
 
   @Get()
   async findManyWithStatusOpen() {
-    return this.tutorsService.findManyWithStatusOpen();
+    try {
+      return await this.tutorsService.findManyWithStatusOpen();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to find tutors with status open',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
+
   @Get('withFavourite')
   async findAllWithFavourite(@Body() requestBody: any) {
-    // Implement logic to fetch students based on query parameters
-    return this.tutorsService.findManyWithStatusOpenWithFavourite(
-      requestBody.userId,
-    );
+    try {
+      return await this.tutorsService.findManyWithStatusOpenWithFavourite(
+        requestBody.userId,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Failed to find all with favourite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  @Post('getFavouriteCase/:userId')
-  async getFavouriteCase(@Param('userId', ParseIntPipe) userId: number) {
-    return this.tutorsService.getFavouriteTutors(userId);
-  }
-
-  @Get(':userId')
-  async getTutor(@Param('userId', ParseIntPipe) userId: number) {
-    // Assuming dummyTutor is imported or defined somewhere in the scope
-    return this.tutorsService.getTutorByuserId(userId, dummyTutor);
-  }
+  // Other methods...
 
   @Post('filter')
   async findTutorsByPreferences(@Body() requestBody: any) {
-    const { lowestfee, locations, highestfee, subjects } =
-      requestBody.preference;
-
-    // if (highestteachinglevel[0] == null) {
-    //   delete pref.highestteachinglevel;
-    // }
-    return this.tutorsService.findTutorsByPreference(
-      highestfee,
-      locations,
-      subjects,
-    );
+    try {
+      const { lowestfee, locations, highestfee, subjects } =
+        requestBody.preference;
+      return await this.tutorsService.findTutorsByPreference(
+        highestfee,
+        locations,
+        subjects,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Failed to find tutors by preferences',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Post('filterWithFavourite')
   async findTutorsByPreferencesWithFavourite(@Body() requestBody: any) {
-    const { lowestfee, locations, highestfee, subjects } =
-      requestBody.preference;
-    // if (highestteachinglevel[0] == null) {
-    //   delete pref.highestteachinglevel;
-    // }
-    return this.tutorsService.findTutorsByPreferenceWithFavourite(
-      highestfee,
-      locations,
-      subjects,
-      requestBody.userId,
-    );
+    try {
+      const { lowestfee, locations, highestfee, subjects } =
+        requestBody.preference;
+      return await this.tutorsService.findTutorsByPreferenceWithFavourite(
+        highestfee,
+        locations,
+        subjects,
+        requestBody.userId,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Failed to find tutors by preferences with favourite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch()
   async updateTutor(@Body() updateInfo: any) {
-    return this.tutorsService.createOrUpdateTutor(updateInfo.information);
+    try {
+      return await this.tutorsService.createOrUpdateTutor(
+        updateInfo.information,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Failed to update tutor information',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
+
+  @Get(':userId')
+  async getTutor(@Param('userId', ParseIntPipe) userId: number) {
+    try {
+      return await this.tutorsService.getTutorByuserId(userId, dummyTutor);
+    } catch (error) {
+      throw new HttpException(
+        `Failed to retrieve tutor with ID ${userId}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('getFavouriteCase/:userId')
+  async getFavouriteCase(@Param('userId', ParseIntPipe) userId: number) {
+    try {
+      return await this.tutorsService.getFavouriteTutors(userId);
+    } catch (error) {
+      throw new HttpException(
+        `Failed to get favourite case for user ID ${userId}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+  // Continue wrapping other methods in try-catch blocks similarly...
 }

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { PasswordForgetService } from './password-forget.service';
 
 @Controller('password-forget')
@@ -7,7 +15,18 @@ export class PasswordForgetController {
 
   @Post()
   async sendResetLink(@Body() requestBody) {
-    return this.passwordForgetService.sendResetLink(requestBody.email);
+    try {
+      if (!requestBody.email) {
+        throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
+      }
+
+      return await this.passwordForgetService.sendResetLink(requestBody.email);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to send reset link',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get(':userId/:token')
@@ -15,7 +34,14 @@ export class PasswordForgetController {
     @Param('userId') userId: string,
     @Param('token') token: string,
   ) {
-    return this.passwordForgetService.verifyToken(userId, token);
+    try {
+      return await this.passwordForgetService.verifyToken(userId, token);
+    } catch (error) {
+      throw new HttpException(
+        'Token verification failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Post(':userId/:token')
@@ -24,10 +50,21 @@ export class PasswordForgetController {
     @Param('token') token: string,
     @Body() requestBody,
   ) {
-    return this.passwordForgetService.resetPassword(
-      userId,
-      token,
-      requestBody.password,
-    );
+    try {
+      if (!requestBody.password) {
+        throw new HttpException('Password is required', HttpStatus.BAD_REQUEST);
+      }
+
+      return await this.passwordForgetService.resetPassword(
+        userId,
+        token,
+        requestBody.password,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Password reset failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

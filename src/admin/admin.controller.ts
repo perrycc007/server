@@ -1,4 +1,10 @@
-import { Controller, Patch, Body, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Patch,
+  Body,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAdminGuard } from '../auth/guard/admin.guard';
 import { StudentsService } from '../students/students.service';
@@ -23,7 +29,10 @@ export class AdminController {
       return await this.adminService.toggleCheck(requestBody);
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
-      throw error;
+      throw new HttpException(
+        'Error updating tutor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -33,7 +42,10 @@ export class AdminController {
       return await this.adminService.toggleAvail(requestBody);
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
-      throw error;
+      throw new HttpException(
+        'Error updating student',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -43,7 +55,10 @@ export class AdminController {
       return await this.adminService.updateTutorVerify(requestBody);
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
-      throw error;
+      throw new HttpException(
+        'Error updating case status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
   @Patch('profile')
@@ -52,7 +67,10 @@ export class AdminController {
       return await this.profileService.updateProfile(requestBody);
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
-      throw error;
+      throw new HttpException(
+        'Error updating profile',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -65,7 +83,10 @@ export class AdminController {
       );
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
-      throw error;
+      throw new HttpException(
+        'Error updating tutor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -77,7 +98,10 @@ export class AdminController {
       return { result };
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
-      throw error;
+      throw new HttpException(
+        'Error updating student',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -91,7 +115,10 @@ export class AdminController {
       );
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
-      throw error;
+      throw new HttpException(
+        'Error updating case status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -105,7 +132,10 @@ export class AdminController {
       );
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
-      throw error;
+      throw new HttpException(
+        'Error updating tutor status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

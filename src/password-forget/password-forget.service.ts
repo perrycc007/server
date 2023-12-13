@@ -1,95 +1,86 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { JwtService, JwtVerifyOptions } from '@nestjs/jwt'; // Assuming you have JWT module set up
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class PasswordForgetService {
-  bcrypt: any;
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
   ) {}
 
   async sendResetLink(email: string) {
-    // Implement logic to send a password reset link to the user's email
-    // Generate and send the token with the reset link
-    const result = await this.prisma.user.findFirst({
-      where: {
-        email: email,
-        // password:password
-      },
-    });
-    console.log(result);
-    if (result != null) {
-      console.log(result.userId);
-      const secret = process.env.RESET_PASSWORD_SECRET + result.password;
-      const payload = {
-        email: email,
-        userId: result.userId,
-      };
-      const token = this.jwt.sign(payload, { secret, expiresIn: '15m' });
+    try {
+      const user = await this.prisma.user.findFirst({ where: { email } });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
 
-      const link = `http://localhost:3000/resetPassword/${result.userId}/${token}`;
+      const secret = process.env.RESET_PASSWORD_SECRET + user.password;
+      const payload = { email: email, userId: user.userId };
+      const token = this.jwt.sign(payload, { secret, expiresIn: '15m' });
+      const link = `http://localhost:3000/resetPassword/${user.userId}/${token}`;
+
+      // Logic to send email with the reset link
       // sendResetPasswordEmail(email, link)
-      console.log(link);
-      return 'reset link is sent';
-    } else {
-      return 'user not found';
+      console.log(link); // Replace with actual email sending logic
+
+      return 'Reset link sent';
+    } catch (error) {
+      throw new HttpException(
+        'Failed to send reset link',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   async verifyToken(userId: string, token: string) {
-    // Implement logic to verify the token and return the payload
-    const result = await this.prisma.user.findFirst({
-      where: {
-        userId: parseInt(userId),
-      },
-    });
-    if (result != null) {
-      const secret = process.env.RESET_PASSWORD_SECRET + result.password;
-      try {
-        const payload = this.jwt.verify(token, { secret });
-        return payload;
-      } catch (error) {
-        return error.message;
+    try {
+      const user = await this.prisma.user.findFirst({
+        where: { userId: parseInt(userId) },
+      });
+      if (!user) {
+        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
       }
+
+      const secret = process.env.RESET_PASSWORD_SECRET + user.password;
+      return this.jwt.verify(token, { secret });
+    } catch (error) {
+      throw new HttpException(
+        'Token verification failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
   async resetPassword(userId: string, token: string, newPassword: string) {
-    // Implement logic to reset the user's password based on the provided token and new password
-
-    const salt = await this.bcrypt.genSalt(8);
     try {
-      const encrypedPassword = await this.bcrypt.hash(newPassword, salt);
-      const result = await this.prisma.user.findFirst({
-        where: {
-          userId: parseInt(userId),
-        },
+      const user = await this.prisma.user.findFirst({
+        where: { userId: parseInt(userId) },
       });
-      if (result != null) {
-        const secret = process.env.RESET_PASSWORD_SECRET + result.password;
-        try {
-          const payload = this.jwt.verify(token, { secret });
-          console.log(payload);
-          if (userId == payload.userId) {
-            const result = await this.prisma.user.update({
-              where: {
-                userId: parseInt(userId),
-              },
-              data: {
-                password: encrypedPassword,
-              },
-            });
-            return result;
-          }
-        } catch (error) {
-          return error.message;
-        }
+      if (!user) {
+        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
       }
+
+      const secret = process.env.RESET_PASSWORD_SECRET + user.password;
+      const payload = this.jwt.verify(token, { secret });
+      if (userId !== payload.userId.toString()) {
+        throw new HttpException('Unauthorized access', HttpStatus.UNAUTHORIZED);
+      }
+
+      const salt = await bcrypt.genSalt(8);
+      const encryptedPassword = await bcrypt.hash(newPassword, salt);
+
+      return await this.prisma.user.update({
+        where: { userId: parseInt(userId) },
+        data: { password: encryptedPassword },
+      });
     } catch (error) {
-      console.log(error.message);
-      return error.message;
+      throw new HttpException(
+        'Password reset failed',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

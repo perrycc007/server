@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { isEqual } from 'lodash';
 @Injectable()
@@ -92,9 +92,12 @@ export class MatchService {
       });
 
       return { message: 'Tutor profile updated successfully.' };
-    } catch (err) {
-      console.log('Error: ', err.message);
-      return { error: 'An error occurred while processing the tutor profile.' };
+    } catch (error) {
+      console.error('Error in matchTutor: ', error.message);
+      throw new HttpException(
+        'Failed to match tutor',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -181,37 +184,39 @@ export class MatchService {
         }
       });
       return { message: 'Student request processed successfully.' };
-    } catch (err) {
-      console.log('Error: ', err.message);
-      return {
-        error: 'An error occurred while processing the student request.',
-      };
+    } catch (error) {
+      console.error('Error in matchStudent: ', error.message);
+      throw new HttpException(
+        'Failed to match student',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
 
 async function findMatchingStudents(locations, subjects, lowestfee) {
-  const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
-  let locationQuery = null;
-  let subjectQuery = null;
+  try {
+    const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
+    let locationQuery = null;
+    let subjectQuery = null;
 
-  if (locations.length !== 0) {
-    locationQuery = await this.DataService.QueryBuilder(
-      locations,
-      'locations',
-      'student',
-    );
-  }
+    if (locations.length !== 0) {
+      locationQuery = await this.DataService.QueryBuilder(
+        locations,
+        'locations',
+        'student',
+      );
+    }
 
-  if (subjects.length !== 0) {
-    subjectQuery = await this.DataService.QueryBuilder(
-      subjects,
-      'subjects',
-      'student',
-    );
-  }
-  // Start with the static part of the query
-  let query = `
+    if (subjects.length !== 0) {
+      subjectQuery = await this.DataService.QueryBuilder(
+        subjects,
+        'subjects',
+        'student',
+      );
+    }
+    // Start with the static part of the query
+    let query = `
   SELECT
   s.studentId
   s.lastOnline
@@ -227,19 +232,19 @@ async function findMatchingStudents(locations, subjects, lowestfee) {
     tutorperry.subject su ON ss.subjectId = su.subjectId
 `;
 
-  // Add dynamic WHERE conditions for the main query
-  let whereConditions = [];
-  if (lowestFee !== undefined) {
-    whereConditions.push(lowestFee);
-  }
+    // Add dynamic WHERE conditions for the main query
+    let whereConditions = [];
+    if (lowestFee !== undefined) {
+      whereConditions.push(lowestFee);
+    }
 
-  // Add the WHERE clause if there are conditions to include
-  if (whereConditions.length > 0) {
-    query += ` WHERE ${whereConditions.join(' AND ')}`;
-  }
+    // Add the WHERE clause if there are conditions to include
+    if (whereConditions.length > 0) {
+      query += ` WHERE ${whereConditions.join(' AND ')}`;
+    }
 
-  // Add the subquery with its own dynamic WHERE conditions
-  let subquery = `
+    // Add the subquery with its own dynamic WHERE conditions
+    let subquery = `
    s.studentId IN (
     SELECT DISTINCT s.studentId
     FROM tutorperry.student s
@@ -249,57 +254,69 @@ async function findMatchingStudents(locations, subjects, lowestfee) {
     LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
 `;
 
-  // Add dynamic WHERE conditions for the subquery
-  let subWhereConditions = [];
-  if (locationQuery) {
-    subWhereConditions.push(locationQuery);
-  }
-  if (subjectQuery) {
-    subWhereConditions.push(subjectQuery);
-  }
+    // Add dynamic WHERE conditions for the subquery
+    let subWhereConditions = [];
+    if (locationQuery) {
+      subWhereConditions.push(locationQuery);
+    }
+    if (subjectQuery) {
+      subWhereConditions.push(subjectQuery);
+    }
 
-  // Add the WHERE clause if there are subquery conditions to include
-  if (subWhereConditions.length > 0) {
-    subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
-  }
+    // Add the WHERE clause if there are subquery conditions to include
+    if (subWhereConditions.length > 0) {
+      subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+    }
 
-  // Close the subquery
-  subquery += `)`;
+    // Close the subquery
+    subquery += `)`;
 
-  // Add the subquery to the main query
-  query += subquery;
+    // Add the subquery to the main query
+    query += subquery;
 
-  // Add GROUP BY and ORDER BY clauses
-  query += `
+    // Add GROUP BY and ORDER BY clauses
+    query += `
   GROUP BY
     s.studentId
   ORDER BY
     s.lastOnline DESC
 `;
 
-  // Execute the raw query safely with Prisma
-  const result = await this.prisma.$queryRawUnsafe(query);
+    // Execute the raw query safely with Prisma
+    const result = await this.prisma.$queryRawUnsafe(query);
 
-  return result;
+    return result;
+  } catch (error) {
+    console.error('Error in findMatchingStudents: ', error.message);
+    throw new HttpException(
+      'Failed to find matching students',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
 }
 
 // Helper function to find matching tutors
 async function findMatchingTutors(locations, subjects, highestfee) {
-  const highestFee = this.DataService.HighestFeeQuery(highestfee);
-  let locationQuery = null;
-  let subjectQuery = null;
+  try {
+    const highestFee = this.DataService.HighestFeeQuery(highestfee);
+    let locationQuery = null;
+    let subjectQuery = null;
 
-  if (locations.length !== 0) {
-    locationQuery = this.DataService.QueryBuilder(
-      locations,
-      'locations',
-      'tutor',
-    );
-  }
-  if (subjects.length !== 0) {
-    subjectQuery = this.DataService.QueryBuilder(subjects, 'subjects', 'tutor');
-  }
-  let mainQuery = `
+    if (locations.length !== 0) {
+      locationQuery = this.DataService.QueryBuilder(
+        locations,
+        'locations',
+        'tutor',
+      );
+    }
+    if (subjects.length !== 0) {
+      subjectQuery = this.DataService.QueryBuilder(
+        subjects,
+        'subjects',
+        'tutor',
+      );
+    }
+    let mainQuery = `
 SELECT
 t.tutorId
 t.lastOnline
@@ -315,19 +332,19 @@ LEFT JOIN
 tutorperry.subject s ON ts.subjectId = s.subjectId
 `;
 
-  // Dynamic WHERE conditions for the main query
-  let whereConditions = [];
-  if (highestFee !== undefined) {
-    whereConditions.push(highestFee);
-  }
+    // Dynamic WHERE conditions for the main query
+    let whereConditions = [];
+    if (highestFee !== undefined) {
+      whereConditions.push(highestFee);
+    }
 
-  // Add the WHERE clause if there are conditions to include
-  if (whereConditions.length > 0) {
-    mainQuery += ` WHERE ${whereConditions.join(' AND ')}`;
-  }
+    // Add the WHERE clause if there are conditions to include
+    if (whereConditions.length > 0) {
+      mainQuery += ` WHERE ${whereConditions.join(' AND ')}`;
+    }
 
-  // Subquery with its own dynamic WHERE conditions
-  let subQuery = `
+    // Subquery with its own dynamic WHERE conditions
+    let subQuery = `
 t.tutorId IN (
 SELECT DISTINCT t.tutorId
 FROM tutorperry.tutor t
@@ -337,35 +354,42 @@ LEFT JOIN tutorperry.tutorSubject ts ON t.tutorId = ts.tutorId
 LEFT JOIN tutorperry.subject s ON ts.subjectId = s.subjectId
 `;
 
-  // Dynamic WHERE conditions for the subquery
-  let subWhereConditions = [];
-  if (locationQuery) {
-    subWhereConditions.push(locationQuery);
-  }
-  if (subjectQuery) {
-    subWhereConditions.push(subjectQuery);
-  }
+    // Dynamic WHERE conditions for the subquery
+    let subWhereConditions = [];
+    if (locationQuery) {
+      subWhereConditions.push(locationQuery);
+    }
+    if (subjectQuery) {
+      subWhereConditions.push(subjectQuery);
+    }
 
-  // Add the WHERE clause if there are subquery conditions to include
-  if (subWhereConditions.length > 0) {
-    subQuery += ` WHERE ${subWhereConditions.join(' AND ')}`;
-  }
+    // Add the WHERE clause if there are subquery conditions to include
+    if (subWhereConditions.length > 0) {
+      subQuery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+    }
 
-  // Close the subquery
-  subQuery += `)`;
+    // Close the subquery
+    subQuery += `)`;
 
-  // Add the subquery to the main query
-  mainQuery += subQuery;
+    // Add the subquery to the main query
+    mainQuery += subQuery;
 
-  // Add GROUP BY and ORDER BY clauses
-  mainQuery += `
+    // Add GROUP BY and ORDER BY clauses
+    mainQuery += `
 GROUP BY
 t.tutorId
 ORDER BY
 t.lastOnline DESC
 `;
 
-  // Execute the raw query safely with Prisma
-  const result = await this.prisma.$queryRawUnsafe(mainQuery);
-  return result;
+    // Execute the raw query safely with Prisma
+    const result = await this.prisma.$queryRawUnsafe(mainQuery);
+    return result;
+  } catch (error) {
+    console.error('Error in findMatchingTutors: ', error.message);
+    throw new HttpException(
+      'Failed to find matching tutors',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
 }

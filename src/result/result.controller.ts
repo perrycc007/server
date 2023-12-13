@@ -4,12 +4,14 @@ import {
   Param,
   Query,
   UseGuards,
-  Request,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ResultService } from './result.service';
-import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
+import { JwtAdminGuard } from '../auth/guard/admin.guard'; // Import the JwtAuthGuard
 // @UseGuards(JwtAuthGuard)
 @Controller('result')
+@UseGuards(JwtAdminGuard)
 export class ResultController {
   constructor(private readonly resultService: ResultService) {}
 
@@ -25,25 +27,57 @@ export class ResultController {
     @Param('studentid') studentid: string,
     @Query('page') page: string,
   ) {
-    const parsedStudentId = JSON.parse(studentid);
-    const parsedPage = JSON.parse(page);
-    return this.resultService.getResultByStudentId(parsedStudentId, parsedPage);
+    try {
+      const parsedStudentId = JSON.parse(studentid);
+      const parsedPage = JSON.parse(page);
+      return await this.resultService.getResultByStudentId(
+        parsedStudentId,
+        parsedPage,
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get results by student ID',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
+
   @Get('tutorId/:tutorId')
   async getResultBytutorId(
     @Param('tutorId') tutorId: string,
     @Query('page') page: string,
   ) {
-    const parsedtutorId = JSON.parse(tutorId);
-    const parsedPage = JSON.parse(page);
-    return this.resultService.getResultByStudentId(parsedtutorId, parsedPage);
+    try {
+      const parsedtutorId = JSON.parse(tutorId);
+      const parsedPage = JSON.parse(page);
+      return this.resultService.getResultByStudentId(parsedtutorId, parsedPage);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get results by tutor ID',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Get('studentidSorted')
   async getSortedStudentid() {
-    return this.resultService.getSortedStudentId();
+    try {
+      return this.resultService.getSortedStudentId();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get sorted student IDs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   @Get('tutorIdSorted')
   async getSortedTutortid() {
-    return this.resultService.getSortedTutortid();
+    try {
+      return this.resultService.getSortedTutortid();
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get sorted tutor IDs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

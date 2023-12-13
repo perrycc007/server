@@ -34,7 +34,7 @@ export class JwtAdminGuard extends AuthGuard('jwt') {
       request.userId = userId;
 
       const userRole = await this.checkRole(parseInt(userId));
-      if (userRole?.role !== 'admin') {
+      if (userRole?.role !== 'ADMIN') {
         this.logger.warn(`Access denied for non-admin user with ID: ${userId}`);
         throw new UnauthorizedException('Only admin users are authorized.');
       }

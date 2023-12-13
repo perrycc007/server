@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // Assuming you have a PrismaService
 import { DataService } from '../helper/helperFunction.service';
 @Injectable()
@@ -9,7 +9,8 @@ export class StudentsService {
   ) {}
 
   async findManyWithStatusOpen(): Promise<any> {
-    const result = await this.prisma.$queryRaw` 
+    try {
+      const result = await this.prisma.$queryRaw` 
     SELECT 
       s.*,
       GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
@@ -36,11 +37,18 @@ export class StudentsService {
     ORDER BY 
       s.lastOnline DESC;
   `;
-    return result;
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Error finding students with status open',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async findManyWithStatusOpenWithFavourite(userId: number): Promise<any> {
-    const result = await this.prisma.$queryRaw` 
+    try {
+      const result = await this.prisma.$queryRaw` 
     SELECT 
       s.*,
       GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
@@ -67,11 +75,18 @@ export class StudentsService {
     ORDER BY 
       s.lastOnline DESC;
   `;
-    return result;
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Error finding students with status open and favourite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getStudentbyStudentId(studentId: string) {
-    const result = await this.prisma.$queryRaw`
+    try {
+      const result = await this.prisma.$queryRaw`
     SELECT 
     t.*,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
@@ -94,18 +109,24 @@ export class StudentsService {
     ORDER BY 
       s.lastOnline DESC;
   `;
-    if (result !== null) {
-      result[0].locations = result[0].locations
-        ? result[0].locations.split(',')
-        : [];
-      result[0].subjects = result[0].subjects
-        ? result[0].subjects.split(',')
-        : [];
-      result[0].availtimes = result[0].availtimes
-        ? result[0].availtimes.split(',')
-        : [];
-      console.log(result[0]);
-      return result[0];
+      if (result !== null) {
+        result[0].locations = result[0].locations
+          ? result[0].locations.split(',')
+          : [];
+        result[0].subjects = result[0].subjects
+          ? result[0].subjects.split(',')
+          : [];
+        result[0].availtimes = result[0].availtimes
+          ? result[0].availtimes.split(',')
+          : [];
+        console.log(result[0]);
+        return result[0];
+      }
+    } catch (error) {
+      throw new HttpException(
+        'Error finding user favourite cases',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -114,28 +135,29 @@ export class StudentsService {
     locations: [],
     subjects: [],
   ): Promise<any> {
-    const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
-    let locationQuery = null;
-    let subjectQuery = null;
+    try {
+      const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
+      let locationQuery = null;
+      let subjectQuery = null;
 
-    if (locations.length !== 0) {
-      locationQuery = await this.DataService.QueryBuilder(
-        locations,
-        'locations',
-        'student',
-      );
-    }
+      if (locations.length !== 0) {
+        locationQuery = await this.DataService.QueryBuilder(
+          locations,
+          'locations',
+          'student',
+        );
+      }
 
-    if (subjects.length !== 0) {
-      subjectQuery = await this.DataService.QueryBuilder(
-        subjects,
-        'subjects',
-        'student',
-      );
-    }
+      if (subjects.length !== 0) {
+        subjectQuery = await this.DataService.QueryBuilder(
+          subjects,
+          'subjects',
+          'student',
+        );
+      }
 
-    // Start with the static part of the query
-    let query = `
+      // Start with the static part of the query
+      let query = `
     SELECT
       s.*,
       GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
@@ -152,19 +174,19 @@ export class StudentsService {
       tutorperry.subject su ON ss.subjectId = su.subjectId
   `;
 
-    // Add dynamic WHERE conditions for the main query
-    let whereConditions = [];
-    if (lowestFee !== undefined) {
-      whereConditions.push(lowestFee);
-    }
+      // Add dynamic WHERE conditions for the main query
+      let whereConditions = [];
+      if (lowestFee !== undefined) {
+        whereConditions.push(lowestFee);
+      }
 
-    // Add the WHERE clause if there are conditions to include
-    if (whereConditions.length > 0) {
-      query += ` WHERE ${whereConditions.join(' AND ')}`;
-    }
+      // Add the WHERE clause if there are conditions to include
+      if (whereConditions.length > 0) {
+        query += ` WHERE ${whereConditions.join(' AND ')}`;
+      }
 
-    // Add the subquery with its own dynamic WHERE conditions
-    let subquery = `
+      // Add the subquery with its own dynamic WHERE conditions
+      let subquery = `
      s.studentId IN (
       SELECT DISTINCT s.studentId
       FROM tutorperry.student s
@@ -174,39 +196,45 @@ export class StudentsService {
       LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
   `;
 
-    // Add dynamic WHERE conditions for the subquery
-    let subWhereConditions = [];
-    if (locationQuery) {
-      subWhereConditions.push(locationQuery);
-    }
-    if (subjectQuery) {
-      subWhereConditions.push(subjectQuery);
-    }
+      // Add dynamic WHERE conditions for the subquery
+      let subWhereConditions = [];
+      if (locationQuery) {
+        subWhereConditions.push(locationQuery);
+      }
+      if (subjectQuery) {
+        subWhereConditions.push(subjectQuery);
+      }
 
-    // Add the WHERE clause if there are subquery conditions to include
-    if (subWhereConditions.length > 0) {
-      subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
-    }
+      // Add the WHERE clause if there are subquery conditions to include
+      if (subWhereConditions.length > 0) {
+        subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+      }
 
-    // Close the subquery
-    subquery += `)`;
+      // Close the subquery
+      subquery += `)`;
 
-    // Add the subquery to the main query
-    query += subquery;
+      // Add the subquery to the main query
+      query += subquery;
 
-    // Add GROUP BY and ORDER BY clauses
-    query += `
+      // Add GROUP BY and ORDER BY clauses
+      query += `
     GROUP BY
       s.studentId
     ORDER BY
       s.lastOnline DESC
   `;
 
-    // Execute the raw query safely with Prisma
-    // console.log(query);
-    const result = await this.prisma.$queryRawUnsafe(query);
+      // Execute the raw query safely with Prisma
+      // console.log(query);
+      const result = await this.prisma.$queryRawUnsafe(query);
 
-    return result;
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Error finding student by preference',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async findStudentByPreferenceWithFavourite(
@@ -215,26 +243,27 @@ export class StudentsService {
     locations: [],
     subjects: [],
   ): Promise<any> {
-    const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
-    let locationQuery = null;
-    let subjectQuery = null;
+    try {
+      const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
+      let locationQuery = null;
+      let subjectQuery = null;
 
-    if (locations.length !== 0) {
-      locationQuery = await this.DataService.QueryBuilder(
-        locations,
-        'locations',
-        'student',
-      );
-    }
+      if (locations.length !== 0) {
+        locationQuery = await this.DataService.QueryBuilder(
+          locations,
+          'locations',
+          'student',
+        );
+      }
 
-    if (subjects.length !== 0) {
-      subjectQuery = await this.DataService.QueryBuilder(
-        subjects,
-        'subjects',
-        'student',
-      );
-    }
-    let query = `
+      if (subjects.length !== 0) {
+        subjectQuery = await this.DataService.QueryBuilder(
+          subjects,
+          'subjects',
+          'student',
+        );
+      }
+      let query = `
     SELECT
       s.*,
       GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
@@ -254,19 +283,19 @@ export class StudentsService {
       tutorperry.favourite f ON s.studentId = f.studentId AND f.userId = ${userId}
   `;
 
-    // Add dynamic WHERE conditions for the main query
-    let whereConditions = [];
-    if (lowestFee !== undefined) {
-      whereConditions.push(lowestFee);
-    }
+      // Add dynamic WHERE conditions for the main query
+      let whereConditions = [];
+      if (lowestFee !== undefined) {
+        whereConditions.push(lowestFee);
+      }
 
-    // Add the WHERE clause if there are conditions to include
-    if (whereConditions.length > 0) {
-      query += ` WHERE ${whereConditions.join(' AND ')}`;
-    }
+      // Add the WHERE clause if there are conditions to include
+      if (whereConditions.length > 0) {
+        query += ` WHERE ${whereConditions.join(' AND ')}`;
+      }
 
-    // Add the subquery with its own dynamic WHERE conditions
-    let subquery = `
+      // Add the subquery with its own dynamic WHERE conditions
+      let subquery = `
      s.studentId IN (
       SELECT DISTINCT s.studentId
       FROM tutorperry.student s
@@ -276,37 +305,43 @@ export class StudentsService {
       LEFT JOIN tutorperry.subject su ON ss.subjectId = su.subjectId
   `;
 
-    // Add dynamic WHERE conditions for the subquery
-    let subWhereConditions = [];
-    if (locationQuery) {
-      subWhereConditions.push(locationQuery);
-    }
-    if (subjectQuery) {
-      subWhereConditions.push(subjectQuery);
-    }
+      // Add dynamic WHERE conditions for the subquery
+      let subWhereConditions = [];
+      if (locationQuery) {
+        subWhereConditions.push(locationQuery);
+      }
+      if (subjectQuery) {
+        subWhereConditions.push(subjectQuery);
+      }
 
-    // Add the WHERE clause if there are subquery conditions to include
-    if (subWhereConditions.length > 0) {
-      subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
-    }
+      // Add the WHERE clause if there are subquery conditions to include
+      if (subWhereConditions.length > 0) {
+        subquery += ` WHERE ${subWhereConditions.join(' AND ')}`;
+      }
 
-    // Close the subquery
-    subquery += `)`;
+      // Close the subquery
+      subquery += `)`;
 
-    // Add the subquery to the main query
-    query += subquery;
+      // Add the subquery to the main query
+      query += subquery;
 
-    // Add GROUP BY and ORDER BY clauses
-    query += `
+      // Add GROUP BY and ORDER BY clauses
+      query += `
     GROUP BY
       s.studentId,  f.idfavourite
     ORDER BY
       s.lastOnline DESC
   `;
 
-    // Execute the raw query safely with Prisma
-    const result = await this.prisma.$queryRawUnsafe(query);
-    return result;
+      // Execute the raw query safely with Prisma
+      const result = await this.prisma.$queryRawUnsafe(query);
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Error finding student by preference with favourite',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async findUniqueUserFavouriteCases(userId: number): Promise<any> {
@@ -328,176 +363,186 @@ export class StudentsService {
     // return object;
   }
   async updateStudent(information: any): Promise<any> {
-    const {
-      userId,
-      studentId,
-      availtimes,
-      locations,
-      subjects,
-      availtime,
-      ...studentinfo
-    } = information;
-    let date_ob = new Date();
-    await this.prisma.student.update({
-      where: { studentId: studentId },
-      data: {
-        ...studentinfo,
-        lastOnline: date_ob,
-        completeFormStatus: false,
-      },
-    });
-
-    async function upsertStudentDetailsRaw(
-      studentId,
-      availtime,
-      location,
-      subject,
-      prisma,
-      DataService,
-    ) {
-      // Example usage
-      const filteredLocation = location
-        ? location.filter((item) => item !== null)
-        : [];
-      const filteredSubject = subject
-        ? subject.filter((item) => item !== null)
-        : [];
-      const filteredAvailtime = availtime
-        ? availtime.filter((item) => item !== null)
-        : [];
-      DataService.ResolveIds(
-        filteredLocation,
-        filteredSubject,
-        filteredAvailtime,
-        prisma,
-      ).then(async (resolvedIds) => {
-        const studentLocationsData = resolvedIds.locationIds.map((locId) => ({
-          studentId: studentId,
-          locationId: locId,
-        }));
-        const studentSubjectsData = resolvedIds.subjectIds.map((subId) => ({
-          studentId: studentId,
-          subjectId: subId,
-        }));
-        const studentAvailTimesData = resolvedIds.availTimeIds.map(
-          (availId) => ({
-            studentId: studentId,
-            availTimeId: availId,
-          }),
-        );
-
-        prisma.$transaction([
-          // Delete existing relations
-          prisma.studentlocation.deleteMany({
-            where: { studentId: studentId },
-          }),
-          prisma.studentsubject.deleteMany({
-            where: { studentId: studentId },
-          }),
-          prisma.studentavailtime.deleteMany({
-            where: { studentId: studentId },
-          }),
-
-          //   // Prepare batch insert data
-
-          // Batch insert new records
-          prisma.studentlocation.createMany({ data: studentLocationsData }),
-          prisma.studentsubject.createMany({ data: studentSubjectsData }),
-          prisma.studentavailtime.createMany({
-            data: studentAvailTimesData,
-          }),
-        ]);
-      });
-    }
-
-    upsertStudentDetailsRaw(
-      studentId,
-      availtimes,
-      locations,
-      subjects,
-      this.prisma,
-      this.DataService,
-    );
-  }
-
-  async createStudent(information: any): Promise<any> {
-    const { userId, availtimes, locations, subjects, ...studentinfo } =
-      information;
-    let date_ob = new Date();
-    let studentId = null;
-    await this.prisma.student
-      .create({
+    try {
+      const {
+        userId,
+        studentId,
+        availtimes,
+        locations,
+        subjects,
+        availtime,
+        ...studentinfo
+      } = information;
+      let date_ob = new Date();
+      await this.prisma.student.update({
+        where: { studentId: studentId },
         data: {
-          userId: userId,
           ...studentinfo,
           lastOnline: date_ob,
           completeFormStatus: false,
         },
-      })
-      .then((result) => {
-        studentId = result.studentId;
       });
 
-    async function upsertStudentDetailsRaw(
-      availtime,
-      location,
-      subject,
-      prisma,
-      DataService,
-    ) {
-      // Example usage
-      const filteredLocation = location
-        ? location.filter((item) => item !== null)
-        : [];
-      const filteredSubject = subject
-        ? subject.filter((item) => item !== null)
-        : [];
-      const filteredAvailtime = availtime
-        ? availtime.filter((item) => item !== null)
-        : [];
-      DataService.ResolveIds(
-        filteredLocation,
-        filteredSubject,
-        filteredAvailtime,
+      async function upsertStudentDetailsRaw(
+        studentId,
+        availtime,
+        location,
+        subject,
         prisma,
-      ).then(async (resolvedIds) => {
-        const studentLocationsData = resolvedIds.locationIds.map((locId) => ({
-          studentId: studentId,
-          locationId: locId,
-        }));
-        const studentSubjectsData = resolvedIds.subjectIds.map((subId) => ({
-          studentId: studentId,
-          subjectId: subId,
-        }));
-        const studentAvailTimesData = resolvedIds.availTimeIds.map(
-          (availId) => ({
+        DataService,
+      ) {
+        // Example usage
+        const filteredLocation = location
+          ? location.filter((item) => item !== null)
+          : [];
+        const filteredSubject = subject
+          ? subject.filter((item) => item !== null)
+          : [];
+        const filteredAvailtime = availtime
+          ? availtime.filter((item) => item !== null)
+          : [];
+        DataService.ResolveIds(
+          filteredLocation,
+          filteredSubject,
+          filteredAvailtime,
+          prisma,
+        ).then(async (resolvedIds) => {
+          const studentLocationsData = resolvedIds.locationIds.map((locId) => ({
             studentId: studentId,
-            availTimeId: availId,
-          }),
-        );
-        prisma.$transaction([
-          prisma.studentlocation.createMany({ data: studentLocationsData }),
-          prisma.studentsubject.createMany({ data: studentSubjectsData }),
-          prisma.studentavailtime.createMany({
-            data: studentAvailTimesData,
-          }),
-        ]);
-      });
-    }
+            locationId: locId,
+          }));
+          const studentSubjectsData = resolvedIds.subjectIds.map((subId) => ({
+            studentId: studentId,
+            subjectId: subId,
+          }));
+          const studentAvailTimesData = resolvedIds.availTimeIds.map(
+            (availId) => ({
+              studentId: studentId,
+              availTimeId: availId,
+            }),
+          );
 
-    return {
-      func: upsertStudentDetailsRaw(
+          prisma.$transaction([
+            // Delete existing relations
+            prisma.studentlocation.deleteMany({
+              where: { studentId: studentId },
+            }),
+            prisma.studentsubject.deleteMany({
+              where: { studentId: studentId },
+            }),
+            prisma.studentavailtime.deleteMany({
+              where: { studentId: studentId },
+            }),
+
+            //   // Prepare batch insert data
+
+            // Batch insert new records
+            prisma.studentlocation.createMany({ data: studentLocationsData }),
+            prisma.studentsubject.createMany({ data: studentSubjectsData }),
+            prisma.studentavailtime.createMany({
+              data: studentAvailTimesData,
+            }),
+          ]);
+        });
+      }
+
+      upsertStudentDetailsRaw(
+        studentId,
         availtimes,
         locations,
         subjects,
         this.prisma,
         this.DataService,
-      ),
-      studentId: studentId,
-    };
+      );
+    } catch (error) {
+      throw new HttpException(
+        'Error updating student information',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
-  async test() {
-    return;
+  async createStudent(information: any): Promise<any> {
+    try {
+      const { userId, availtimes, locations, subjects, ...studentinfo } =
+        information;
+      let date_ob = new Date();
+      let studentId = null;
+      await this.prisma.student
+        .create({
+          data: {
+            userId: userId,
+            ...studentinfo,
+            lastOnline: date_ob,
+            completeFormStatus: false,
+          },
+        })
+        .then((result) => {
+          studentId = result.studentId;
+        });
+
+      async function upsertStudentDetailsRaw(
+        availtime,
+        location,
+        subject,
+        prisma,
+        DataService,
+      ) {
+        // Example usage
+        const filteredLocation = location
+          ? location.filter((item) => item !== null)
+          : [];
+        const filteredSubject = subject
+          ? subject.filter((item) => item !== null)
+          : [];
+        const filteredAvailtime = availtime
+          ? availtime.filter((item) => item !== null)
+          : [];
+        DataService.ResolveIds(
+          filteredLocation,
+          filteredSubject,
+          filteredAvailtime,
+          prisma,
+        ).then(async (resolvedIds) => {
+          const studentLocationsData = resolvedIds.locationIds.map((locId) => ({
+            studentId: studentId,
+            locationId: locId,
+          }));
+          const studentSubjectsData = resolvedIds.subjectIds.map((subId) => ({
+            studentId: studentId,
+            subjectId: subId,
+          }));
+          const studentAvailTimesData = resolvedIds.availTimeIds.map(
+            (availId) => ({
+              studentId: studentId,
+              availTimeId: availId,
+            }),
+          );
+          prisma.$transaction([
+            prisma.studentlocation.createMany({ data: studentLocationsData }),
+            prisma.studentsubject.createMany({ data: studentSubjectsData }),
+            prisma.studentavailtime.createMany({
+              data: studentAvailTimesData,
+            }),
+          ]);
+        });
+      }
+
+      return {
+        func: upsertStudentDetailsRaw(
+          availtimes,
+          locations,
+          subjects,
+          this.prisma,
+          this.DataService,
+        ),
+        studentId: studentId,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Error creating student',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

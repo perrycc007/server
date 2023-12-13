@@ -17,13 +17,14 @@ export class FavouriteService {
       'intro', t.intro,
       'language', t.language,
       'occupation', t.occupation,
+       'lowestfee', t.lowestfee,
+     'highestfee',  t.highestfee,
       'yearOfExperience', t.yearofexperience,
       'highestTeachingLevel', t.highestteachinglevel,
       'educationallevel', t.educationallevel,
       'notes', t.notes,
-      'locations', GROUP_CONCAT(DISTINCT lTutor.location SEPARATOR ','),
-      'subjects', GROUP_CONCAT(DISTINCT subTutor.name SEPARATOR ','),
-      'availTimes', GROUP_CONCAT(DISTINCT CONCAT(atTutor.day, '-', atTutor.time) SEPARATOR ',')
+       GROUP_CONCAT(DISTINCT lTutor.location SEPARATOR ',')AS locations,
+       GROUP_CONCAT(DISTINCT subTutor.name SEPARATOR ',') AS subjects
   FROM 
       tutorperry.favourite f
   JOIN 
@@ -69,8 +70,7 @@ export class FavouriteService {
       s.lastOnline AS lastOnline,
       s.status AS status,
       GROUP_CONCAT(DISTINCT lStudent.location SEPARATOR ',') AS locations,
-      GROUP_CONCAT(DISTINCT subStudent.name SEPARATOR ',') AS subjects,
-      GROUP_CONCAT(DISTINCT CONCAT(atStudent.day, '-', atStudent.time) SEPARATOR ',') AS availTimes
+      GROUP_CONCAT(DISTINCT subStudent.name SEPARATOR ',') AS subjects
   FROM 
       tutorperry.favourite f
   JOIN 

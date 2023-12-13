@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 
@@ -7,9 +7,10 @@ export class ResultService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getResultByPage(page: number) {
-    // Implement the logic for getting results by page
-    // You can reuse your existing logic from the Express router
-    const result = await this.prisma.$queryRaw`
+    try {
+      // Implement the logic for getting results by page
+      // You can reuse your existing logic from the Express router
+      const result = await this.prisma.$queryRaw`
     SELECT 
     s.*, 
     t.*, 
@@ -45,13 +46,19 @@ export class ResultService {
  
     ;
     `;
-    console.log(result);
-    return result;
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get results by page',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   async getResultByStudentId(studentId: number, page: number) {
-    // Implement the logic for getting results by student ID
-    // You can reuse your existing logic from the Express router
-    const result = await this.prisma.$queryRaw`
+    try {
+      // Implement the logic for getting results by student ID
+      // You can reuse your existing logic from the Express router
+      const result = await this.prisma.$queryRaw`
     SELECT 
     s.*,
     pStudent.*, 
@@ -155,17 +162,24 @@ LEFT JOIN
       t.lastOnline DESC
       LIMIT 5 OFFSET ${(page - 1) * 5};
       `;
-    (result as Array<any>).forEach((item) => {
-      item.total_counts = Number(item.total_counts);
-    });
-    console.log(result);
-    return result;
+      (result as Array<any>).forEach((item) => {
+        item.total_counts = Number(item.total_counts);
+      });
+      console.log(result);
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get results by student ID',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getResultBytutorId(tutorId: number, page: number) {
-    // Implement the logic for getting results by student ID
-    // You can reuse your existing logic from the Express router
-    const result = await this.prisma.$queryRaw`
+    try {
+      // Implement the logic for getting results by student ID
+      // You can reuse your existing logic from the Express router
+      const result = await this.prisma.$queryRaw`
     SELECT 
     t.*,
     m.*,
@@ -249,15 +263,22 @@ LEFT JOIN
       LIMIT 5 OFFSET ${(page - 1) * 5}
       `;
 
-    console.log(result);
-    (result as Array<any>).forEach((item) => {
-      item.total_tutorials = Number(item.total_tutorials);
-    });
-    return result;
+      console.log(result);
+      (result as Array<any>).forEach((item) => {
+        item.total_tutorials = Number(item.total_tutorials);
+      });
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get results by tutor ID',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getSortedStudentId() {
-    const result = await this.prisma.$queryRaw`  SELECT 
+    try {
+      const result = await this.prisma.$queryRaw`  SELECT 
     JSON_ARRAYAGG(s.studentId) AS studentIds
     FROM 
       tutorperry.student s
@@ -265,11 +286,18 @@ LEFT JOIN
       status = 'OPEN'
     ORDER BY 
       lastOnline DESC;`;
-    return result;
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get sorted student IDs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async getSortedTutortid() {
-    const result = await this.prisma.$queryRaw`  SELECT 
+    try {
+      const result = await this.prisma.$queryRaw`  SELECT 
       tutorId 
       COUNT(*) OVER() AS total_count
     FROM 
@@ -278,32 +306,45 @@ LEFT JOIN
       status = 'OPEN'
     ORDER BY 
       lastOnline DESC;`;
-    console.log(result);
-    return result;
+      console.log(result);
+      return result;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to get sorted tutor IDs',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async closeLastOnlineMoreThan6months() {
-    await this.prisma.student.updateMany({
-      where: {
-        lastOnline: {
-          lt: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+    try {
+      await this.prisma.student.updateMany({
+        where: {
+          lastOnline: {
+            lt: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+          },
+          status: 'OPEN',
         },
-        status: 'OPEN',
-      },
-      data: {
-        status: 'CLOSE',
-      },
-    });
-    await this.prisma.tutor.updateMany({
-      where: {
-        lastOnline: {
-          lt: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+        data: {
+          status: 'CLOSE',
         },
-        status: 'OPEN',
-      },
-      data: {
-        status: 'CLOSE',
-      },
-    });
+      });
+      await this.prisma.tutor.updateMany({
+        where: {
+          lastOnline: {
+            lt: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+          },
+          status: 'OPEN',
+        },
+        data: {
+          status: 'CLOSE',
+        },
+      });
+    } catch (error) {
+      throw new HttpException(
+        'Failed to close profiles last online more than 6 months',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

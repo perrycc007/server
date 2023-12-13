@@ -1,6 +1,15 @@
-import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { ProfileService } from './profile.service';
-import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
+import { JwtAuthGuard } from '../auth/guard/auth.guard';
 
 @Controller('profile')
 @UseGuards(JwtAuthGuard)
@@ -9,12 +18,26 @@ export class ProfileController {
 
   @Get(':userId')
   async getProfile(@Param('userId') userId: string) {
-    console.log(userId);
-    return this.profileService.getProfile(parseInt(userId));
+    try {
+      console.log(userId);
+      return await this.profileService.getProfile(parseInt(userId));
+    } catch (error) {
+      throw new HttpException(
+        `Failed to get profile for user ID ${userId}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Patch()
   async updateProfile(@Body() requestBody) {
-    return this.profileService.updateProfile(requestBody);
+    try {
+      return await this.profileService.updateProfile(requestBody);
+    } catch (error) {
+      throw new HttpException(
+        'Failed to update profile',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
