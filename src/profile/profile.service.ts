@@ -5,7 +5,7 @@ import { UpdateProfileDto } from './dto/profile.dto';
 @Injectable()
 export class ProfileService {
   constructor(private readonly prismaService: PrismaService) {}
-  private isFormComplete(tutorInfo: UpdateProfileDto): boolean {
+  private isFormComplete(profileInfo: UpdateProfileDto): boolean {
     const requiredFieldsWithValidation = [
       'findus',
       'language',
@@ -19,7 +19,7 @@ export class ProfileService {
     ];
 
     return requiredFieldsWithValidation.every((field) => {
-      const value = tutorInfo[field];
+      const value = profileInfo[field];
       return (
         value !== null &&
         value !== '' &&
@@ -28,7 +28,6 @@ export class ProfileService {
       );
     });
   }
-
   async getProfile(userId: number) {
     try {
       const result = await this.prismaService.profile.findUnique({
@@ -49,11 +48,8 @@ export class ProfileService {
     try {
       const { userId, ...information } = requestBody;
       let { availtime, country, lastOnline, ...requiredInfo } = information;
-      console.log(requiredInfo);
-      const isEmpty = Object.values(requiredInfo).some(
-        (x) => x == null || x == '',
-      );
-      if (isEmpty) {
+
+      if (!this.isFormComplete(requiredInfo)) {
         throw new HttpException(
           'Please fill in all required fields',
           HttpStatus.BAD_REQUEST,
@@ -68,19 +64,19 @@ export class ProfileService {
         update: {
           ...information,
           lastOnline: date_ob,
+          completeFormStatus: true,
         },
         create: {
           userId: userId,
           ...information,
           lastOnline: date_ob,
+          completeFormStatus: true,
           agreewith: `${agreewith}`,
         },
       });
     } catch (error) {
-      throw new HttpException(
-        'Failed to update profile',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      console.log(error);
+      throw new HttpException('Failed to update profile', error.message);
     }
   }
 }

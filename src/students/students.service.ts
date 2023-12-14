@@ -1,13 +1,37 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service'; // Assuming you have a PrismaService
 import { DataService } from '../helper/helperFunction.service';
+import { UpdateStudentDto } from './dto/student.dto';
 @Injectable()
 export class StudentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly DataService: DataService,
   ) {}
+  private isFormComplete(studentInfo: UpdateStudentDto): boolean {
+    const requiredFieldsWithValidation = [
+      'expectation',
+      'lowestfee',
+      'highestfee',
+      'lowestduration',
+      'highestduration',
+      'lowestfrequency',
+      'highestfrequency',
+      'locations',
+      'availtimes',
+      'subjects',
+    ];
 
+    return requiredFieldsWithValidation.every((field) => {
+      const value = studentInfo[field];
+      return (
+        value !== null &&
+        value !== '' &&
+        JSON.stringify(value) !== '[]' &&
+        value !== undefined
+      );
+    });
+  }
   async findManyWithStatusOpen(): Promise<any> {
     try {
       const result = await this.prisma.$queryRaw` 
@@ -393,12 +417,15 @@ export class StudentsService {
         ...studentinfo
       } = information;
       let date_ob = new Date();
+      console.log(information);
+      const formIsComplete = this.isFormComplete(information);
+      console.log(formIsComplete);
       await this.prisma.student.update({
         where: { studentId: studentId },
         data: {
           ...studentinfo,
           lastOnline: date_ob,
-          completeFormStatus: false,
+          completeFormStatus: formIsComplete,
         },
       });
 

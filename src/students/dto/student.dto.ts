@@ -1,4 +1,4 @@
-export class UpdateTutorDto {
+export class UpdateStudentDto {
   language: string;
   occupation: string;
   secondaryschool: string;

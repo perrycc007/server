@@ -79,7 +79,6 @@ export class StudentsController {
   @Patch()
   async updateStudent(@Body() requestBody) {
     try {
-      console.log(requestBody);
       const result = await this.studentsService.updateStudent(requestBody);
       return { result };
     } catch (error) {
@@ -93,7 +92,6 @@ export class StudentsController {
   @Patch('updateCaseStatus')
   async updateCaseStatus(@Body() requestBody) {
     try {
-      console.log(requestBody);
       const result = await this.studentsService.updateCaseStatus(requestBody);
       return { result };
     } catch (error) {
