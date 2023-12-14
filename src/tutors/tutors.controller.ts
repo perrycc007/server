@@ -85,6 +85,7 @@ export class TutorsController {
   @Patch()
   async updateTutor(@Body() updateInfo: any) {
     try {
+      console.log(updateInfo);
       return await this.tutorsService.createOrUpdateTutor(
         updateInfo.information,
       );

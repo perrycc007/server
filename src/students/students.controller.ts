@@ -79,6 +79,7 @@ export class StudentsController {
   @Patch()
   async updateStudent(@Body() requestBody) {
     try {
+      console.log(requestBody);
       const result = await this.studentsService.updateStudent(requestBody);
       return { result };
     } catch (error) {
@@ -88,6 +89,21 @@ export class StudentsController {
       );
     }
   }
+  @UseGuards(JwtAuthGuard)
+  @Patch('updateCaseStatus')
+  async updateCaseStatus(@Body() requestBody) {
+    try {
+      console.log(requestBody);
+      const result = await this.studentsService.updateCaseStatus(requestBody);
+      return { result };
+    } catch (error) {
+      throw new HttpException(
+        'Failed to update student',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() requestBody) {

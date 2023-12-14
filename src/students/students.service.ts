@@ -362,6 +362,25 @@ export class StudentsService {
     // console.log(object);
     // return object;
   }
+  async updateCaseStatus(requestBody: any): Promise<any> {
+    try {
+      let date_ob = new Date();
+      await this.prisma.student.update({
+        where: { studentId: requestBody.studentId },
+        data: {
+          ...requestBody,
+          lastOnline: date_ob,
+          completeFormStatus: false,
+        },
+      });
+    } catch (error) {
+      throw new HttpException(
+        'Error changing status',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async updateStudent(information: any): Promise<any> {
     try {
       const {

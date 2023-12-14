@@ -32,6 +32,7 @@ export class ProfileController {
   @Patch()
   async updateProfile(@Body() requestBody) {
     try {
+      console.log(requestBody);
       return await this.profileService.updateProfile(requestBody);
     } catch (error) {
       throw new HttpException(
