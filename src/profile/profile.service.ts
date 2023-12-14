@@ -1,10 +1,33 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { dummyProfile } from '../DUMMY/dummyProfile';
-
+import { UpdateProfileDto } from './dto/profile.dto';
 @Injectable()
 export class ProfileService {
   constructor(private readonly prismaService: PrismaService) {}
+  private isFormComplete(tutorInfo: UpdateProfileDto): boolean {
+    const requiredFieldsWithValidation = [
+      'findus',
+      'language',
+      'name',
+      'nationality',
+      'phoneno',
+      'address',
+      'emergencycontact',
+      'emergencyrelationship',
+      'emergencyphone',
+    ];
+
+    return requiredFieldsWithValidation.every((field) => {
+      const value = tutorInfo[field];
+      return (
+        value !== null &&
+        value !== '' &&
+        JSON.stringify(value) !== '[]' &&
+        value !== undefined
+      );
+    });
+  }
 
   async getProfile(userId: number) {
     try {

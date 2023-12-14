@@ -22,6 +22,7 @@ model profile {
   nationality           String?   @db.VarChar(45)
   phoneno               String?   @db.VarChar(45)
   lastOnline            DateTime? @db.DateTime(0)
+  completeFormStatus    Boolean   @default(false)
 }
 
 model user {
@@ -55,7 +56,7 @@ model student {
   others             String?            @db.VarChar(45)
   expectation        String?            @db.VarChar(45)
   genderrequirement  String?            @db.VarChar(45)
-  status             String?            @default("OPEN") @db.VarChar(45)
+  status             case_open_status   @default(OPEN)
   highestfee         Int?
   highestfrequency   Int?
   highestduration    Int?
@@ -94,7 +95,7 @@ model tutor {
   highestfee           Int?
   lowestfee            Int?
   matchedbefore        Json?
-  status               String?          @default("OPEN") @db.VarChar(45)
+  status               case_open_status @default(OPEN)
   lastOnline           DateTime?        @db.DateTime(0)
   verify               String?          @default("未驗證") @db.VarChar(45)
   completeFormStatus   Boolean          @default(false)
@@ -271,4 +272,10 @@ enum matchtable_matchstatus {
   ASK_AGAIN
   NO_LONGER_MATCH
   OPEN
+}
+
+enum case_open_status {
+  CLOSE
+  OPEN
+  BLOCKED
 }

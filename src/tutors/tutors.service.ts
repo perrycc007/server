@@ -2,7 +2,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { DataService } from '../helper/helperFunction.service';
-
+import { UpdateTutorDto } from './dto/tutor.dto';
 @Injectable()
 export class TutorsService {
   constructor(private readonly DataService: DataService) {}
@@ -57,6 +57,41 @@ ORDER BY
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+  private isFormComplete(tutorInfo: UpdateTutorDto): boolean {
+    const requiredFields = [
+      'language',
+      'occupation',
+      'secondaryschool',
+      'primaryschool',
+      'yearofexperience',
+      'experience',
+      'highestteachinglevel',
+      'educationallevel',
+      'notes',
+      'schoolcat',
+      'publicexamgrade',
+      'strength',
+      'highestfee',
+      'lowestfee',
+      'status',
+      'lastOnline',
+      'verify',
+      'completeFormStatus',
+      'locations',
+      'subjects',
+      'availtimes',
+    ];
+
+    return requiredFields.every((field) => {
+      const value = tutorInfo[field];
+      return (
+        value !== null &&
+        value !== '' &&
+        JSON.stringify(value) !== '[]' &&
+        value !== undefined
+      );
+    });
   }
 
   async findManyWithStatusOpenWithFavourite(userId: number): Promise<any> {
@@ -415,12 +450,14 @@ GROUP BY
         ...tutorinfo
       } = information;
       let date_ob = new Date();
+      console.log(tutorinfo);
+      const formIsComplete = this.isFormComplete(information);
       const upsertTutor = await this.prisma.tutor.upsert({
         where: { userId: userId },
         update: {
           ...tutorinfo,
           lastOnline: date_ob,
-          completeFormStatus: false,
+          completeFormStatus: formIsComplete,
         },
         create: {
           // userId: userId,
