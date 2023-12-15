@@ -58,7 +58,7 @@ ORDER BY
       );
     }
   }
-  private isFormComplete(tutorInfo: UpdateTutorDto): boolean {
+  public isFormComplete(tutorInfo: UpdateTutorDto): boolean {
     const requiredFields = [
       'language',
       'occupation',
@@ -85,6 +85,14 @@ ORDER BY
 
     return requiredFields.every((field) => {
       const value = tutorInfo[field];
+      if (
+        value == null ||
+        value == '' ||
+        JSON.stringify(value) == '[]' ||
+        value == undefined
+      ) {
+        console.log(field);
+      }
       return (
         value !== null &&
         value !== '' &&
@@ -447,10 +455,10 @@ GROUP BY
         locations,
         subjects,
         subjectGrade,
+        caseid,
         ...tutorinfo
       } = information;
       let date_ob = new Date();
-      console.log(tutorinfo);
       const formIsComplete = this.isFormComplete(information);
       const upsertTutor = await this.prisma.tutor.upsert({
         where: { userId: userId },
@@ -602,6 +610,7 @@ GROUP BY
         subjectGrade,
       );
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         'Error creating or updating tutor',
         HttpStatus.INTERNAL_SERVER_ERROR,

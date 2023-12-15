@@ -8,7 +8,7 @@ export class StudentsService {
     private readonly prisma: PrismaService,
     private readonly DataService: DataService,
   ) {}
-  private isFormComplete(studentInfo: UpdateStudentDto): boolean {
+  public isFormComplete(studentInfo: UpdateStudentDto): boolean {
     const requiredFieldsWithValidation = [
       'expectation',
       'lowestfee',
@@ -417,9 +417,7 @@ export class StudentsService {
         ...studentinfo
       } = information;
       let date_ob = new Date();
-      console.log(information);
       const formIsComplete = this.isFormComplete(information);
-      console.log(formIsComplete);
       await this.prisma.student.update({
         where: { studentId: studentId },
         data: {
@@ -514,13 +512,14 @@ export class StudentsService {
         information;
       let date_ob = new Date();
       let studentId = null;
+      const formIsComplete = this.isFormComplete(information);
       await this.prisma.student
         .create({
           data: {
             userId: userId,
             ...studentinfo,
             lastOnline: date_ob,
-            completeFormStatus: false,
+            completeFormStatus: formIsComplete,
           },
         })
         .then((result) => {

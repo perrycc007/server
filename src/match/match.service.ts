@@ -1,23 +1,16 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { DataService } from '../helper/helperFunction.service';
+import { Prisma, matchtable_checkStatus } from '@prisma/client';
 import { isEqual } from 'lodash';
 @Injectable()
 export class MatchService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly DataService: DataService,
+  ) {}
 
   async matchTutor(req: any) {
-    enum matchtable_checkStatus {
-      NOT_YET_CHECKED,
-      CHECKING,
-      CHECKED,
-    }
-
-    enum matchtable_matchstatus {
-      REJECTED,
-      ASK_AGAIN,
-      NO_LONGER_MATCH,
-      OPEN,
-    }
     // Implement the matching system for tutors here
     // You can reuse your existing logic from the Express router
 
@@ -41,9 +34,12 @@ export class MatchService {
           studentId: true, // Include only the 'studentId' field in the result
         },
       });
-      const difference = studentIdOfExistingMatch.filter(
-        (studentId) => !matchedstudentIds.includes(studentId),
-      );
+      const difference =
+        studentIdOfExistingMatch.length == 0
+          ? matchedstudentIds
+          : studentIdOfExistingMatch.filter(
+              (studentId) => !matchedstudentIds.includes(studentId.studentId),
+            );
 
       await this.prisma.$transaction(async (prisma) => {
         if (difference.length !== 0) {
@@ -52,13 +48,13 @@ export class MatchService {
               tutorId: tutorId,
               studentId: onestudentId, // access the studentId property of the onestudentId object
               availability: true, // replace with actual value
-              checkStatus: matchtable_checkStatus.NOT_YET_CHECKED, // replace with actual value
-              matchstatus: matchtable_matchstatus.OPEN,
+              checkStatus: 'NOT_YET_CHECKED', // replace with actual value
+              matchstatus: 'OPEN',
             };
           });
-          // await prisma.matchtable.createMany({
-          //   data: newRows,
-          // });
+          await prisma.matchtable.createMany({
+            data: newRows,
+          });
         }
         await prisma.matchtable.updateMany({
           where: {
@@ -117,11 +113,17 @@ export class MatchService {
       OPEN,
     }
     try {
-      const { locations, subjects, highestfee, studentId } =
-        req.body.information;
+      const { locations, subjects, highestfee, studentId } = req;
 
-      const tutors = await findMatchingTutors(locations, subjects, highestfee);
+      const tutors = await findMatchingTutors(
+        locations,
+        subjects,
+        highestfee,
+        this.DataService,
+        this.prisma,
+      );
       const matchedtutorIds = tutors.map((tutor) => tutor.tutorId);
+
       const tutorIdOfExistingMatch = await this.prisma.matchtable.findMany({
         where: {
           studentId: studentId,
@@ -133,8 +135,9 @@ export class MatchService {
           tutorId: true, // Include only the 'studentId' field in the result
         },
       });
+
       await this.prisma.$transaction(async (prisma) => {
-        await prisma.matchtable.updateMany({
+        await this.prisma.matchtable.updateMany({
           where: {
             studentId: studentId,
             NOT: {
@@ -148,7 +151,7 @@ export class MatchService {
           },
         });
 
-        await prisma.matchtable.updateMany({
+        await this.prisma.matchtable.updateMany({
           where: {
             studentId: studentId,
             tutorId: {
@@ -164,23 +167,27 @@ export class MatchService {
           },
         });
 
-        const difference = tutorIdOfExistingMatch.filter(
-          (tutorId) => !matchedtutorIds.includes(tutorId),
-        );
+        const difference =
+          tutorIdOfExistingMatch.length == 0
+            ? matchedtutorIds
+            : tutorIdOfExistingMatch.filter((tutorId) => {
+                return !matchedtutorIds.includes(tutorId.tutorId);
+              });
         if (difference.length !== 0) {
           const newRows = difference.map((onetutorId) => {
             return {
               studentId: studentId,
               tutorId: onetutorId, // access the studentId property of the onestudentId object
               availability: true, // replace with actual value
-              checkStatus: matchtable_checkStatus.NOT_YET_CHECKED, // replace with actual value
-              matchstatus: matchtable_matchstatus.OPEN,
+              checkStatus: 'NOT_YET_CHECKED',
+              matchstatus: 'OPEN',
             };
           });
-
-          // await this.prisma.matchtable.createMany({
-          //   data: newRows,
-          // });
+          if (difference.length !== 0) {
+            await this.prisma.matchtable.createMany({
+              data: newRows,
+            });
+          }
         }
       });
       return { message: 'Student request processed successfully.' };
@@ -296,29 +303,27 @@ async function findMatchingStudents(locations, subjects, lowestfee) {
 }
 
 // Helper function to find matching tutors
-async function findMatchingTutors(locations, subjects, highestfee) {
+async function findMatchingTutors(
+  locations,
+  subjects,
+  highestfee,
+  DataService,
+  prisma,
+) {
   try {
-    const highestFee = this.DataService.HighestFeeQuery(highestfee);
+    const highestFee = DataService.HighestFeeQuery(highestfee);
     let locationQuery = null;
     let subjectQuery = null;
 
     if (locations.length !== 0) {
-      locationQuery = this.DataService.QueryBuilder(
-        locations,
-        'locations',
-        'tutor',
-      );
+      locationQuery = DataService.QueryBuilder(locations, 'locations', 'tutor');
     }
     if (subjects.length !== 0) {
-      subjectQuery = this.DataService.QueryBuilder(
-        subjects,
-        'subjects',
-        'tutor',
-      );
+      subjectQuery = DataService.QueryBuilder(subjects, 'subjects', 'tutor');
     }
     let mainQuery = `
 SELECT
-t.tutorId
+t.tutorId,
 t.lastOnline
 FROM
 tutorperry.tutor t
@@ -383,7 +388,8 @@ t.lastOnline DESC
 `;
 
     // Execute the raw query safely with Prisma
-    const result = await this.prisma.$queryRawUnsafe(mainQuery);
+    const result = await prisma.$queryRawUnsafe(mainQuery);
+
     return result;
   } catch (error) {
     console.error('Error in findMatchingTutors: ', error.message);

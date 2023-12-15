@@ -12,11 +12,14 @@ import {
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
+import { MatchService } from '../match/match.service';
 
 @Controller('students')
 export class StudentsController {
-  constructor(private readonly studentsService: StudentsService) {}
-
+  constructor(
+    private readonly studentsService: StudentsService,
+    private readonly matchService: MatchService,
+  ) {}
   // @Get('test')
   // async test() {
   //   return this.studentsService.test();
@@ -80,6 +83,10 @@ export class StudentsController {
   async updateStudent(@Body() requestBody) {
     try {
       const result = await this.studentsService.updateStudent(requestBody);
+
+      if (this.studentsService.isFormComplete(requestBody)) {
+        await this.matchService.matchStudent(requestBody);
+      }
       return { result };
     } catch (error) {
       throw new HttpException(
@@ -106,7 +113,11 @@ export class StudentsController {
   @Post()
   async create(@Body() requestBody) {
     try {
-      return await this.studentsService.createStudent(requestBody);
+      const result = await this.studentsService.createStudent(requestBody);
+      if (this.studentsService.isFormComplete(requestBody)) {
+        await this.matchService.matchStudent(requestBody);
+      }
+      return { result };
     } catch (error) {
       throw new HttpException(
         'Failed to create student',

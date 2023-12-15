@@ -13,9 +13,13 @@ import {
 import { TutorsService } from './tutors.service';
 import { dummyTutor } from '../DUMMY/dummyTutor';
 import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
+import { MatchService } from '../match/match.service';
 @Controller('tutors')
 export class TutorsController {
-  constructor(private readonly tutorsService: TutorsService) {}
+  constructor(
+    private readonly tutorsService: TutorsService,
+    private readonly matchService: MatchService,
+  ) {}
 
   @Get()
   async findManyWithStatusOpen() {
@@ -85,9 +89,13 @@ export class TutorsController {
   @Patch()
   async updateTutor(@Body() updateInfo: any) {
     try {
-      return await this.tutorsService.createOrUpdateTutor(
+      const result = await this.tutorsService.createOrUpdateTutor(
         updateInfo.information,
       );
+      if (this.tutorsService.isFormComplete(updateInfo.information)) {
+        await this.matchService.matchStudent(updateInfo.information);
+      }
+      return { result };
     } catch (error) {
       throw new HttpException(
         'Failed to update tutor information',

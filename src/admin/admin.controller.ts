@@ -11,7 +11,7 @@ import { StudentsService } from '../students/students.service';
 import { TutorsService } from '../tutors/tutors.service';
 import { HistoryService } from '../history/history.service';
 import { ProfileService } from '../profile/profile.service';
-
+import { MatchService } from '../match/match.service';
 @Controller('admin')
 // @UseGuards(JwtAdminGuard)
 export class AdminController {
@@ -21,6 +21,7 @@ export class AdminController {
     private readonly studentsService: StudentsService,
     private readonly historyService: HistoryService,
     private readonly profileService: ProfileService,
+    private readonly matchService: MatchService,
   ) {}
 
   @Patch('toggleCheck')
@@ -78,9 +79,13 @@ export class AdminController {
   @Patch('updateTutor')
   async updateTutor(@Body() updateInfo: any) {
     try {
-      return await this.tutorsService.createOrUpdateTutor(
+      const result = await this.tutorsService.createOrUpdateTutor(
         updateInfo.information,
       );
+      if (this.tutorsService.isFormComplete(updateInfo.information)) {
+        await this.matchService.matchStudent(updateInfo.information);
+      }
+      return { result };
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
@@ -95,6 +100,10 @@ export class AdminController {
   async updateStudent(@Body() requestBody) {
     try {
       const result = await this.studentsService.updateStudent(requestBody);
+
+      if (this.studentsService.isFormComplete(requestBody)) {
+        await this.matchService.matchStudent(requestBody);
+      }
       return { result };
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
