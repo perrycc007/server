@@ -18,7 +18,8 @@ export class HistoryService {
         SELECT 
         s.*,
         GROUP_CONCAT(DISTINCT l.location SEPARATOR ',') AS locations,
-        GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects
+        GROUP_CONCAT(DISTINCT su.name SEPARATOR ',') AS subjects,
+        GROUP_CONCAT(DISTINCT CONCAT(at.day, '-', at.time) SEPARATOR ',') AS availtimes
         FROM 
           tutorperry.student s
         LEFT JOIN 
@@ -28,7 +29,11 @@ export class HistoryService {
         LEFT JOIN
           tutorperry.studentSubject ss ON s.studentId = ss.studentId
         LEFT JOIN
-          tutorperry.subject su ON ss.subjectId = su.subjectId
+        tutorperry.subject su ON ss.subjectId = su.subjectId
+        LEFT JOIN 
+        tutorperry.StudentAvailTime sat ON s.studentId = sat.studentId
+        LEFT JOIN 
+        tutorperry.AvailTime at ON sat.availTimeId = at.id
         WHERE 
           s.userId = ${userId}
         GROUP BY 

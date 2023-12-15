@@ -74,42 +74,27 @@ export class DataService {
     return resolveIds(locations, subjects, availtimes, prisma);
   }
 }
+export function isFormComplete(studentInfo): boolean {
+  const requiredFieldsWithValidation = [
+    'expectation',
+    'lowestfee',
+    'highestfee',
+    'lowestduration',
+    'highestduration',
+    'lowestfrequency',
+    'highestfrequency',
+    'locations',
+    'availtimes',
+    'subjects',
+  ];
 
-//   Example input
-//   const inputArray = [
-// {
-//   "id": 1,
-//   "studentId": null,
-//   "tutorId": 1,
-//   "location": ['中半山','薄扶林'],
-//   "availtime": ['SUN0900','MON1000'],
-//   "subject": ['文科','商科']
-// },
-//     {
-//       "id": 2,
-//       "studentId": null,
-//       "tutorId": 1,
-//       "location": ['PokFuLam'],
-//       "availtime": ['Mon1000']
-//     }
-//   ];
-//   Example output array
-//   const outputArray = [
-//     {
-//       id: 1,
-//       studentId: null,
-//       tutorId: 1,
-//       location: [{ CentralMidLevels: true, PokFuLam: false }],
-//       availtime: [{ Sun0900: true, Mon1000: false }],
-//       subject: [{ English: false, Chinese: true }],
-//     },
-//     {
-//       id: 1,
-//       studentId: null,
-//       tutorId: 1,
-//       location: [{ CentralMidLevels: false, PokFuLam: true }],
-//       availtime: [{ Sun0900: false, Mon1000: true }],
-//       subject: [{ English: true, Chinese: false }],
-//     },
-//   ];
-// }
+  return requiredFieldsWithValidation.every((field) => {
+    const value = studentInfo[field];
+    return (
+      value !== null &&
+      value !== '' &&
+      JSON.stringify(value) !== '[]' &&
+      value !== undefined
+    );
+  });
+}

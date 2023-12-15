@@ -509,7 +509,7 @@ export class StudentsService {
 
   async createStudent(information: any): Promise<any> {
     try {
-      const { userId, availtime, locations, subjects, ...studentinfo } =
+      const { userId, availtimes, locations, subjects, ...studentinfo } =
         information;
       let date_ob = new Date();
       let studentId = null;
@@ -534,6 +534,7 @@ export class StudentsService {
         prisma,
         DataService,
       ) {
+        console.log(availtime);
         // Example usage
         const filteredLocation = location
           ? location.filter((item) => item !== null)
@@ -564,6 +565,7 @@ export class StudentsService {
               availTimeId: availId,
             }),
           );
+          console.log(studentAvailTimesData);
           prisma.$transaction([
             prisma.studentlocation.createMany({ data: studentLocationsData }),
             prisma.studentsubject.createMany({ data: studentSubjectsData }),
@@ -576,7 +578,7 @@ export class StudentsService {
 
       return {
         func: upsertStudentDetailsRaw(
-          availtime,
+          availtimes,
           locations,
           subjects,
           this.prisma,
@@ -585,6 +587,7 @@ export class StudentsService {
         studentId: studentId,
       };
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         'Error creating student',
         HttpStatus.INTERNAL_SERVER_ERROR,
