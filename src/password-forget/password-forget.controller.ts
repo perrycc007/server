@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { PasswordForgetService } from './password-forget.service';
 
-@Controller('password-forget')
+@Controller('forgetPassword')
 export class PasswordForgetController {
   constructor(private readonly passwordForgetService: PasswordForgetService) {}
 

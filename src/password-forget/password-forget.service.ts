@@ -12,6 +12,7 @@ export class PasswordForgetService {
 
   async sendResetLink(email: string) {
     try {
+      console.log(email);
       const user = await this.prisma.user.findFirst({ where: { email } });
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -59,8 +60,9 @@ export class PasswordForgetService {
       const user = await this.prisma.user.findFirst({
         where: { userId: parseInt(userId) },
       });
+
       if (!user) {
-        throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+        throw new HttpException("User doesn't exist", HttpStatus.UNAUTHORIZED);
       }
 
       const secret = process.env.RESET_PASSWORD_SECRET + user.password;
@@ -68,19 +70,16 @@ export class PasswordForgetService {
       if (userId !== payload.userId.toString()) {
         throw new HttpException('Unauthorized access', HttpStatus.UNAUTHORIZED);
       }
-
       const salt = await bcrypt.genSalt(8);
       const encryptedPassword = await bcrypt.hash(newPassword, salt);
-
+      // console.log(encryptedPassword);
       return await this.prisma.user.update({
         where: { userId: parseInt(userId) },
         data: { password: encryptedPassword },
       });
     } catch (error) {
-      throw new HttpException(
-        'Password reset failed',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      console.log(error);
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

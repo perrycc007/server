@@ -23,7 +23,6 @@ export class UpdateTutorDto {
   lastOnline: string;
   verify: string;
   completeFormStatus: number;
-  caseid: string | null;
   locations: string[];
   subjects: string[];
   availtimes: string[];

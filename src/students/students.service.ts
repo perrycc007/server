@@ -61,6 +61,7 @@ export class StudentsService {
     ORDER BY 
       s.lastOnline DESC;
   `;
+      console.log(result);
       return result;
     } catch (error) {
       throw new HttpException(
@@ -508,7 +509,7 @@ export class StudentsService {
 
   async createStudent(information: any): Promise<any> {
     try {
-      const { userId, availtimes, locations, subjects, ...studentinfo } =
+      const { userId, availtime, locations, subjects, ...studentinfo } =
         information;
       let date_ob = new Date();
       let studentId = null;
@@ -575,7 +576,7 @@ export class StudentsService {
 
       return {
         func: upsertStudentDetailsRaw(
-          availtimes,
+          availtime,
           locations,
           subjects,
           this.prisma,
