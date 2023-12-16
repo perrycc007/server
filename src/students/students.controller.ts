@@ -26,7 +26,7 @@ export class StudentsController {
   // }
 
   @Get()
-  async findAll() {
+  async findManyWithStatusOpen() {
     // Implement logic to fetch students based on query parameters
     try {
       return this.studentsService.findManyWithStatusOpen();

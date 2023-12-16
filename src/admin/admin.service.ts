@@ -10,11 +10,14 @@ export class AdminService {
       // Implement the logic for toggling check here
       // You can reuse your existing logic from the Express router
 
-      await this.prisma.$queryRaw`
-        UPDATE matchTable
-        SET checkStatus = ${req.checkStatus}
-        WHERE idmatch = ${req.idmatch};
-      `;
+      await this.prisma.matchtable.update({
+        where: {
+          idmatch: req.idmatch,
+        },
+        data: {
+          checkStatus: req.checkStatus,
+        },
+      });
 
       // Check if the update was successful or not and handle errors accordingly
       // You can also return a success message or a meaningful response here
@@ -33,11 +36,14 @@ export class AdminService {
       // Implement the logic for toggling availability here
       // You can reuse your existing logic from the Express router
 
-      await this.prisma.$queryRaw`
-        UPDATE matchTable
-        SET availability = ${req.availability}
-        WHERE idmatch = ${req.idmatch};
-      `;
+      await this.prisma.matchtable.update({
+        where: {
+          idmatch: req.idmatch, // Replace 'idmatch' with the actual field name if it's different
+        },
+        data: {
+          availability: req.availability, // Assuming 'availability' is the correct field name
+        },
+      });
 
       // Check if the update was successful or not and handle errors accordingly
       // You can also return a success message or a meaningful response here

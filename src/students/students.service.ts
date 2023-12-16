@@ -61,7 +61,7 @@ export class StudentsService {
     ORDER BY 
       s.lastOnline DESC;
   `;
-      console.log(result);
+      console.log(result, 64);
       return result;
     } catch (error) {
       throw new HttpException(

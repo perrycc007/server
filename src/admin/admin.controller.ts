@@ -4,6 +4,7 @@ import {
   Body,
   HttpException,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAdminGuard } from '../auth/guard/admin.guard';
@@ -13,7 +14,7 @@ import { HistoryService } from '../history/history.service';
 import { ProfileService } from '../profile/profile.service';
 import { MatchService } from '../match/match.service';
 @Controller('admin')
-// @UseGuards(JwtAdminGuard)
+@UseGuards(JwtAdminGuard)
 export class AdminController {
   constructor(
     private readonly adminService: AdminService,

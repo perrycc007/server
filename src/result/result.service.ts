@@ -155,7 +155,8 @@ LEFT JOIN
       LEFT JOIN tutorperry. subject subStudent ON ss.subjectId = subStudent.subjectId
       LEFT JOIN tutorperry. studentavailtime sa ON s.studentId = sa.studentId
       LEFT JOIN tutorperry. availtime atStudent ON sa.availTimeId = atStudent.id
-      WHERE s.studentId = ${studentId}
+      WHERE 
+      s.studentId = ${studentId} AND m.matchStatus != 'NO_LONGER_MATCH'
       GROUP BY s.studentId,m.idmatch
       
       ORDER BY 

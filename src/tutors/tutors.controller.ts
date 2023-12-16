@@ -93,7 +93,7 @@ export class TutorsController {
         updateInfo.information,
       );
       if (this.tutorsService.isFormComplete(updateInfo.information)) {
-        await this.matchService.matchStudent(updateInfo.information);
+        await this.matchService.matchTutor(updateInfo.information);
       }
       return { result };
     } catch (error) {
