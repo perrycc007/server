@@ -15,12 +15,14 @@ export class MatchService {
     // You can reuse your existing logic from the Express router
 
     try {
-      const { locations, subjects, lowestfee, tutorId } = req.body.information;
-
+      const { locations, subjects, lowestfee, tutorId } = req.information;
+      console.log('locations: ', req.information);
       const students = await findMatchingStudents(
         locations,
         subjects,
         lowestfee,
+        this.DataService,
+        this.prisma,
       );
       const matchedstudentIds = students.map((student) => student.studentId);
       const studentIdOfExistingMatch = await this.prisma.matchtable.findMany({
@@ -202,14 +204,20 @@ export class MatchService {
   }
 }
 
-async function findMatchingStudents(locations, subjects, lowestfee) {
+async function findMatchingStudents(
+  locations,
+  subjects,
+  lowestfee,
+  DataService,
+  prisma,
+) {
   try {
-    const lowestFee = await this.DataService.LowestFeeQuery(lowestfee);
+    const lowestFee = await DataService.LowestFeeQuery(lowestfee);
     let locationQuery = null;
     let subjectQuery = null;
 
     if (locations.length !== 0) {
-      locationQuery = await this.DataService.QueryBuilder(
+      locationQuery = await DataService.QueryBuilder(
         locations,
         'locations',
         'student',
@@ -217,7 +225,7 @@ async function findMatchingStudents(locations, subjects, lowestfee) {
     }
 
     if (subjects.length !== 0) {
-      subjectQuery = await this.DataService.QueryBuilder(
+      subjectQuery = await DataService.QueryBuilder(
         subjects,
         'subjects',
         'student',
@@ -226,7 +234,7 @@ async function findMatchingStudents(locations, subjects, lowestfee) {
     // Start with the static part of the query
     let query = `
   SELECT
-  s.studentId
+  s.studentId,
   s.lastOnline
   FROM
     tutorperry.student s
@@ -289,9 +297,8 @@ async function findMatchingStudents(locations, subjects, lowestfee) {
   ORDER BY
     s.lastOnline DESC
 `;
-
     // Execute the raw query safely with Prisma
-    const result = await this.prisma.$queryRawUnsafe(query);
+    const result = await prisma.$queryRawUnsafe(query);
 
     return result;
   } catch (error) {

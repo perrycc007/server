@@ -89,11 +89,12 @@ export class TutorsController {
   @Patch()
   async updateTutor(@Body() updateInfo: any) {
     try {
+      console.log(updateInfo.information);
       const result = await this.tutorsService.createOrUpdateTutor(
         updateInfo.information,
       );
       if (this.tutorsService.isFormComplete(updateInfo.information)) {
-        await this.matchService.matchTutor(updateInfo.information);
+        await this.matchService.matchTutor(updateInfo);
       }
       return { result };
     } catch (error) {

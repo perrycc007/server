@@ -127,7 +127,8 @@ export class StudentsController {
   }
 
   @Post('filter')
-  async findTutorsByPreferences(@Body() requestBody: any) {
+  async findStudentByPreference(@Body() requestBody: any) {
+    console.log(requestBody);
     try {
       const { lowestfee, locations, highestfee, subjects } =
         requestBody.preference;

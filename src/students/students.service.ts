@@ -61,7 +61,6 @@ export class StudentsService {
     ORDER BY 
       s.lastOnline DESC;
   `;
-      console.log(result, 64);
       return result;
     } catch (error) {
       throw new HttpException(
@@ -144,7 +143,6 @@ export class StudentsService {
         result[0].availtimes = result[0].availtimes
           ? result[0].availtimes.split(',')
           : [];
-        console.log(result[0]);
         return result[0];
       }
     } catch (error) {
@@ -534,7 +532,6 @@ export class StudentsService {
         prisma,
         DataService,
       ) {
-        console.log(availtime);
         // Example usage
         const filteredLocation = location
           ? location.filter((item) => item !== null)
@@ -565,7 +562,6 @@ export class StudentsService {
               availTimeId: availId,
             }),
           );
-          console.log(studentAvailTimesData);
           prisma.$transaction([
             prisma.studentlocation.createMany({ data: studentLocationsData }),
             prisma.studentsubject.createMany({ data: studentSubjectsData }),
