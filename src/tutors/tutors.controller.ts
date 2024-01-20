@@ -14,6 +14,7 @@ import { TutorsService } from './tutors.service';
 import { dummyTutor } from '../DUMMY/dummyTutor';
 import { JwtAuthGuard } from '../auth/guard/auth.guard'; // Import the JwtAuthGuard
 import { MatchService } from '../match/match.service';
+
 @Controller('tutors')
 export class TutorsController {
   constructor(
@@ -27,7 +28,7 @@ export class TutorsController {
       return await this.tutorsService.findManyWithStatusOpen();
     } catch (error) {
       throw new HttpException(
-        'Failed to find tutors with status open',
+        '未能找到狀態開放的導師',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -41,7 +42,7 @@ export class TutorsController {
       );
     } catch (error) {
       throw new HttpException(
-        'Failed to find all with favourite',
+        '未能找到所有導師',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -61,7 +62,7 @@ export class TutorsController {
       );
     } catch (error) {
       throw new HttpException(
-        'Failed to find tutors by preferences',
+        '未能按喜好找到導師',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -79,7 +80,7 @@ export class TutorsController {
       );
     } catch (error) {
       throw new HttpException(
-        'Failed to find tutors by preferences with favourite',
+        '未能按喜好找到導師',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -89,7 +90,7 @@ export class TutorsController {
   @Patch()
   async updateTutor(@Body() updateInfo: any) {
     try {
-      console.log(updateInfo.information);
+      // console.log(updateInfo.information);
       const result = await this.tutorsService.createOrUpdateTutor(
         updateInfo.information,
       );
@@ -99,7 +100,7 @@ export class TutorsController {
       return { result };
     } catch (error) {
       throw new HttpException(
-        'Failed to update tutor information',
+        '導師資訊更新失敗',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -111,7 +112,7 @@ export class TutorsController {
       return await this.tutorsService.getTutorByuserId(userId, dummyTutor);
     } catch (error) {
       throw new HttpException(
-        `Failed to retrieve tutor with ID ${userId}`,
+        `檢索導師失敗 ${userId}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -123,7 +124,7 @@ export class TutorsController {
       return await this.tutorsService.getFavouriteTutors(userId);
     } catch (error) {
       throw new HttpException(
-        `Failed to get favourite case for user ID ${userId}`,
+        `未能取得心儀案例 ${userId}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

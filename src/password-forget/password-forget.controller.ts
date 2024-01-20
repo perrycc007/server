@@ -17,13 +17,13 @@ export class PasswordForgetController {
   async sendResetLink(@Body() requestBody) {
     try {
       if (!requestBody.email) {
-        throw new HttpException('Email is required', HttpStatus.BAD_REQUEST);
+        throw new HttpException('電子郵件為必填項', HttpStatus.BAD_REQUEST);
       }
 
       return await this.passwordForgetService.sendResetLink(requestBody.email);
     } catch (error) {
       throw new HttpException(
-        'Failed to send reset link',
+        '發送重置連結失敗',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -38,7 +38,7 @@ export class PasswordForgetController {
       return await this.passwordForgetService.verifyToken(userId, token);
     } catch (error) {
       throw new HttpException(
-        'Token verification failed',
+        'Token 驗證失敗',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -52,7 +52,7 @@ export class PasswordForgetController {
   ) {
     try {
       if (!requestBody.password) {
-        throw new HttpException('Password is required', HttpStatus.BAD_REQUEST);
+        throw new HttpException('密碼是必需的', HttpStatus.BAD_REQUEST);
       }
 
       return await this.passwordForgetService.resetPassword(
@@ -61,10 +61,7 @@ export class PasswordForgetController {
         requestBody.password,
       );
     } catch (error) {
-      throw new HttpException(
-        'Password reset failed',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('密碼重置失敗', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

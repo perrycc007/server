@@ -1,4 +1,13 @@
-import { Controller, Get, Param, Patch, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Body,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { HistoryService } from './history.service';
 import { JwtAuthGuard } from '../auth/guard/auth.guard';
 import { Logger } from '@nestjs/common';
@@ -16,7 +25,10 @@ export class HistoryController {
       return this.historyService.getHistoryByUserId(userId);
     } catch (error) {
       this.logger.error(`Error in getHistoryByuserId: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `按使用者 ID 取得歷史記錄時發生錯誤：`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -26,7 +38,10 @@ export class HistoryController {
       return this.historyService.updateCaseStatus(body.studentId, body.status);
     } catch (error) {
       this.logger.error(`Error in updateCaseStatus: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `更新案例狀態時發生錯誤：`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -36,7 +51,10 @@ export class HistoryController {
       return this.historyService.updateTutorStatus(body.tutorId, body.status);
     } catch (error) {
       this.logger.error(`Error in updateTutorStatus: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `更新導師狀態時發生錯誤`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

@@ -36,7 +36,7 @@ export class ResultController {
       );
     } catch (error) {
       throw new HttpException(
-        'Failed to get results by student ID',
+        '無法透過學生ID取得結果',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -53,7 +53,7 @@ export class ResultController {
       return this.resultService.getResultByStudentId(parsedtutorId, parsedPage);
     } catch (error) {
       throw new HttpException(
-        'Failed to get results by tutor ID',
+        '無法透過導師ID取得結果',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -64,7 +64,7 @@ export class ResultController {
       return this.resultService.getSortedStudentId();
     } catch (error) {
       throw new HttpException(
-        'Failed to get sorted student IDs',
+        '無法取得已排序的學生 ID',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -75,7 +75,7 @@ export class ResultController {
       return this.resultService.getSortedTutortid();
     } catch (error) {
       throw new HttpException(
-        'Failed to get sorted tutor IDs',
+        '無法取得已排序的導師 ID',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -3,6 +3,8 @@ import {
   Post,
   Body,
   Logger,
+  HttpException,
+  HttpStatus,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { MatchService } from './match.service';
@@ -20,7 +22,7 @@ export class MatchController {
     } catch (error) {
       this.logger.error(`Error in matchTutor: ${error.message}`);
       // Here, you can throw a specific exception based on the error type
-      throw new InternalServerErrorException('Error matching tutor');
+      throw new HttpException(`匹配導師錯誤`, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -31,7 +33,10 @@ export class MatchController {
     } catch (error) {
       this.logger.error(`Error in matchStudent: ${error.message}`);
       // Here, you can throw a specific exception based on the error type
-      throw new InternalServerErrorException('Error matching student');
+      throw new HttpException(
+        `配對學生時出錯`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

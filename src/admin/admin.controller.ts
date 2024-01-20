@@ -32,7 +32,7 @@ export class AdminController {
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
-        'Error updating tutor',
+        '更新導師時出錯',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -45,7 +45,7 @@ export class AdminController {
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
-        'Error updating student',
+        '更新學生時出錯',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -58,7 +58,7 @@ export class AdminController {
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
-        'Error updating case status',
+        '更新案例狀態時發生錯誤',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -70,7 +70,7 @@ export class AdminController {
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
-        'Error updating profile',
+        '更新個人檔案時發生錯誤',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -90,7 +90,7 @@ export class AdminController {
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
-        'Error updating tutor',
+        '更新導師時出錯',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -109,7 +109,7 @@ export class AdminController {
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
-        'Error updating student',
+        '更新學生時出錯',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -126,7 +126,7 @@ export class AdminController {
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
-        'Error updating case status',
+        '更新案例狀態時發生錯誤',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -143,7 +143,7 @@ export class AdminController {
     } catch (error) {
       // Handle the error and send an appropriate response or rethrow if needed.
       throw new HttpException(
-        'Error updating tutor status',
+        '更新導師狀態時發生錯誤',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

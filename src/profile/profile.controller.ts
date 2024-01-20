@@ -23,7 +23,7 @@ export class ProfileController {
       return await this.profileService.getProfile(parseInt(userId));
     } catch (error) {
       throw new HttpException(
-        `Failed to get profile for user ID ${userId}`,
+        `無法取得使用者 ID 的設定文件 ${userId}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -36,7 +36,7 @@ export class ProfileController {
       return await this.profileService.updateProfile(requestBody);
     } catch (error) {
       throw new HttpException(
-        'Failed to update profile',
+        '更新個人資料失敗',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

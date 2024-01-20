@@ -5,6 +5,8 @@ import {
   Delete,
   Param,
   Body,
+  HttpException,
+  HttpStatus,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -29,7 +31,10 @@ export class FavouriteController {
       );
     } catch (error) {
       this.logger.error(`Error in getUserTutor: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `取得使用者導師時出錯`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -43,7 +48,10 @@ export class FavouriteController {
       );
     } catch (error) {
       this.logger.error(`Error in getUserCases: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `取得使用者案例時出錯`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -58,7 +66,10 @@ export class FavouriteController {
       );
     } catch (error) {
       this.logger.error(`Error in addFavouriteStudent: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `加入最喜歡的學生時出錯`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -73,7 +84,10 @@ export class FavouriteController {
       );
     } catch (error) {
       this.logger.error(`Error in removeFavouriteStudent: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `刪除最喜歡的學生時出錯`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -83,7 +97,10 @@ export class FavouriteController {
       return this.favouriteService.addFavouriteTutor(body.userId, body.tutorId);
     } catch (error) {
       this.logger.error(`Error in addFavouriteTutor: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `新增收藏導師時發生錯誤：`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -98,7 +115,10 @@ export class FavouriteController {
       );
     } catch (error) {
       this.logger.error(`Error in removeFavouriteTutor: ${error.message}`);
-      throw error;
+      throw new HttpException(
+        `刪除最愛導師時出錯`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

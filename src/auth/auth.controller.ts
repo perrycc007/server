@@ -29,7 +29,7 @@ export class AuthController {
       this.logger.error(`Error during signup: ${error.message}`);
 
       // Throw an HttpException with a specific status code and error message
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('註冊時發生錯誤', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -47,7 +47,7 @@ export class AuthController {
       this.logger.error(`Error during login: ${error.message}`);
 
       // Throw an HttpException with a specific status code and error message
-      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException('登入時發生錯誤：', HttpStatus.BAD_REQUEST);
     }
   }
 }

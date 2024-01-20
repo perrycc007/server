@@ -17,7 +17,10 @@ export class PasswordResetController {
     try {
       // Ensure requestBody contains the password and it's not empty
       if (!requestBody.password || requestBody.password.trim() === '') {
-        throw new HttpException('Password is required', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          '密碼是必需的, 重置密碼失敗, 連結可能已過期, 請請求另一個連結。',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       return await this.passwordResetService.resetPassword(
@@ -30,7 +33,7 @@ export class PasswordResetController {
         throw error; // Re-throwing the error if it's already an HttpException
       } else {
         throw new HttpException(
-          'Failed to reset password',
+          '重置密碼失敗, 連結可能已過期, 請請求另一個連結。',
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }

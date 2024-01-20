@@ -31,10 +31,12 @@ export class StudentsController {
     try {
       return this.studentsService.findManyWithStatusOpen();
     } catch (error) {
-      throw new HttpException(
-        'Failed to find all students',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      const result = {
+        data: {
+          error: true,
+        },
+      };
+      return result;
     }
   }
 
@@ -47,7 +49,7 @@ export class StudentsController {
       );
     } catch (error) {
       throw new HttpException(
-        'Failed to find all students with favourite',
+        '未能找到所有學生',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -59,7 +61,7 @@ export class StudentsController {
       return this.studentsService.findUniqueUserFavouriteCases(userId);
     } catch (error) {
       throw new HttpException(
-        'Failed to get favourite cases',
+        '未能取得收藏案例',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -72,7 +74,7 @@ export class StudentsController {
       return this.studentsService.getStudentbyStudentId(studentId);
     } catch (error) {
       throw new HttpException(
-        `Failed to find student with ID ${studentId}`,
+        `找不到學生${studentId}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -89,10 +91,7 @@ export class StudentsController {
       }
       return { result };
     } catch (error) {
-      throw new HttpException(
-        'Failed to update student',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('更新學生失敗', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
   @UseGuards(JwtAuthGuard)
@@ -102,10 +101,7 @@ export class StudentsController {
       const result = await this.studentsService.updateCaseStatus(requestBody);
       return { result };
     } catch (error) {
-      throw new HttpException(
-        'Failed to update student',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('更新學生失敗', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -119,10 +115,7 @@ export class StudentsController {
       }
       return { result };
     } catch (error) {
-      throw new HttpException(
-        'Failed to create student',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new HttpException('創建學生失敗', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -139,7 +132,7 @@ export class StudentsController {
       );
     } catch (error) {
       throw new HttpException(
-        'Failed to find students by preferences',
+        '未能按喜好找到學生',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -158,7 +151,7 @@ export class StudentsController {
       );
     } catch (error) {
       throw new HttpException(
-        'Failed to find students by preferences with favourite',
+        '未能按喜好找到學生',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

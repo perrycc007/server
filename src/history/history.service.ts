@@ -1,3 +1,4 @@
+const newrelic = require('newrelic');
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { DataService } from '../helper/helperFunction.service';

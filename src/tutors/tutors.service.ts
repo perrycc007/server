@@ -1,3 +1,4 @@
+const newrelic = require('newrelic');
 // tutors.service.ts
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
@@ -503,18 +504,31 @@ GROUP BY
             select: { id: true, subjectKey: true },
           });
 
-          const gradeMapping = allGrades.reduce((acc, grade) => {
-            acc[grade.subjectkey] = grade.id;
-            return acc;
-          }, {});
+          // console.log(allGrades);
+          // const gradeMapping = allGrades.reduce((acc, grade) => {
+          //   acc[grade.subjectkey] = grade.id;
+          //   return acc;
+          // }, {});
+
           const tutorId = upsertTutor.tutorId;
           const tutorGradeData = Object.entries(subjectGrade).map(
-            ([subjectKey, examGrade]) => {
-              const gradeId = gradeMapping[subjectKey];
-
-              return { tutorId, gradeId, examGrade };
+            ([key, grade]) => {
+              const subject = allGrades.find((subj) => subj.subjectKey === key);
+              return {
+                tutorId,
+                gradeId: subject ? subject.id : null,
+                examGrade: grade,
+              };
             },
           );
+          // const tutorGradeData = Object.entries(subjectGrade).map(
+          //   ([subjectKey, examGrade]) => {
+          //     const gradeId = gradeMapping[subjectKey];
+          //     // console.log(510, gradeMapping);
+          //     return { tutorId, gradeId, examGrade };
+          //   },
+          // );
+          // console.log(tutorGradeData);
           // Map names to IDs
           const locationIds = locations
             .map(
@@ -569,11 +583,6 @@ GROUP BY
           );
           const tutorGradeData = resolvedIds.tutorGradeData;
           // Assuming 'subjectGrade' is the array you are referring to
-          if (subjectGrade && subjectGrade.length > 0) {
-            prisma.tutorgrade.createMany({
-              data: tutorGradeData,
-            });
-          }
 
           prisma.$transaction([
             // Delete existing relations
@@ -586,9 +595,9 @@ GROUP BY
             prisma.tutoravailtime.deleteMany({
               where: { tutorId: upsertTutor.tutorId },
             }),
-            prisma.tutorgrade.deleteMany({
-              where: { tutorId: upsertTutor.tutorId },
-            }),
+            // prisma.tutorgrade.deleteMany({
+            //   where: { tutorId: upsertTutor.tutorId },
+            // }),
             //   // Prepare batch insert data
 
             // Batch insert new records
@@ -598,6 +607,12 @@ GROUP BY
               data: tutorAvailTimesData,
             }),
           ]);
+
+          if (subjectGrade && Object.keys(subjectGrade).length > 0) {
+            prisma.tutorgrade.createMany({
+              data: tutorGradeData,
+            });
+          }
         });
       }
 

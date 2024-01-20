@@ -1,3 +1,4 @@
+const newrelic = require('newrelic');
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 @Injectable()
